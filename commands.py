@@ -1,6 +1,7 @@
 import getpass
 import ConfigParser
 from os.path import join, expanduser
+import pprint
 
 from tutum.api import auth
 from tutum.api import exceptions
@@ -45,5 +46,13 @@ def apps():
             data_list.append([app.name, app.uuid[:8], app.state, app.image_tag, app.container_size,
                               app.deployed_datetime])
         utils.tabulate_result(data_list, headers)
+    except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
+        print e
+
+
+def app_details(uuid):
+    try:
+        app_detail = tutum.Application.fetch(uuid)
+        pprint.pprint(app_detail.get_all_attributes())
     except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
         print e

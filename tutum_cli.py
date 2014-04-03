@@ -22,22 +22,16 @@ if __name__ == "__main__":
     # Commands
     login_parser = subparsers.add_parser('login', help='Login into Tutum', parents=[parent_parser])
 
-    apps_parser = subparsers.add_parser('apps', help='List all apps', parents=[parent_parser])
+    apps_parser = subparsers.add_parser('apps', help='List all applications', parents=[parent_parser])
 
+    app_parser = subparsers.add_parser('app', help='Get application details', parents=[parent_parser])
+    app_parser.add_argument("uuid", help="Application's uuid")
 
     # Parse args
     args = parser.parse_args()
-
     if args.command == "login":
         commands.authenticate()
     elif args.command == "apps":
         commands.apps()
-
-
-
-
-
-
-
-
-
+    elif args.command == "app":
+        commands.app_details(args.uuid)
