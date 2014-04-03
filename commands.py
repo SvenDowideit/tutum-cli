@@ -56,3 +56,33 @@ def app_details(uuid):
         pprint.pprint(app_detail.get_all_attributes())
     except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
         print e
+
+
+def app_start(uuid):
+    try:
+        app_detail = tutum.Application.fetch(uuid)
+        result = app_detail.start()
+        if result:
+            print "Application %s: %s" % (uuid, app_detail.state)
+    except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
+        print e
+
+
+def app_stop(uuid):
+    try:
+        app_detail = tutum.Application.fetch(uuid)
+        result = app_detail.stop()
+        if result:
+            print "Application %s: %s" % (uuid, app_detail.state)
+    except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
+        print e
+
+
+def app_terminate(uuid):
+    try:
+        app_detail = tutum.Application.fetch(uuid)
+        result = app_detail.terminate()
+        if result:
+            print "Application %s: %s" % (uuid, app_detail.state)
+    except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
+        print e
