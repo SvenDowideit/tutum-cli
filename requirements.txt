@@ -1,0 +1,5 @@
+-e git+https://github.com/tutumcloud/python-tutum.git@45b79bed63d2bba05f728e2982ba8177cb3b16b9#egg=python_tutum-master
+requests==2.2.1
+six==1.6.1
+tabulate==0.7.2
+wsgiref==0.1.2
