@@ -26,7 +26,8 @@ if __name__ == "__main__":
     parsers.add_login_parser(subparsers, parent_parser)
     parsers.add_apps_parser(subparsers, parent_parser)
     parsers.add_app_parser(subparsers, parent_parser)
-    parsers.add_containers_parse(subparsers, parent_parser)
+    parsers.add_containers_parser(subparsers, parent_parser)
+    parsers.add_container_parser(subparsers, parent_parser)
 
 
     # Parse args
@@ -37,13 +38,15 @@ if __name__ == "__main__":
         commands.apps()
     elif args.command == "app":
         if args.app_command == "inspect":
-            commands.app_details(args.identifier)
+            commands.application_details(args.identifier)
         elif args.app_command == "start":
             commands.app_start(args.identifier)
         elif args.app_command == "stop":
             commands.app_stop(args.identifier)
         elif args.app_command == "terminate":
             commands.app_terminate(args.identifier)
+        elif args.app_command == "logs":
+            commands.app_logs(args.identifier)
         elif args.app_command == "update":
             commands.app_update(args.identifier, args.target_num_containers, args.web_public_dns)
         elif args.app_command == "create":
@@ -55,3 +58,14 @@ if __name__ == "__main__":
                                 autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.roles)
     elif args.command == "ps":
         commands.ps()
+    elif args.command == "container":
+        if args.container_command == "inspect":
+            commands.container_inspect(args.identifier)
+        elif args.container_command == "logs":
+            commands.container_logs(args.identifier)
+        elif args.container_command == "start":
+            commands.container_start(args.identifier)
+        elif args.container_command == "stop":
+            commands.container_stop(args.identifier)
+        elif args.container_command == "terminate":
+            commands.container_terminate(args.identifier)

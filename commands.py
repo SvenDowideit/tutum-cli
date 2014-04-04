@@ -50,55 +50,63 @@ def apps():
         print e
 
 
-def app_details(uuid):
+def application_details(identifier):
     try:
-        app_detail = tutum.Application.fetch(uuid)
-        pprint.pprint(app_detail.get_all_attributes())
+        app_details = tutum.Application.fetch(identifier)
+        pprint.pprint(app_details.get_all_attributes())
     except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
         print e
 
 
-def app_start(uuid):
+def app_start(identifier):
     try:
-        app_detail = tutum.Application.fetch(uuid)
-        result = app_detail.start()
+        app_details = tutum.Application.fetch(identifier)
+        result = app_details.start()
         if result:
-            print app_detail.uuid
+            print app_details.uuid
     except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
         print e
 
 
-def app_stop(uuid):
+def app_stop(identifier):
     try:
-        app_detail = tutum.Application.fetch(uuid)
-        result = app_detail.stop()
+        app_details = tutum.Application.fetch(identifier)
+        result = app_details.stop()
         if result:
-            print app_detail.uuid
+            print app_details.uuid
     except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
         print e
 
 
-def app_terminate(uuid):
+def app_terminate(identifier):
     try:
-        app_detail = tutum.Application.fetch(uuid)
-        result = app_detail.delete()
+        app_details = tutum.Application.fetch(identifier)
+        result = app_details.delete()
         if result:
-            print app_detail.uuid
+            print app_details.uuid
     except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
         print e
 
 
-def app_update(uuid, target_num_containers, web_public_dns):
+def app_logs(identifier):
     try:
-        app_detail = tutum.Application.fetch(uuid)
+        app_details = tutum.Application.fetch(identifier)
+        print app_details.logs
+    except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
+        print e
+
+
+def app_update(identifier, target_num_containers, web_public_dns):
+    try:
+        app_details = tutum.Application.fetch(identifier)
         if target_num_containers:
-            app_detail.target_num_containers = target_num_containers
+            app_details.target_num_containers = target_num_containers
         if web_public_dns:
-            app_detail.web_public_dns = web_public_dns
+            app_details.web_public_dns = web_public_dns
         if target_num_containers or web_public_dns:
-            result = app_detail.save()
+            result = app_details.save()
             if result:
-                print app_detail.uuid
+                print app_details.uuid
     except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
         print e
 
@@ -116,7 +124,7 @@ def app_create(**kwargs):
 def ps():
     try:
         containers = tutum.Container.list()
-        headers = ["Name", "UUID", "State", "Image", "Run Command", "Size", "Exit Code", "Deployed datetime", "Web Hostname", "Ports"]
+        headers = ["Name", "UUID", "State", "Image", "Run Command", "Size", "Exit Code", "Deployed datetime", "Ports"]
         data_list = []
         for container in containers:
             ports_string = ""
@@ -126,7 +134,53 @@ def ps():
                     ports_string += ", "
             data_list.append([container.name, container.uuid[:8], container.state, container.image_tag,
                               container.run_command, container.container_size, container.exit_code,
-                              container.deployed_datetime, container.web_public_dns, ports_string])
+                              container.deployed_datetime, ports_string])
         utils.tabulate_result(data_list, headers)
+    except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
+        print e
+
+
+def container_inspect(identifier):
+    try:
+        container_details = tutum.Container.fetch(identifier)
+        pprint.pprint(container_details.get_all_attributes())
+    except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
+        print e
+
+
+def container_start(identifier):
+    try:
+        container_details = tutum.Container.fetch(identifier)
+        result = container_details.start()
+        if result:
+            print container_details.uuid
+    except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
+        print e
+
+
+def container_stop(identifier):
+    try:
+        container_details = tutum.Container.fetch(identifier)
+        result = container_details.stop()
+        if result:
+            print container_details.uuid
+    except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
+        print e
+
+
+def container_terminate(identifier):
+    try:
+        container_details = tutum.Container.fetch(identifier)
+        result = container_details.delete()
+        if result:
+            print container_details.uuid
+    except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
+        print e
+
+
+def container_logs(identifier):
+    try:
+        container_details = tutum.Container.fetch(identifier)
+        print container_details.logs
     except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
         print e

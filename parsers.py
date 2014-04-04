@@ -29,6 +29,8 @@ def add_app_parser(subparsers, parent_parser):
                                                 parents=[parent_parser, app_common_parser])
     terminate_app_parser = app_subparsers.add_parser('terminate', help='Terminate an application',
                                                      parents=[parent_parser, app_common_parser])
+    logs_app_parser = app_subparsers.add_parser('logs', help='Get logs from an application',
+                                                parents=[parent_parser, app_common_parser])
     update_app_parser = app_subparsers.add_parser('update', help='Update an application',
                                                   parents=[parent_parser, app_common_parser])
     update_app_parser.add_argument("--target_num_containers",
@@ -76,6 +78,30 @@ def add_app_parser(subparsers, parent_parser):
     return app_parser
 
 
-def add_containers_parse(subparsers, parent_parser):
+def add_containers_parser(subparsers, parent_parser):
     containers_parser = subparsers.add_parser('ps', help='List all containers', parents=[parent_parser])
     return containers_parser
+
+
+def add_container_parser(subparsers, parent_parser):
+    # Container common options
+    container_common_parser = argparse.ArgumentParser(add_help=False)
+    container_common_parser.add_argument("identifier", help="Container's uuid (either long or short) or name")
+
+    # Container parser
+    container_parser = subparsers.add_parser('container', help='Manage a container', parents=[parent_parser])
+
+    # Container commands
+    container_subparsers = container_parser.add_subparsers(title="Container commands", dest='container_command')
+    inspect_container_parser = container_subparsers.add_parser('inspect', help='Inspect a container',
+                                                               parents=[parent_parser, container_common_parser])
+    start_container_parser = container_subparsers.add_parser('start', help='Start a container',
+                                                             parents=[parent_parser, container_common_parser])
+    stop_container_parser = container_subparsers.add_parser('stop', help='Stop a container',
+                                                            parents=[parent_parser, container_common_parser])
+    terminate_container_parser = container_subparsers.add_parser('terminate', help='Terminate a container',
+                                                                 parents=[parent_parser, container_common_parser])
+    logs_container_parser = container_subparsers.add_parser('logs', help='Get logs from a container',
+                                                            parents=[parent_parser, container_common_parser])
+
+    return container_parser
