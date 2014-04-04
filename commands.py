@@ -40,11 +40,11 @@ def authenticate():
 def apps():
     try:
         apps = tutum.Application.list()
-        headers = ["Name", "UUID", "State", "Image", "Size", "Deployed datetime"]
+        headers = ["Name", "UUID", "State", "Image", "Size", "Deployed datetime", "Web Hostname"]
         data_list = []
         for app in apps:
             data_list.append([app.name, app.uuid[:8], app.state, app.image_tag, app.container_size,
-                              app.deployed_datetime])
+                              app.deployed_datetime, app.web_public_dns])
         utils.tabulate_result(data_list, headers)
     except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
         print e
@@ -109,5 +109,24 @@ def app_create(**kwargs):
         result = app.save()
         if result:
             print app.uuid
+    except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
+        print e
+
+
+def ps():
+    try:
+        containers = tutum.Container.list()
+        headers = ["Name", "UUID", "State", "Image", "Run Command", "Size", "Exit Code", "Deployed datetime", "Web Hostname", "Ports"]
+        data_list = []
+        for container in containers:
+            ports_string = ""
+            for index, port in enumerate(container.container_ports):
+                ports_string += "%s:%d->%d/%s" % (container.public_dns, port['outer_port'], port['inner_port'], port['protocol'])
+                if index != len(container.container_ports) - 1:
+                    ports_string += ", "
+            data_list.append([container.name, container.uuid[:8], container.state, container.image_tag,
+                              container.run_command, container.container_size, container.exit_code,
+                              container.deployed_datetime, container.web_public_dns, ports_string])
+        utils.tabulate_result(data_list, headers)
     except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
         print e

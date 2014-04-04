@@ -74,3 +74,8 @@ def add_app_parser(subparsers, parent_parser):
                                                    "i.e. ['/api/v1/role/global/'] (default: empty array)")
 
     return app_parser
+
+
+def add_containers_parse(subparsers, parent_parser):
+    containers_parser = subparsers.add_parser('ps', help='List all containers', parents=[parent_parser])
+    return containers_parser

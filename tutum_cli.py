@@ -26,6 +26,7 @@ if __name__ == "__main__":
     parsers.add_login_parser(subparsers, parent_parser)
     parsers.add_apps_parser(subparsers, parent_parser)
     parsers.add_app_parser(subparsers, parent_parser)
+    parsers.add_containers_parse(subparsers, parent_parser)
 
 
     # Parse args
@@ -52,3 +53,5 @@ if __name__ == "__main__":
                                 container_envvars=args.container_envvars,
                                 linked_to_application=args.linked_to_application, autorestart=args.autorestart,
                                 autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.roles)
+    elif args.command == "ps":
+        commands.ps()
