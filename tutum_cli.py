@@ -7,15 +7,15 @@ import commands
 
 
 TEST_BASE_URL = "https://app-test.tutum.co/api/v1/"
-
+VERSION = "0.6.3.5"
 
 if __name__ == "__main__":
     tutum.base_url = TEST_BASE_URL
     logging.basicConfig()
 
     # Main parser
-    parser = argparse.ArgumentParser(description="Tutum's CLI")
-    parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.6.3.4')
+    parser = argparse.ArgumentParser(description="Tutum's CLI", prog="tutum")
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s %s' % VERSION)
 
     subparsers = parser.add_subparsers(title="Tutum's CLI commands", dest='command')
 
