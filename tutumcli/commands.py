@@ -27,7 +27,6 @@ def authenticate():
             config.add_section(AUTH_SECTION)
             config.set(AUTH_SECTION, USER_OPTION, username)
             config.set(AUTH_SECTION, APIKEY_OPTION, api_key)
-            print join(expanduser('~'), TUTUM_FILE)
             with open(join(expanduser('~'), TUTUM_FILE), 'w') as cfgfile:
                 config.write(cfgfile)
             print "Login succeeded!"
