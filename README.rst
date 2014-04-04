@@ -15,7 +15,7 @@ In order to install the Tutum CLI, you can use ``pip install``:
 
 Now you can start using it:
 
-.. sourcecode:: bash
+.. sourcecode:: none
 
     $ tutum -h
     usage: tutum [-h] [-v] {login,apps,app,ps,container} ...
@@ -72,7 +72,7 @@ Quick examples
 Applications
 ^^^^^^^^^^^^
 
-.. sourcecode:: bash
+.. sourcecode:: none
 
     $ tutum apps
         Name       UUID      State           Image                                      Size    Deployed datetime               Web Hostname
@@ -140,7 +140,7 @@ Applications
 Containers
 ^^^^^^^^^^
 
-.. sourcecode:: bash
+.. sourcecode:: none
 
     $ tutum ps
     Name       UUID      State         Image                                      Run Command    Size      Exit Code  Deployed datetime               Ports
