@@ -5,8 +5,8 @@ import pprint
 
 from tutum.api import auth
 from tutum.api import exceptions
-import tutum
 
+import tutum
 import utils
 
 
