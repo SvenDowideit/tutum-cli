@@ -39,10 +39,10 @@ def authenticate():
 
 def apps():
     try:
-        apps = tutum.Application.list()
+        app_list = tutum.Application.list()
         headers = ["Name", "UUID", "State", "Image", "Size", "Deployed datetime", "Web Hostname"]
         data_list = []
-        for app in apps:
+        for app in app_list:
             data_list.append([app.name, app.uuid[:8], app.state, app.image_tag, app.container_size,
                               app.deployed_datetime, app.web_public_dns])
         utils.tabulate_result(data_list, headers)

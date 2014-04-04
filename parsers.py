@@ -72,8 +72,8 @@ def add_app_parser(subparsers, parent_parser):
     create_app_parser.add_argument('--autodestroy', help="whether the containers should be terminated if "
                                                          "they stop (default: OFF)",
                                    choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
-    create_app_parser.add_argument('--roles', help="a list of Tutum API role resource URIs to grant the application, "
-                                                   "i.e. ['/api/v1/role/global/'] (default: empty array)")
+    create_app_parser.add_argument('--roles', help="a list of Tutum API roles to grant the application, "
+                                                   "i.e. ['global'] (default: empty array, possible values: 'global')")
 
     return app_parser
 
