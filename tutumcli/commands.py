@@ -128,7 +128,9 @@ def ps():
         for container in containers:
             ports_string = ""
             for index, port in enumerate(container.container_ports):
-                ports_string += "%s:%d->%d/%s" % (container.public_dns, port['outer_port'], port['inner_port'], port['protocol'])
+                if port['outer_port'] is not None:
+                    ports_string += "%s:%d->" % (container.public_dns, port['outer_port'])
+                ports_string += "%d/%s" % (port['inner_port'], port['protocol'])
                 if index != len(container.container_ports) - 1:
                     ports_string += ", "
             data_list.append([container.name, container.uuid[:8], container.state, container.image_tag,
