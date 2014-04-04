@@ -86,3 +86,18 @@ def app_terminate(uuid):
             print "Application %s: %s" % (uuid, app_detail.state)
     except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
         print e
+
+
+def app_update(uuid, target_num_containers=None, web_public_dns=None):
+    try:
+        app_detail = tutum.Application.fetch(uuid)
+        if target_num_containers:
+            app_detail.target_num_containers = target_num_containers
+        if web_public_dns:
+            app_detail.web_public_dns = web_public_dns
+        if target_num_containers or web_public_dns:
+            result = app_detail.save()
+            if result:
+                print "Application %s updated" % uuid
+    except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
+        print e
