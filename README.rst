@@ -16,6 +16,7 @@ In order to install the Tutum CLI, you can use ``pip install``:
 Now you can start using it:
 
 .. sourcecode:: bash
+
     $ tutum -h
     usage: tutum [-h] [-v] {login,apps,app,ps,container} ...
 
