@@ -63,7 +63,7 @@ def app_start(uuid):
         app_detail = tutum.Application.fetch(uuid)
         result = app_detail.start()
         if result:
-            print "Application %s: %s" % (uuid, app_detail.state)
+            print app_detail.uuid
     except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
         print e
 
@@ -73,7 +73,7 @@ def app_stop(uuid):
         app_detail = tutum.Application.fetch(uuid)
         result = app_detail.stop()
         if result:
-            print "Application %s: %s" % (uuid, app_detail.state)
+            print app_detail.uuid
     except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
         print e
 
@@ -81,14 +81,14 @@ def app_stop(uuid):
 def app_terminate(uuid):
     try:
         app_detail = tutum.Application.fetch(uuid)
-        result = app_detail.terminate()
+        result = app_detail.delete()
         if result:
-            print "Application %s: %s" % (uuid, app_detail.state)
+            print app_detail.uuid
     except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
         print e
 
 
-def app_update(uuid, target_num_containers=None, web_public_dns=None):
+def app_update(uuid, target_num_containers, web_public_dns):
     try:
         app_detail = tutum.Application.fetch(uuid)
         if target_num_containers:
@@ -98,6 +98,16 @@ def app_update(uuid, target_num_containers=None, web_public_dns=None):
         if target_num_containers or web_public_dns:
             result = app_detail.save()
             if result:
-                print "Application %s updated" % uuid
+                print app_detail.uuid
+    except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
+        print e
+
+
+def app_create(**kwargs):
+    try:
+        app = tutum.Application.create(**kwargs)
+        result = app.save()
+        if result:
+            print app.uuid
     except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
         print e
