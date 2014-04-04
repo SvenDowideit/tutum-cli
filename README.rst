@@ -34,10 +34,13 @@ Now you can start using it:
         container           Manage a container
 
 
-Authorization
--------------
+Authentication
+--------------
 
-In other to manage your apps and containers running on Tutum, you need to login using your Tutum username and password:
+In other to manage your apps and containers running on Tutum, you need to log into Tutum in any of the following ways
+(will be used in this order):
+
+* Login using Tutum CLI or storing it directly in a configuration file in ``~/.tutum``:
 
 .. sourcecode:: bash
 
@@ -45,20 +48,21 @@ In other to manage your apps and containers running on Tutum, you need to login 
     Username: admin
     Password:
     Login succeeded!
-Your login credentials will be stored in ``~/.tutum``.
-As Tutum CLI uses Tutum Python library, you can log into Tutum setting the environment variables ``TUTUM_USER`` and
-``TUTUM_APIKEY``.
-For this, log into Tutum using environment variables, click on the menu on the upper right corner of the screen,
-and select **Get Api Key**.
-Set the environment variables ``TUTUM_USER`` and ``TUTUM_APIKEY``:
+
+Your login credentials will be stored in ``~/.tutum``:
+
+.. sourcecode:: ini
+
+    [auth]
+    user = "username"
+    apikey = "apikey"
+
+* Set the environment variables ``TUTUM_USER`` and ``TUTUM_APIKEY``:
 
 .. sourcecode:: bash
 
     export TUTUM_USER=username
     export TUTUM_APIKEY=apikey
-
-**Credentials from file ``~/.tutum`` will be priority over the environment variables ``TUTUM_USER`` and
-``TUTUM_APIKEY``.**
 
 
 Quick examples
