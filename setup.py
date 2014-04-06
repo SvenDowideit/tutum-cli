@@ -6,7 +6,7 @@ setup(
     name = "tutum",
     version = tutum_cli.VERSION,
     packages = find_packages(),
-    install_requires = ['python-tutum==0.6.3.5', 'requests>=2.2.1', 'six==1.6.1', 'tabulate==0.7.2', 'wsgiref==0.1.2'],
+    install_requires = ['python-tutum==0.6.4', 'requests>=2.2.1', 'six==1.6.1', 'tabulate==0.7.2', 'wsgiref==0.1.2'],
     entry_points={
         'console_scripts':
             ['tutum = tutumcli.tutum_cli:main']

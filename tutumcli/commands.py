@@ -41,9 +41,12 @@ def apps():
         app_list = tutum.Application.list()
         headers = ["Name", "UUID", "State", "Image", "Size", "Deployed datetime", "Web Hostname"]
         data_list = []
-        for app in app_list:
-            data_list.append([app.name, app.uuid[:8], app.state, app.image_tag, app.container_size,
-                              app.deployed_datetime, app.web_public_dns])
+        if len(app_list) != 0:
+            for app in app_list:
+                data_list.append([app.name, app.uuid[:8], app.state, app.image_tag, app.container_size,
+                                  app.deployed_datetime, app.web_public_dns])
+        else:
+            data_list.append(["", "", "", "", "", "", ""])
         utils.tabulate_result(data_list, headers)
     except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
         print e
@@ -95,14 +98,23 @@ def app_logs(identifier):
         print e
 
 
-def app_update(identifier, target_num_containers, web_public_dns):
+def app_scale(identifier, target_num_containers):
     try:
         app_details = tutum.Application.fetch(identifier)
         if target_num_containers:
             app_details.target_num_containers = target_num_containers
-        if web_public_dns:
-            app_details.web_public_dns = web_public_dns
-        if target_num_containers or web_public_dns:
+            result = app_details.save()
+            if result:
+                print app_details.uuid
+    except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
+        print e
+
+
+def app_alias(identifier, dns):
+    try:
+        app_details = tutum.Application.fetch(identifier)
+        if dns:
+            app_details.web_public_dns = dns
             result = app_details.save()
             if result:
                 print app_details.uuid
@@ -120,22 +132,25 @@ def app_create(**kwargs):
         print e
 
 
-def ps():
+def ps(app_identifier):
     try:
-        containers = tutum.Container.list()
+        containers = tutum.Container.list(application__uuid=app_identifier)
         headers = ["Name", "UUID", "State", "Image", "Run Command", "Size", "Exit Code", "Deployed datetime", "Ports"]
         data_list = []
-        for container in containers:
-            ports_string = ""
-            for index, port in enumerate(container.container_ports):
-                if port['outer_port'] is not None:
-                    ports_string += "%s:%d->" % (container.public_dns, port['outer_port'])
-                ports_string += "%d/%s" % (port['inner_port'], port['protocol'])
-                if index != len(container.container_ports) - 1:
-                    ports_string += ", "
-            data_list.append([container.name, container.uuid[:8], container.state, container.image_tag,
-                              container.run_command, container.container_size, container.exit_code,
-                              container.deployed_datetime, ports_string])
+        if len(containers) != 0:
+            for container in containers:
+                ports_string = ""
+                for index, port in enumerate(container.container_ports):
+                    if port['outer_port'] is not None:
+                        ports_string += "%s:%d->" % (container.public_dns, port['outer_port'])
+                    ports_string += "%d/%s" % (port['inner_port'], port['protocol'])
+                    if index != len(container.container_ports) - 1:
+                        ports_string += ", "
+                data_list.append([container.name, container.uuid[:8], container.state, container.image_tag,
+                                  container.run_command, container.container_size, container.exit_code,
+                                  container.deployed_datetime, ports_string])
+        else:
+            data_list.append(["", "", "", "", "", "", "", "", ""])
         utils.tabulate_result(data_list, headers)
     except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
         print e
