@@ -41,9 +41,12 @@ def apps():
         app_list = tutum.Application.list()
         headers = ["Name", "UUID", "State", "Image", "Size", "Deployed datetime", "Web Hostname"]
         data_list = []
-        for app in app_list:
-            data_list.append([app.name, app.uuid[:8], app.state, app.image_tag, app.container_size,
-                              app.deployed_datetime, app.web_public_dns])
+        if len(app_list) != 0:
+            for app in app_list:
+                data_list.append([app.name, app.uuid[:8], app.state, app.image_tag, app.container_size,
+                                  app.deployed_datetime, app.web_public_dns])
+        else:
+            data_list.append(["", "", "", "", "", "", ""])
         utils.tabulate_result(data_list, headers)
     except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
         print e
@@ -95,14 +98,23 @@ def app_logs(identifier):
         print e
 
 
-def app_update(identifier, target_num_containers, web_public_dns):
+def app_scale(identifier, target_num_containers):
     try:
         app_details = tutum.Application.fetch(identifier)
         if target_num_containers:
             app_details.target_num_containers = target_num_containers
-        if web_public_dns:
-            app_details.web_public_dns = web_public_dns
-        if target_num_containers or web_public_dns:
+            result = app_details.save()
+            if result:
+                print app_details.uuid
+    except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
+        print e
+
+
+def app_alias(identifier, dns):
+    try:
+        app_details = tutum.Application.fetch(identifier)
+        if dns:
+            app_details.web_public_dns = dns
             result = app_details.save()
             if result:
                 print app_details.uuid
