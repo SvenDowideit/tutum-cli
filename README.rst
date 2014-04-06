@@ -18,7 +18,8 @@ Now you can start using it:
 .. sourcecode:: bash
 
     $ tutum -h
-    usage: tutum [-h] [-v] {login,apps,app,ps,container} ...
+    usage: tutum [-h] [-v] {login,apps,create,inspect,start,stop,terminate,logs,scale,alias,ps,inspect-container,start-container,stop-container,terminate-container,logs-container}
+                           ...
 
     Tutum's CLI
 
@@ -27,12 +28,24 @@ Now you can start using it:
       -v, --version         show program's version number and exit
 
     Tutum's CLI commands:
-      {login,apps,app,ps,container}
-        login               Login into Tutum
-        apps                List all applications
-        app                 Manage an app
-        ps                  List all containers
-        container           Manage a container
+     {login,apps,create,inspect,start,stop,terminate,logs,scale,alias,ps,inspect-container,start-container,stop-container,terminate-container,logs-container}
+       login               Login into Tutum
+       apps                List all applications
+       create              Create an application
+       inspect             Inspect an application
+       start               Start an application
+       stop                Stop an application
+       terminate           Terminate an application
+       logs                Get logs from an application
+       scale               Scale an application
+       alias               Change application's dns
+       ps                  List all containers
+       inspect-container   Inspect a container
+       start-container     Start a container
+       stop-container      Stop a container
+       terminate-container
+                           Terminate a container
+       logs-container      Get logs from a container
 
 
 Authentication
@@ -79,7 +92,7 @@ Applications
     ---------  --------  --------------  -----------------------------------------  ------  ------------------------------  ------------------------------
     mysql      663f8063  Running         /api/v1/image/tutum/mysql/tag/latest/      XS      Thu, 3 Apr 2014 19:47:44 +0000
     wordpress  058df79b  Partly running  /api/v1/image/tutum/wordpress/tag/latest/  M       Thu, 3 Apr 2014 20:24:36 +0000  wordpress-3-admin.dev.tutum.io
-    $ tutum app inspect 663f8063-1d15-4010-af0c-5ef828de5964
+    $ tutum inspect 663f8063-1d15-4010-af0c-5ef828de5964
     {'autodestroy': u'OFF',
      'autoreplace': u'OFF',
      'autorestart': u'OFF',
@@ -123,17 +136,17 @@ Applications
      'unique_name': u'mysql',
      'uuid': u'663f8063-1d15-4010-af0c-5ef828de5964',
      'web_public_dns': None}
-    $ tutum app update --target_num_containers=3 663f8063-1d15-4010-af0c-5ef828de5964
+    $ tutum scale 663f8063-1d15-4010-af0c-5ef828de5964 3
     663f8063-1d15-4010-af0c-5ef828de5964
-    $ tutum app stop 663f8063-1d15-4010-af0c-5ef828de5964
+    $ tutum stop 663f8063-1d15-4010-af0c-5ef828de5964
     663f8063-1d15-4010-af0c-5ef828de5964
-    $ tutum app start 663f8063-1d15-4010-af0c-5ef828de5964
+    $ tutum start 663f8063-1d15-4010-af0c-5ef828de5964
     663f8063-1d15-4010-af0c-5ef828de5964
-    $ tutum app logs 663f8063-1d15-4010-af0c-5ef828de5964
+    $ tutum logs 663f8063-1d15-4010-af0c-5ef828de5964
     ======>mysql-1 <======
     => Creating MySQL admin user with random password
     => Done! [...]
-    $ tutum app terminate 663f8063-1d15-4010-af0c-5ef828de5964
+    $ tutum terminate 663f8063-1d15-4010-af0c-5ef828de5964
     663f8063-1d15-4010-af0c-5ef828de5964
 
 
@@ -189,12 +202,12 @@ Containers
      'unique_name': u'wordpress-1',
      'uuid': u'a7765c40-32df-433b-8d17-5f9106fd148b',
      'web_public_dns': u'wordpress-1-admin.atlas-dev.tutum.io'}
-    $ tutum container stop a7765c40-32df-433b-8d17-5f9106fd148b
+    $ tutum stop-container a7765c40-32df-433b-8d17-5f9106fd148b
     a7765c40-32df-433b-8d17-5f9106fd148b
-    $ tutum container start a7765c40-32df-433b-8d17-5f9106fd148b
+    $ tutum start-container a7765c40-32df-433b-8d17-5f9106fd148b
     a7765c40-32df-433b-8d17-5f9106fd148b
-    $ tutum container logs a7765c40-32df-433b-8d17-5f9106fd148b
+    $ tutum logs-container a7765c40-32df-433b-8d17-5f9106fd148b
     => Creating MySQL admin user with random password
     => Done! [...]
-    $ tutum container terminate a7765c40-32df-433b-8d17-5f9106fd148b
+    $ tutum terminate-container a7765c40-32df-433b-8d17-5f9106fd148b
     a7765c40-32df-433b-8d17-5f9106fd148b
