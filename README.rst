@@ -15,7 +15,7 @@ In order to install the Tutum CLI, you can use ``pip install``:
 
 Now you can start using it:
 
-.. sourcecode:: bash
+.. sourcecode:: none
 
     $ tutum -h
     usage: tutum [-h] [-v] {login,apps,create,inspect,start,stop,terminate,logs,scale,alias,ps,inspect-container,start-container,stop-container,terminate-container,logs-container}
@@ -85,7 +85,7 @@ Quick examples
 Applications
 ^^^^^^^^^^^^
 
-.. sourcecode:: bash
+.. sourcecode:: none
 
     $ tutum apps
         Name       UUID      State           Image                                      Size    Deployed datetime               Web Hostname
@@ -153,14 +153,14 @@ Applications
 Containers
 ^^^^^^^^^^
 
-.. sourcecode:: bash
+.. sourcecode:: none
 
     $ tutum ps
     Name       UUID      State         Image                                      Run Command    Size      Exit Code  Deployed datetime               Ports
     ---------  --------  ------------  -----------------------------------------  -------------  ------  -----------  ------------------------------  --------------------------------------------------------------------------------------------------------
     wordpress  a7765c40  Running       /api/v1/image/tutum/wordpress/tag/latest/  /run.sh        M                    Thu, 3 Apr 2014 20:24:34 +0000  wordpress-1-admin.atlas-dev.tutum.io:49306->80/tcp, wordpress-1-admin.atlas-dev.tutum.io:49305->3306/tcp
     wordpress  40a11d2b  Running       /api/v1/image/tutum/wordpress/tag/latest/  /run.sh        M                    Fri, 4 Apr 2014 19:36:22 +0000  wordpress-2-admin.atlas-dev.tutum.io:49325->80/tcp, wordpress-2-admin.atlas-dev.tutum.io:49324->3306/tcp
-    $ tutum container inspect a7765c40-32df-433b-8d17-5f9106fd148b
+    $ tutum inspect-container a7765c40-32df-433b-8d17-5f9106fd148b
     {'application': u'/api/v1/application/058df79b-6248-476b-890b-c15562f6ef25/',
      'autodestroy': u'OFF',
      'autoreplace': u'OFF',
