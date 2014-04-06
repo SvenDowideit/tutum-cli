@@ -23,8 +23,7 @@ def main():
     # Commands
     parsers.add_login_parser(subparsers, parent_parser)
     parsers.add_apps_parser(subparsers, parent_parser)
-    #parsers.add_containers_parser(subparsers, parent_parser)
-    #parsers.add_container_parser(subparsers, parent_parser)
+    parsers.add_containers_parser(subparsers, parent_parser)
 
 
     # Parse args
@@ -54,19 +53,18 @@ def main():
                             container_envvars=args.container_envvars,
                             linked_to_application=args.linked_to_application, autorestart=args.autorestart,
                             autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.roles)
-    # elif args.command == "ps":
-    #     commands.ps()
-    # elif args.command == "container":
-    #     if args.container_command == "inspect":
-    #         commands.container_inspect(args.identifier)
-    #     elif args.container_command == "logs":
-    #         commands.container_logs(args.identifier)
-    #     elif args.container_command == "start":
-    #         commands.container_start(args.identifier)
-    #     elif args.container_command == "stop":
-    #         commands.container_stop(args.identifier)
-    #     elif args.container_command == "terminate":
-    #         commands.container_terminate(args.identifier)
+    elif args.command == "ps":
+            commands.ps(args.identifier)
+    elif args.command == "inspect-container":
+        commands.container_inspect(args.identifier)
+    elif args.command == "logs-container":
+        commands.container_logs(args.identifier)
+    elif args.command == "start-container":
+        commands.container_start(args.identifier)
+    elif args.command == "stop-container":
+        commands.container_stop(args.identifier)
+    elif args.command == "terminate-container":
+        commands.container_terminate(args.identifier)
 
 if __name__ == "__main__":
     main()

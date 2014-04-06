@@ -132,22 +132,25 @@ def app_create(**kwargs):
         print e
 
 
-def ps():
+def ps(app_identifier):
     try:
-        containers = tutum.Container.list()
+        containers = tutum.Container.list(application__uuid=app_identifier)
         headers = ["Name", "UUID", "State", "Image", "Run Command", "Size", "Exit Code", "Deployed datetime", "Ports"]
         data_list = []
-        for container in containers:
-            ports_string = ""
-            for index, port in enumerate(container.container_ports):
-                if port['outer_port'] is not None:
-                    ports_string += "%s:%d->" % (container.public_dns, port['outer_port'])
-                ports_string += "%d/%s" % (port['inner_port'], port['protocol'])
-                if index != len(container.container_ports) - 1:
-                    ports_string += ", "
-            data_list.append([container.name, container.uuid[:8], container.state, container.image_tag,
-                              container.run_command, container.container_size, container.exit_code,
-                              container.deployed_datetime, ports_string])
+        if len(containers) != 0:
+            for container in containers:
+                ports_string = ""
+                for index, port in enumerate(container.container_ports):
+                    if port['outer_port'] is not None:
+                        ports_string += "%s:%d->" % (container.public_dns, port['outer_port'])
+                    ports_string += "%d/%s" % (port['inner_port'], port['protocol'])
+                    if index != len(container.container_ports) - 1:
+                        ports_string += ", "
+                data_list.append([container.name, container.uuid[:8], container.state, container.image_tag,
+                                  container.run_command, container.container_size, container.exit_code,
+                                  container.deployed_datetime, ports_string])
+        else:
+            data_list.append(["", "", "", "", "", "", "", "", ""])
         utils.tabulate_result(data_list, headers)
     except (exceptions.TutumAuthError, exceptions.TutumApiError) as e:
         print e
