@@ -1,11 +1,11 @@
 import argparse
 import logging
 
-import parsers
-import commands
+from tutumcli import parsers
+from tutumcli import commands
 
 
-VERSION = "0.6.4"
+VERSION = "0.6.5"
 
 
 def main():
@@ -56,6 +56,7 @@ def main():
     elif args.command == "ps":
             commands.ps(args.identifier)
     elif args.command == "inspect-container":
+        print "inspect"
         commands.container_inspect(args.identifier)
     elif args.command == "logs-container":
         commands.container_logs(args.identifier)

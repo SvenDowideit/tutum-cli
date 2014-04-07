@@ -1,5 +1,9 @@
 from tabulate import tabulate
 import datetime
+import re
+import tutum
+
+from tutumcli.exceptions import NonUniqueIdentifier, ObjectNotFound
 
 
 def tabulate_result(data_list, headers):
@@ -33,3 +37,37 @@ def humanize_date_difference_from_now(target_datetime):
         return "%dm%ds ago" % (delta_m, delta_s)
     else:
         return "%ds ago" % delta_s
+
+
+def is_uuid4(identifier):
+    uuid4_regexp = re.compile('^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}', re.I)
+    match = uuid4_regexp.match(identifier)
+    return bool(match)
+
+
+def fetch_container(identifier):
+
+    if is_uuid4(identifier):
+        return tutum.Container.fetch(identifier)
+    else:
+        objects_same_identifier = tutum.Container.list(unique_name=identifier) or \
+                                  tutum.Container.list(uuid__startswith=identifier)
+        if len(objects_same_identifier) == 1:
+            return objects_same_identifier[0]
+        elif len(objects_same_identifier) == 0:
+            raise ObjectNotFound("Cannot find a container with the identifier '%s'" % identifier)
+        raise NonUniqueIdentifier("More than one container has the same identifier, please use the long uuid")
+
+
+def fetch_app(identifier):
+
+    if is_uuid4(identifier):
+        return tutum.Application.fetch(identifier)
+    else:
+        objects_same_identifier = tutum.Application.list(name=identifier) or \
+                                  tutum.Application.list(uuid__startswith=identifier)
+        if len(objects_same_identifier) == 1:
+            return objects_same_identifier[0]
+        elif len(objects_same_identifier) == 0:
+            raise ObjectNotFound("Cannot find an application with the identifier '%s'" % identifier)
+        raise NonUniqueIdentifier("More than one application has the same identifier, please use the long uuid")
