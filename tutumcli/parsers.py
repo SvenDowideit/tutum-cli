@@ -24,13 +24,13 @@ def add_apps_parser(subparsers, parent_parser):
     create_app_parser.add_argument("-r", "--run_command",
                                    help="the command used to start the application containers "
                                         "(default: as defined in the image)")
-    create_app_parser.add_argument("-e", "--entrypoint",
+    create_app_parser.add_argument("--entrypoint",
                                    help="the command prefix used to start the application containers "
                                         "(default: as defined in the image)")
     create_app_parser.add_argument("-p", "--port",
                                    help="set ports i.e. '80/tcp'"
                                         "(default: as defined in the image)", action='append')
-    create_app_parser.add_argument("-v", "--env",
+    create_app_parser.add_argument("-e", "--env",
                                    help="set environment variables i.e. 'ENVVAR=foo' "
                                         "(default: as defined in the image, plus any link- or role-generated variables)",
                                    action='append')
