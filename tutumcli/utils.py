@@ -3,7 +3,7 @@ import datetime
 import re
 import tutum
 
-from tutumcli.exceptions import NonUniqueIdentifier, ObjectNotFound
+from tutumcli.exceptions import NonUniqueIdentifier, ObjectNotFound, BadParameter
 
 
 def tabulate_result(data_list, headers):
@@ -71,3 +71,44 @@ def fetch_app(identifier):
         elif len(objects_same_identifier) == 0:
             raise ObjectNotFound("Cannot find an application with the identifier '%s'" % identifier)
         raise NonUniqueIdentifier("More than one application has the same identifier, please use the long uuid")
+
+
+def parse_ports(port_list):
+    if port_list is not None:
+        parsed_ports = []
+        for port in port_list:
+            parsed_ports.append(_get_port_dict(port))
+    else:
+        parsed_ports = None
+    return parsed_ports
+
+
+def _get_port_dict(port):
+    port_regexp = re.compile('^[0-9]{1,5}/(tcp|udp)$', re.I)
+    match = port_regexp.match(port)
+    if bool(match):
+        port = port.split("/", 1)
+        inner_port = int(port[0])
+        protocol = port[1].lower()
+        return {'protocol': protocol, 'inner_port': inner_port}
+    raise BadParameter("Port argument %s does not match with 'port/protocol'. Example: 80/tcp" % port)
+
+
+def parse_envvars(envvar_list):
+    if envvar_list is not None:
+        parsed_envvars = []
+        for envvar in envvar_list:
+            parsed_envvars.append(_is_envvar(envvar))
+    else:
+        parsed_envvars = None
+    return parsed_envvars
+
+
+def _is_envvar(envvar):
+    envvar_regexp = re.compile('^[a-zA-Z_]+[a-zA-Z0-9_]*=[^?!=]+$', re.I)
+    match = envvar_regexp.match(envvar)
+    if bool(match):
+        envvar = envvar.split("=", 1)
+        return {'key': envvar[0], 'value': envvar[1]}
+    raise BadParameter("Environment Variable argument %s does not match with 'KEY=VALUE'. Example: ENVVAR=foo" % envvar)
+

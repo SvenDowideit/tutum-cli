@@ -4,3 +4,7 @@ class NonUniqueIdentifier(RuntimeError):
 
 class ObjectNotFound(RuntimeError):
     pass
+
+
+class BadParameter(RuntimeError):
+    pass

@@ -122,9 +122,16 @@ def app_alias(identifier, dns):
         print e
 
 
-def app_create(**kwargs):
+def app_run(image, name, container_size, target_num_containers, run_command, entrypoint, container_ports,
+            container_envvars, linked_to_application, autorestart, autoreplace, autodestroy, roles):
     try:
-        app = tutum.Application.create(**kwargs)
+        ports = utils.parse_ports(container_ports)
+        envvars = utils.parse_envvars(container_envvars)
+        app = tutum.Application.create(image=image, name=name, container_size=container_size,
+                                       target_num_containers=target_num_containers, run_command=run_command,
+                                       entrypoint=entrypoint, container_ports=ports,
+                                       container_envvars=envvars, linked_to_application=linked_to_application,
+                                       autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy, roles=roles)
         result = app.save()
         if result:
             print app.uuid
