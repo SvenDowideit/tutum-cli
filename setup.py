@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "tutum",
-    version = "0.6.5",
+    version = "0.6.6",
     packages = find_packages(),
     install_requires = ['python-tutum==0.6.4', 'requests>=2.2.1', 'six==1.6.1', 'tabulate==0.7.2', 'wsgiref==0.1.2'],
     entry_points={

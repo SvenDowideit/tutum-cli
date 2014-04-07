@@ -5,7 +5,7 @@ from tutumcli import parsers
 from tutumcli import commands
 
 
-VERSION = "0.6.5"
+VERSION = "0.6.6"
 
 
 logging.basicConfig()
