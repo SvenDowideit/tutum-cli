@@ -18,7 +18,7 @@ Now you can start using it:
 .. sourcecode:: none
 
     $ tutum -h
-    usage: tutum [-h] [-v] {login,apps,create,inspect,start,stop,terminate,logs,scale,alias,ps,inspect-container,start-container,stop-container,terminate-container,logs-container}
+    usage: tutum [-h] [-v] {login,apps,run,inspect,start,stop,terminate,logs,scale,alias,ps,inspect-container,start-container,stop-container,terminate-container,logs-container}
                            ...
 
     Tutum's CLI
@@ -31,7 +31,7 @@ Now you can start using it:
      {login,apps,create,inspect,start,stop,terminate,logs,scale,alias,ps,inspect-container,start-container,stop-container,terminate-container,logs-container}
        login               Login into Tutum
        apps                List all applications
-       create              Create an application
+       run                 Create and run an application
        inspect             Inspect an application
        start               Start an application
        stop                Stop an application
