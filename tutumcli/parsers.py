@@ -13,7 +13,7 @@ def add_apps_parser(subparsers, parent_parser):
     app_common_parser = argparse.ArgumentParser(add_help=False)
     app_common_parser.add_argument("identifier", help="Application's uuid (either long or short) or name")
 
-    create_app_parser = subparsers.add_parser('create', help='Create an application', parents=[parent_parser])
+    create_app_parser = subparsers.add_parser('run', help='Create and run an application', parents=[parent_parser])
     create_app_parser.add_argument("image", help="the image used to deploy this application in docker format")
     create_app_parser.add_argument("-n", "--name", help="a human-readable name for the application "
                                                         "(default: image_tag without namespace)")
@@ -24,21 +24,20 @@ def add_apps_parser(subparsers, parent_parser):
     create_app_parser.add_argument("-r", "--run_command",
                                    help="the command used to start the application containers "
                                         "(default: as defined in the image)")
-    create_app_parser.add_argument("-e", "--entrypoint",
+    create_app_parser.add_argument("--entrypoint",
                                    help="the command prefix used to start the application containers "
                                         "(default: as defined in the image)")
-    create_app_parser.add_argument("-p", "--container_ports",
-                                   help="an array of objects with port information to be exposed in the application "
-                                        "containers, i.e. [{'protocol': 'tcp', 'inner_port': 80}] "
-                                        "(default: as defined in the image)")
-    create_app_parser.add_argument("-v", "--container_envvars",
-                                   help="an array of objects with environment variables to be set in the application "
-                                        "containers on launch, i.e. [{'key': 'DB_PASSWORD', 'value': 'mypass'}] "
-                                        "(default: as defined in the image, plus any link- or role-generated variables)")
-    create_app_parser.add_argument("-l", "--linked_to_application",
-                                   help="an array of application resource URIs to link this application to, "
-                                        "i.e. ['/api/v1/application/80ff1635-2d56-478d-a97f-9b59c720e513/'] "
-                                        "(default: empty array)")
+    create_app_parser.add_argument("-p", "--port",
+                                   help="set ports i.e. '80/tcp'"
+                                        "(default: as defined in the image)", action='append')
+    create_app_parser.add_argument("-e", "--env",
+                                   help="set environment variables i.e. 'ENVVAR=foo' "
+                                        "(default: as defined in the image, plus any link- or role-generated variables)",
+                                   action='append')
+    create_app_parser.add_argument("-l", "--link",
+                                   help="an application's uuid (either long or short) or name to link this application "
+                                        "to, i.e. 80ff1635-2d56-478d-a97f-9b59c720e513'] (default: none)",
+                                   action='append')
     create_app_parser.add_argument('--autorestart', help="whether the containers should be restarted if they stop "
                                                          "(default: OFF)", choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     create_app_parser.add_argument('--autoreplace', help="whether the containers should be replaced with a new one if "
@@ -47,8 +46,9 @@ def add_apps_parser(subparsers, parent_parser):
     create_app_parser.add_argument('--autodestroy', help="whether the containers should be terminated if "
                                                          "they stop (default: OFF)",
                                    choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
-    create_app_parser.add_argument('--roles', help="a list of Tutum API roles to grant the application, "
-                                                   "i.e. ['global'] (default: empty array, possible values: 'global')")
+    create_app_parser.add_argument('--role', help="Tutum API roles to grant the application, "
+                                                  "i.e. 'global' (default: none, possible values: 'global')",
+                                   action='append')
 
     inspect_app_parser = subparsers.add_parser('inspect', help='Inspect an application',
                                                parents=[parent_parser, app_common_parser])
