@@ -8,24 +8,24 @@ from tutumcli import commands
 VERSION = "0.6.5"
 
 
+logging.basicConfig()
+
+# Main parser
+parser = argparse.ArgumentParser(description="Tutum's CLI", prog="tutum")
+parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + VERSION)
+
+subparsers = parser.add_subparsers(title="Tutum's CLI commands", dest='command')
+
+# Common options
+parent_parser = argparse.ArgumentParser(add_help=False)
+
+# Commands
+parsers.add_login_parser(subparsers, parent_parser)
+parsers.add_apps_parser(subparsers, parent_parser)
+parsers.add_containers_parser(subparsers, parent_parser)
+
+
 def main():
-    logging.basicConfig()
-
-    # Main parser
-    parser = argparse.ArgumentParser(description="Tutum's CLI", prog="tutum")
-    parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + VERSION)
-
-    subparsers = parser.add_subparsers(title="Tutum's CLI commands", dest='command')
-
-    # Common options
-    parent_parser = argparse.ArgumentParser(add_help=False)
-
-    # Commands
-    parsers.add_login_parser(subparsers, parent_parser)
-    parsers.add_apps_parser(subparsers, parent_parser)
-    parsers.add_containers_parser(subparsers, parent_parser)
-
-
     # Parse args
     args = parser.parse_args()
     if args.command == "login":
