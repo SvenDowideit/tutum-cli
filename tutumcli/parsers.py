@@ -7,8 +7,9 @@ def add_login_parser(subparsers, parent_parser):
 
 
 def add_apps_parser(subparsers, parent_parser):
-    apps_parser = subparsers.add_parser('apps', help='List all applications', parents=[parent_parser])
+    apps_parser = subparsers.add_parser('apps', help='List running applications', parents=[parent_parser])
     apps_parser.add_argument("-q", "--quiet", help="Print only long uuids", action='store_true')
+    apps_parser.add_argument("-a", "--all", help="List all applications ", action='store_true')
 
     # App common options
     app_common_parser = argparse.ArgumentParser(add_help=False)
@@ -75,9 +76,10 @@ def add_apps_parser(subparsers, parent_parser):
 
 
 def add_containers_parser(subparsers, parent_parser):
-    containers_parser = subparsers.add_parser('ps', help='List all containers', parents=[parent_parser])
+    containers_parser = subparsers.add_parser('ps', help='List running containers', parents=[parent_parser])
     containers_parser.add_argument("-i", "--identifier", help="Application's uuid (either long or short) or name")
     containers_parser.add_argument("-q", "--quiet", help="Print only long uuids", action='store_true')
+    containers_parser.add_argument("-a", "--all", help="List all containers ", action='store_true')
 
     # Container common options
     container_common_parser = argparse.ArgumentParser(add_help=False)
