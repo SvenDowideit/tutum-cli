@@ -8,10 +8,11 @@ def add_login_parser(subparsers, parent_parser):
 
 def add_apps_parser(subparsers, parent_parser):
     apps_parser = subparsers.add_parser('apps', help='List all applications', parents=[parent_parser])
+    apps_parser.add_argument("-q", "--quiet", help="Print only long uuids", action='store_true')
 
     # App common options
     app_common_parser = argparse.ArgumentParser(add_help=False)
-    app_common_parser.add_argument("identifier", help="Application's uuid (either long or short) or name")
+    app_common_parser.add_argument("identifier", help="Application's uuid (either long or short) or name", nargs="+")
 
     create_app_parser = subparsers.add_parser('run', help='Create and run an application', parents=[parent_parser])
     create_app_parser.add_argument("image", help="the image used to deploy this application in docker format")
@@ -76,10 +77,11 @@ def add_apps_parser(subparsers, parent_parser):
 def add_containers_parser(subparsers, parent_parser):
     containers_parser = subparsers.add_parser('ps', help='List all containers', parents=[parent_parser])
     containers_parser.add_argument("-i", "--identifier", help="Application's uuid (either long or short) or name")
+    containers_parser.add_argument("-q", "--quiet", help="Print only long uuids", action='store_true')
 
     # Container common options
     container_common_parser = argparse.ArgumentParser(add_help=False)
-    container_common_parser.add_argument("identifier", help="Container's uuid (either long or short) or name")
+    container_common_parser.add_argument("identifier", help="Container's uuid (either long or short) or name", nargs="+")
 
     inspect_container_parser = subparsers.add_parser('inspect-container', help='Inspect a container',
                                                      parents=[parent_parser, container_common_parser])

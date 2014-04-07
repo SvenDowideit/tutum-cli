@@ -28,7 +28,7 @@ Now you can start using it:
       -v, --version         show program's version number and exit
 
     Tutum's CLI commands:
-     {login,apps,create,inspect,start,stop,terminate,logs,scale,alias,ps,inspect-container,start-container,stop-container,terminate-container,logs-container}
+     {login,apps,run,inspect,start,stop,terminate,logs,scale,alias,ps,inspect-container,start-container,stop-container,terminate-container,logs-container}
        login               Login into Tutum
        apps                List all applications
        run                 Create and run an application

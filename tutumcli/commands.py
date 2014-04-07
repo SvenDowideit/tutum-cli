@@ -36,88 +36,101 @@ def authenticate():
         print e
 
 
-def apps():
+def apps(quiet=False):
     try:
         app_list = tutum.Application.list()
         headers = ["Name", "UUID", "State", "Image", "Size", "Deployed datetime", "Web Hostname"]
         data_list = []
+        long_uuid_list = []
         if len(app_list) != 0:
             for app in app_list:
                 data_list.append([app.unique_name, app.uuid[:8], app.state, app.image_tag, app.container_size,
                                   app.deployed_datetime, app.web_public_dns])
+                long_uuid_list.append(app.uuid)
         else:
             data_list.append(["", "", "", "", "", "", ""])
-        utils.tabulate_result(data_list, headers)
+        if quiet:
+            for uuid in long_uuid_list:
+                print uuid
+        else:
+            utils.tabulate_result(data_list, headers)
     except Exception as e:
         print e
 
 
-def application_details(identifier):
+def application_details(identifiers):
     try:
-        app_details = utils.fetch_app(identifier)
-        pprint.pprint(app_details.get_all_attributes())
+        for identifier in identifiers:
+            app_details = utils.fetch_app(identifier)
+            pprint.pprint(app_details.get_all_attributes())
     except Exception as e:
         print e
 
 
-def app_start(identifier):
+def app_start(identifiers):
     try:
-        app_details = utils.fetch_app(identifier)
-        result = app_details.start()
-        if result:
-            print app_details.uuid
-    except Exception as e:
-        print e
-
-
-def app_stop(identifier):
-    try:
-        app_details = utils.fetch_app(identifier)
-        result = app_details.stop()
-        if result:
-            print app_details.uuid
-    except Exception as e:
-        print e
-
-
-def app_terminate(identifier):
-    try:
-        app_details = utils.fetch_app(identifier)
-        result = app_details.delete()
-        if result:
-            print app_details.uuid
-    except Exception as e:
-        print e
-
-
-def app_logs(identifier):
-    try:
-        app_details = utils.fetch_app(identifier)
-        print app_details.logs
-    except Exception as e:
-        print e
-
-
-def app_scale(identifier, target_num_containers):
-    try:
-        app_details = utils.fetch_app(identifier)
-        if target_num_containers:
-            app_details.target_num_containers = target_num_containers
-            result = app_details.save()
+        for identifier in identifiers:
+            app_details = utils.fetch_app(identifier)
+            result = app_details.start()
             if result:
                 print app_details.uuid
     except Exception as e:
         print e
 
 
-def app_alias(identifier, dns):
+def app_stop(identifiers):
     try:
-        app_details = utils.fetch_app(identifier)
-        if dns:
-            app_details.web_public_dns = dns
-            result = app_details.save()
+        for identifier in identifiers:
+            app_details = utils.fetch_app(identifier)
+            result = app_details.stop()
             if result:
                 print app_details.uuid
+    except Exception as e:
+        print e
+
+
+def app_terminate(identifiers):
+    try:
+        for identifier in identifiers:
+            app_details = utils.fetch_app(identifier)
+            result = app_details.delete()
+            if result:
+                print app_details.uuid
+    except Exception as e:
+        print e
+
+
+def app_logs(identifiers):
+    try:
+        for identifier in identifiers:
+            app_details = utils.fetch_app(identifier)
+            print app_details.logs
+    except Exception as e:
+        print e
+
+
+def app_scale(identifiers, target_num_containers):
+    try:
+        for identifier in identifiers:
+            app_details = utils.fetch_app(identifier)
+            if target_num_containers:
+                app_details.target_num_containers = target_num_containers
+                result = app_details.save()
+                if result:
+                    print app_details.uuid
+    except Exception as e:
+        print e
+
+
+def app_alias(identifiers, dns):
+    try:
+        for identifier in identifiers:
+            app_details = utils.fetch_app(identifier)
+            if dns is not None:
+                app_details.web_public_dns = dns
+                result = app_details.save()
+                if result:
+                    print app_details.uuid
     except Exception as e:
         print e
 
@@ -139,7 +152,7 @@ def app_run(image, name, container_size, target_num_containers, run_command, ent
         print e
 
 
-def ps(app_identifier):
+def ps(app_identifier, quiet=False):
     try:
         if app_identifier is None:
             containers = tutum.Container.list()
@@ -149,6 +162,7 @@ def ps(app_identifier):
             containers = tutum.Container.list(application__name=app_identifier) + tutum.Container.list(application__uuid__startswith=app_identifier)
         headers = ["Name", "UUID", "State", "Image", "Run Command", "Size", "Exit Code", "Deployed datetime", "Ports"]
         data_list = []
+        long_uuid_list = []
         if len(containers) != 0:
             for container in containers:
                 ports_string = ""
@@ -161,54 +175,64 @@ def ps(app_identifier):
                 data_list.append([container.unique_name, container.uuid[:8], container.state, container.image_tag,
                                   container.run_command, container.container_size, container.exit_code,
                                   container.deployed_datetime, ports_string])
+                long_uuid_list.append(container.uuid)
         else:
             data_list.append(["", "", "", "", "", "", "", "", ""])
-        utils.tabulate_result(data_list, headers)
+        if quiet:
+            for uuid in long_uuid_list:
+                print uuid
+        else:
+            utils.tabulate_result(data_list, headers)
     except Exception as e:
         print e
 
 
-def container_inspect(identifier):
+def container_inspect(identifiers):
     try:
-        container_details = utils.fetch_container(identifier)
-        pprint.pprint(container_details.get_all_attributes())
+        for identifier in identifiers:
+            container_details = utils.fetch_container(identifier)
+            pprint.pprint(container_details.get_all_attributes())
     except Exception as e:
         print e
 
 
-def container_start(identifier):
+def container_start(identifiers):
     try:
-        container_details = utils.fetch_container(identifier)
-        result = container_details.start()
-        if result:
-            print container_details.uuid
+        for identifier in identifiers:
+            container_details = utils.fetch_container(identifier)
+            result = container_details.start()
+            if result:
+                print container_details.uuid
     except Exception as e:
         print e
 
 
-def container_stop(identifier):
+def container_stop(identifiers):
     try:
-        container_details = utils.fetch_container(identifier)
-        result = container_details.stop()
-        if result:
-            print container_details.uuid
+        for identifier in identifiers:
+            container_details = utils.fetch_container(identifier)
+            result = container_details.stop()
+            if result:
+                print container_details.uuid
     except Exception as e:
         print e
 
 
-def container_terminate(identifier):
+def container_terminate(identifiers):
     try:
-        container_details = utils.fetch_container(identifier)
-        result = container_details.delete()
-        if result:
-            print container_details.uuid
+        for identifier in identifiers:
+            container_details = utils.fetch_container(identifier)
+            result = container_details.delete()
+            if result:
+                print container_details.uuid
     except Exception as e:
         print e
 
 
-def container_logs(identifier):
+def container_logs(identifiers):
     try:
-        container_details = utils.fetch_container(identifier)
-        print container_details.logs
+        for identifier in identifiers:
+            container_details = utils.fetch_container(identifier)
+            print container_details.logs
     except Exception as e:
         print e
