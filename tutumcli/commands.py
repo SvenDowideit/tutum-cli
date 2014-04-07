@@ -48,7 +48,8 @@ def apps(quiet=False, all_apps=False):
         if len(app_list) != 0:
             for app in app_list:
                 data_list.append([app.unique_name, app.uuid[:8], app.state, app.image_tag, app.container_size,
-                                  app.deployed_datetime, app.web_public_dns])
+                                  utils.get_humanize_local_datetime_from_utc_datetime_string(app.deployed_datetime),
+                                  app.web_public_dns])
                 long_uuid_list.append(app.uuid)
         else:
             data_list.append(["", "", "", "", "", "", ""])
@@ -181,7 +182,8 @@ def ps(app_identifier, quiet=False, all_containers=False):
                         ports_string += ", "
                 data_list.append([container.unique_name, container.uuid[:8], container.state, container.image_tag,
                                   container.run_command, container.container_size, container.exit_code,
-                                  container.deployed_datetime, ports_string])
+                                  utils.get_humanize_local_datetime_from_utc_datetime_string(container.deployed_datetime),
+                                  ports_string])
                 long_uuid_list.append(container.uuid)
         else:
             data_list.append(["", "", "", "", "", "", "", "", ""])
