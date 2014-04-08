@@ -2,12 +2,15 @@ import argparse
 
 
 def add_login_parser(subparsers, parent_parser):
-    login_parser = subparsers.add_parser('login', help='Login into Tutum', parents=[parent_parser])
+    login_parser = subparsers.add_parser('login', help='Login into Tutum', description='Login into Tutum',
+                                         parents=[parent_parser])
     return login_parser
 
 
 def add_apps_parser(subparsers, parent_parser):
-    apps_parser = subparsers.add_parser('apps', help='List running applications', parents=[parent_parser])
+    apps_parser = subparsers.add_parser('apps', help='List running applications',
+                                        description='List running applications',
+                                        parents=[parent_parser])
     apps_parser.add_argument("-q", "--quiet", help="Print only long uuids", action='store_true')
     apps_parser.add_argument("-a", "--all", help="List all applications", action='store_true')
 
@@ -15,7 +18,8 @@ def add_apps_parser(subparsers, parent_parser):
     app_common_parser = argparse.ArgumentParser(add_help=False)
     app_common_parser.add_argument("identifier", help="Application's uuid (either long or short) or name", nargs="+")
 
-    create_app_parser = subparsers.add_parser('run', help='Create and run an application', parents=[parent_parser])
+    create_app_parser = subparsers.add_parser('run', help='Create and run an application',
+                                              description='Create and run an application', parents=[parent_parser])
     create_app_parser.add_argument("image", help="the image used to deploy this application in docker format")
     create_app_parser.add_argument("-n", "--name", help="a human-readable name for the application "
                                                         "(default: image_tag without namespace)")
@@ -53,22 +57,29 @@ def add_apps_parser(subparsers, parent_parser):
                                    action='append')
 
     inspect_app_parser = subparsers.add_parser('inspect', help='Inspect an application',
+                                               description='Inspect an application',
                                                parents=[parent_parser, app_common_parser])
     start_app_parser = subparsers.add_parser('start', help='Start an application',
+                                             description='Start an application',
                                              parents=[parent_parser, app_common_parser])
     stop_app_parser = subparsers.add_parser('stop', help='Stop an application',
+                                            description='Stop an application',
                                             parents=[parent_parser, app_common_parser])
     terminate_app_parser = subparsers.add_parser('terminate', help='Terminate an application',
+                                                 description='Terminate an application',
                                                  parents=[parent_parser, app_common_parser])
     logs_app_parser = subparsers.add_parser('logs', help='Get logs from an application',
+                                            description='Get logs from an application',
                                             parents=[parent_parser, app_common_parser])
     scale_app_parser = subparsers.add_parser('scale', help='Scale an application',
+                                             description='Scale an application',
                                              parents=[parent_parser, app_common_parser])
     scale_app_parser.add_argument("target_num_containers",
                                   help="target number of containers to scale this application to",
                                   type=int)
 
     alias_app_parser = subparsers.add_parser('alias', help="Change application's dns",
+                                             description="Change application's dns",
                                              parents=[parent_parser, app_common_parser])
     alias_app_parser.add_argument("dns", help="custom domain to use for this web application")
 
@@ -76,7 +87,8 @@ def add_apps_parser(subparsers, parent_parser):
 
 
 def add_containers_parser(subparsers, parent_parser):
-    containers_parser = subparsers.add_parser('ps', help='List running containers', parents=[parent_parser])
+    containers_parser = subparsers.add_parser('ps', help='List running containers',
+                                              description='List running containers', parents=[parent_parser])
     containers_parser.add_argument("-i", "--identifier", help="Application's uuid (either long or short) or name")
     containers_parser.add_argument("-q", "--quiet", help="Print only long uuids", action='store_true')
     containers_parser.add_argument("-a", "--all", help="List all containers", action='store_true')
@@ -86,14 +98,19 @@ def add_containers_parser(subparsers, parent_parser):
     container_common_parser.add_argument("identifier", help="Container's uuid (either long or short) or name", nargs="+")
 
     inspect_container_parser = subparsers.add_parser('inspect-container', help='Inspect a container',
-                                                     parents=[parent_parser, container_common_parser])
+                                                     description='Inspect a container', parents=[parent_parser,
+                                                                                                 container_common_parser])
     start_container_parser = subparsers.add_parser('start-container', help='Start a container',
-                                                   parents=[parent_parser, container_common_parser])
+                                                   description='Start a container', parents=[parent_parser,
+                                                                                             container_common_parser])
     stop_container_parser = subparsers.add_parser('stop-container', help='Stop a container',
-                                                  parents=[parent_parser, container_common_parser])
+                                                  description='Stop a container', parents=[parent_parser,
+                                                                                           container_common_parser])
     terminate_container_parser = subparsers.add_parser('terminate-container', help='Terminate a container',
-                                                       parents=[parent_parser, container_common_parser])
+                                                       description='Terminate a container', parents=[parent_parser,
+                                                                                                     container_common_parser])
     logs_container_parser = subparsers.add_parser('logs-container', help='Get logs from a container',
-                                                  parents=[parent_parser, container_common_parser])
+                                                  description='Get logs from a container', parents=[parent_parser,
+                                                                                                    container_common_parser])
 
     return containers_parser
