@@ -1,11 +1,15 @@
 import argparse
 import logging
+import sys
+import codecs
 
 from tutumcli import parsers
 from tutumcli import commands
 
 
 VERSION = "0.7.0"
+
+sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 
 
 logging.basicConfig()
@@ -23,9 +27,13 @@ parent_parser = argparse.ArgumentParser(add_help=False)
 parsers.add_login_parser(subparsers, parent_parser)
 parsers.add_apps_parser(subparsers, parent_parser)
 parsers.add_containers_parser(subparsers, parent_parser)
+parsers.add_images_parser(subparsers, parent_parser)
 
 
 def main():
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
     # Parse args
     args = parser.parse_args()
     if args.command == "login":
@@ -65,6 +73,10 @@ def main():
         commands.container_stop(args.identifier)
     elif args.command == "terminate-container":
         commands.container_terminate(args.identifier)
+    elif args.command == "images":
+        commands.images(args.quiet, args.jumpstarts, args.linux)
+    elif args.command == "add":
+        commands.add_image(args.repository, args.username, args.password, args.description)
 
 if __name__ == "__main__":
     main()

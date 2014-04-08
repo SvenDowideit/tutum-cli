@@ -245,3 +245,40 @@ def container_logs(identifiers):
             print container_details.logs
         except Exception as e:
             print e
+
+
+def images(quiet=False, jumpstarts=False, linux=False):
+    try:
+        if jumpstarts:
+            image_list = tutum.Image.list(starred=True)
+        elif linux:
+            image_list = tutum.Image.list(base_image=True)
+        else:
+            image_list = tutum.Image.list(is_private_image=True)
+        headers = ["Name", "Description"]
+        data_list = []
+        name_list = []
+        if len(image_list) != 0:
+            for image in image_list:
+                data_list.append([image.name, image.description])
+                name_list.append(image.name)
+        else:
+            data_list.append(["", ""])
+
+        if quiet:
+            for name in name_list:
+                print name
+        else:
+            utils.tabulate_result(data_list, headers)
+    except Exception as e:
+        print e
+
+
+def add_image(repository, username, password, description):
+    try:
+        image = tutum.Image.create(name=repository, username=username, password=password, description=description)
+        result = image.save()
+        if result:
+            print image.name
+    except Exception as e:
+        print e

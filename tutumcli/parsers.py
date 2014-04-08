@@ -4,7 +4,6 @@ import argparse
 def add_login_parser(subparsers, parent_parser):
     login_parser = subparsers.add_parser('login', help='Login into Tutum', description='Login into Tutum',
                                          parents=[parent_parser])
-    return login_parser
 
 
 def add_apps_parser(subparsers, parent_parser):
@@ -56,21 +55,15 @@ def add_apps_parser(subparsers, parent_parser):
                                                   "i.e. 'global' (default: none, possible values: 'global')",
                                    action='append')
 
-    inspect_app_parser = subparsers.add_parser('inspect', help='Inspect an application',
-                                               description='Inspect an application',
-                                               parents=[parent_parser, app_common_parser])
-    start_app_parser = subparsers.add_parser('start', help='Start an application',
-                                             description='Start an application',
+    subparsers.add_parser('inspect', help='Inspect an application', description='Inspect an application',
+                          parents=[parent_parser, app_common_parser])
+    subparsers.add_parser('start', help='Start an application', description='Start an application',
                                              parents=[parent_parser, app_common_parser])
-    stop_app_parser = subparsers.add_parser('stop', help='Stop an application',
-                                            description='Stop an application',
-                                            parents=[parent_parser, app_common_parser])
-    terminate_app_parser = subparsers.add_parser('terminate', help='Terminate an application',
-                                                 description='Terminate an application',
-                                                 parents=[parent_parser, app_common_parser])
-    logs_app_parser = subparsers.add_parser('logs', help='Get logs from an application',
-                                            description='Get logs from an application',
-                                            parents=[parent_parser, app_common_parser])
+    subparsers.add_parser('stop', help='Stop an application', description='Stop an application', parents=[parent_parser, app_common_parser])
+    subparsers.add_parser('terminate', help='Terminate an application', description='Terminate an application',
+                          parents=[parent_parser, app_common_parser])
+    subparsers.add_parser('logs', help='Get logs from an application', description='Get logs from an application',
+                          parents=[parent_parser, app_common_parser])
     scale_app_parser = subparsers.add_parser('scale', help='Scale an application',
                                              description='Scale an application',
                                              parents=[parent_parser, app_common_parser])
@@ -82,8 +75,6 @@ def add_apps_parser(subparsers, parent_parser):
                                              description="Change application's dns",
                                              parents=[parent_parser, app_common_parser])
     alias_app_parser.add_argument("dns", help="custom domain to use for this web application")
-
-    return apps_parser
 
 
 def add_containers_parser(subparsers, parent_parser):
@@ -97,20 +88,30 @@ def add_containers_parser(subparsers, parent_parser):
     container_common_parser = argparse.ArgumentParser(add_help=False)
     container_common_parser.add_argument("identifier", help="Container's uuid (either long or short) or name", nargs="+")
 
-    inspect_container_parser = subparsers.add_parser('inspect-container', help='Inspect a container',
-                                                     description='Inspect a container', parents=[parent_parser,
-                                                                                                 container_common_parser])
-    start_container_parser = subparsers.add_parser('start-container', help='Start a container',
-                                                   description='Start a container', parents=[parent_parser,
-                                                                                             container_common_parser])
-    stop_container_parser = subparsers.add_parser('stop-container', help='Stop a container',
-                                                  description='Stop a container', parents=[parent_parser,
-                                                                                           container_common_parser])
-    terminate_container_parser = subparsers.add_parser('terminate-container', help='Terminate a container',
-                                                       description='Terminate a container', parents=[parent_parser,
-                                                                                                     container_common_parser])
-    logs_container_parser = subparsers.add_parser('logs-container', help='Get logs from a container',
-                                                  description='Get logs from a container', parents=[parent_parser,
-                                                                                                    container_common_parser])
+    subparsers.add_parser('inspect-container', help='Inspect a container', description='Inspect a container',
+                          parents=[parent_parser, container_common_parser])
+    subparsers.add_parser('start-container', help='Start a container', description='Start a container',
+                          parents=[parent_parser,  container_common_parser])
+    subparsers.add_parser('stop-container', help='Stop a container', description='Stop a container',
+                          parents=[parent_parser, container_common_parser])
+    subparsers.add_parser('terminate-container', help='Terminate a container', description='Terminate a container',
+                          parents=[parent_parser, container_common_parser])
+    subparsers.add_parser('logs-container', help='Get logs from a container', description='Get logs from a container',
+                          parents=[parent_parser, container_common_parser])
 
-    return containers_parser
+
+def add_images_parser(subparsers, parent_parser):
+    images_parser = subparsers.add_parser('images', help='List private images', description='List private images',
+                                          parents=[parent_parser])
+    images_parser.add_argument("-q", "--quiet", help="Print only image names", action='store_true')
+    image_list_options = images_parser.add_mutually_exclusive_group()
+    image_list_options.add_argument("-j", "--jumpstarts", help="List jumpstart images", action='store_true')
+    image_list_options.add_argument("-l", "--linux", help="List linux images", action='store_true')
+
+    add_new_image_parser = subparsers.add_parser('add', help='Add private image', description='Add private image',
+                                                 parents=[parent_parser])
+    add_new_image_parser.add_argument("repository", help="full image repository (will add all tags), "
+                                      "i.e. quay.io/tutum/test-repo")
+    add_new_image_parser.add_argument("username", help="username to authenticate with the registry")
+    add_new_image_parser.add_argument("password", help="username password")
+    add_new_image_parser.add_argument("-d", "--description", help="Image description")
