@@ -47,7 +47,7 @@ def apps(quiet=False, all_apps=False):
         long_uuid_list = []
         if len(app_list) != 0:
             for app in app_list:
-                data_list.append([app.unique_name, app.uuid[:8], app.state, app.image_tag, app.container_size,
+                data_list.append([app.unique_name, app.uuid[:8], app.state, app.image_name, app.container_size,
                                   utils.get_humanize_local_datetime_from_utc_datetime_string(app.deployed_datetime),
                                   app.web_public_dns])
                 long_uuid_list.append(app.uuid)
@@ -180,7 +180,7 @@ def ps(app_identifier, quiet=False, all_containers=False):
                     ports_string += "%d/%s" % (port['inner_port'], port['protocol'])
                     if index != len(container.container_ports) - 1:
                         ports_string += ", "
-                data_list.append([container.unique_name, container.uuid[:8], container.state, container.image_tag,
+                data_list.append([container.unique_name, container.uuid[:8], container.state, container.image_name,
                                   container.run_command, container.container_size, container.exit_code,
                                   utils.get_humanize_local_datetime_from_utc_datetime_string(container.deployed_datetime),
                                   ports_string])
