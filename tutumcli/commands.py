@@ -47,7 +47,8 @@ def apps(quiet=False, all_apps=False):
         long_uuid_list = []
         if len(app_list) != 0:
             for app in app_list:
-                data_list.append([app.unique_name, app.uuid[:8], app.state, app.image_name, app.container_size,
+                data_list.append([app.unique_name, app.uuid[:8], utils.add_unicode_symbol_to_state(app.state),
+                                  app.image_name, app.container_size,
                                   utils.get_humanize_local_datetime_from_utc_datetime_string(app.deployed_datetime),
                                   app.web_public_dns])
                 long_uuid_list.append(app.uuid)
@@ -180,7 +181,8 @@ def ps(app_identifier, quiet=False, all_containers=False):
                     ports_string += "%d/%s" % (port['inner_port'], port['protocol'])
                     if index != len(container.container_ports) - 1:
                         ports_string += ", "
-                data_list.append([container.unique_name, container.uuid[:8], container.state, container.image_name,
+                data_list.append([container.unique_name, container.uuid[:8],
+                                  utils.add_unicode_symbol_to_state(container.state), container.image_name,
                                   container.run_command, container.container_size, container.exit_code,
                                   utils.get_humanize_local_datetime_from_utc_datetime_string(container.deployed_datetime),
                                   ports_string])
@@ -282,3 +284,31 @@ def add_image(repository, username, password, description):
             print image.name
     except Exception as e:
         print e
+
+
+def remove_image(repositories):
+    for repository in repositories:
+        try:
+            image = tutum.Image.fetch(repository)
+            result = image.delete()
+            if result:
+                print repository
+        except Exception as e:
+            print e
+
+
+def update_image(repositories, username, password, description):
+    for repository in repositories:
+        try:
+            image = tutum.Image.fetch(repository)
+            if username is not None:
+                image.username = username
+            if password is not None:
+                image.password = password
+            if description is not None:
+                image.description = description
+            result = image.save()
+            if result:
+                print image.name
+        except Exception as e:
+            print e

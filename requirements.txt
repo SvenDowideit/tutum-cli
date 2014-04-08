@@ -1,6 +1,6 @@
 ago==0.0.6
 python-dateutil==2.2
-python-tutum==0.6.4
+python-tutum==0.6.5
 requests==2.2.1
 six==1.6.1
 tabulate==0.7.2

@@ -102,3 +102,18 @@ def _is_envvar(envvar):
         return {'key': envvar[0], 'value': envvar[1]}
     raise BadParameter("Environment Variable argument %s does not match with 'KEY=VALUE'. Example: ENVVAR=foo" % envvar)
 
+
+def add_unicode_symbol_to_state(state):
+    if state in ["Running", "Partly running"]:
+        return u"\u25B6 " + state
+    elif state in ["Init", "Stopped"]:
+        return u"\u25FC " + state
+    elif state in ["Starting", "Stopping", "Scaling", "Terminating"]:
+        return u"\u2699 " + state
+    elif state in ["Start failed", "Stopped with errors"]:
+        return u"\u0021 " + state
+    elif state == "Terminated":
+        return u"\u2718 " + state
+    return state
+
+

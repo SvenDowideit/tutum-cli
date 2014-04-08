@@ -77,6 +77,10 @@ def main():
         commands.images(args.quiet, args.jumpstarts, args.linux)
     elif args.command == "add":
         commands.add_image(args.repository, args.username, args.password, args.description)
+    elif args.command == "remove":
+        commands.remove_image(args.repository)
+    elif args.command == "update":
+        commands.update_image(args.repository, args.username, args.password, args.description)
 
 if __name__ == "__main__":
     main()

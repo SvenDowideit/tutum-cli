@@ -2,8 +2,7 @@ import argparse
 
 
 def add_login_parser(subparsers, parent_parser):
-    login_parser = subparsers.add_parser('login', help='Login into Tutum', description='Login into Tutum',
-                                         parents=[parent_parser])
+    subparsers.add_parser('login', help='Login into Tutum', description='Login into Tutum', parents=[parent_parser])
 
 
 def add_apps_parser(subparsers, parent_parser):
@@ -110,8 +109,21 @@ def add_images_parser(subparsers, parent_parser):
 
     add_new_image_parser = subparsers.add_parser('add', help='Add private image', description='Add private image',
                                                  parents=[parent_parser])
-    add_new_image_parser.add_argument("repository", help="full image repository (will add all tags), "
-                                      "i.e. quay.io/tutum/test-repo")
-    add_new_image_parser.add_argument("username", help="username to authenticate with the registry")
-    add_new_image_parser.add_argument("password", help="username password")
+    add_new_image_parser.add_argument("repository", help="Full image repository, i.e. quay.io/tutum/test-repo")
+    add_new_image_parser.add_argument("username", help="Username to authenticate with the registry")
+    add_new_image_parser.add_argument("password", help="Username password")
     add_new_image_parser.add_argument("-d", "--description", help="Image description")
+
+    # image common options
+    image_common_parser = argparse.ArgumentParser(add_help=False)
+    image_common_parser.add_argument("repository", help="Full image repository, i.e. quay.io/tutum/test-repo", nargs="+")
+
+    subparsers.add_parser('remove', help='Remove a private image', description='Remove a private image',
+                          parents=[parent_parser, image_common_parser])
+
+    update_image_parser = subparsers.add_parser('update', help='Update a private image',
+                                                description='Update a private image',
+                                                parents=[parent_parser, image_common_parser])
+    update_image_parser.add_argument("-u", "--username", help="New username to authenticate with the registry")
+    update_image_parser.add_argument("-p", "--password", help="New username password")
+    update_image_parser.add_argument("-d", "--description", help="New image description")
