@@ -7,7 +7,7 @@ from tutumcli import parsers
 from tutumcli import commands
 
 
-VERSION = "0.7.0"
+VERSION = "0.7.1"
 
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 

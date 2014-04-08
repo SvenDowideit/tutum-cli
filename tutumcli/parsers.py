@@ -107,7 +107,7 @@ def add_images_parser(subparsers, parent_parser):
     image_list_options.add_argument("-j", "--jumpstarts", help="List jumpstart images", action='store_true')
     image_list_options.add_argument("-l", "--linux", help="List linux images", action='store_true')
 
-    add_new_image_parser = subparsers.add_parser('add', help='Add private image', description='Add private image',
+    add_new_image_parser = subparsers.add_parser('add', help='Add a private image', description='Add a private image',
                                                  parents=[parent_parser])
     add_new_image_parser.add_argument("repository", help="Full image repository, i.e. quay.io/tutum/test-repo")
     add_new_image_parser.add_argument("username", help="Username to authenticate with the registry")
