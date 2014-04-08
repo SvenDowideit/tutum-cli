@@ -48,6 +48,30 @@ Now you can start using it:
        logs-container      Get logs from a container
 
 
+Docker image
+^^^^^^^^^^^^
+
+You can also install the CLI via Docker:
+
+.. sourcecode:: bash
+
+    docker run tutum/cli -h
+
+You will have to pass your username and API key as environment variables, as the credentials stored via ``tutum login``
+will not persist by default:
+
+.. sourcecode:: bash
+
+    docker run TUTUM_USER=username -e TUTUM_APIKEY=apikey tutum/cli apps
+
+To make things easier, you might want to use an ``alias`` for it:
+
+.. sourcecode:: bash
+
+    alias tutum="docker run TUTUM_USER=username -e TUTUM_APIKEY=apikey tutum/cli"
+    tutum apps
+
+
 Authentication
 --------------
 
