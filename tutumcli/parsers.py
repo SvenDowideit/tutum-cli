@@ -10,7 +10,11 @@ def add_apps_parser(subparsers, parent_parser):
                                         description='List running applications',
                                         parents=[parent_parser])
     apps_parser.add_argument("-q", "--quiet", help="Print only long uuids", action='store_true')
-    apps_parser.add_argument("-s", "--status", help="Filter applications by status")
+    apps_parser.add_argument("-s", "--status", help="Filter applications by status", choices=['Running',
+                                                                                              'Partly running',
+                                                                                              'Stopped',
+                                                                                              'Start failed',
+                                                                                              'Stopped with errors'])
 
     # App common options
     app_common_parser = argparse.ArgumentParser(add_help=False)
@@ -81,7 +85,10 @@ def add_containers_parser(subparsers, parent_parser):
                                               description='List running containers', parents=[parent_parser])
     containers_parser.add_argument("-i", "--identifier", help="Application's uuid (either long or short) or name")
     containers_parser.add_argument("-q", "--quiet", help="Print only long uuids", action='store_true')
-    containers_parser.add_argument("-s", "--status", help="Filter containers by status")
+    containers_parser.add_argument("-s", "--status", help="Filter containers by status", choices=['Running',
+                                                                                                  'Stopped',
+                                                                                                  'Start failed',
+                                                                                                  'Stopped with errors'])
 
     # Container common options
     container_common_parser = argparse.ArgumentParser(add_help=False)

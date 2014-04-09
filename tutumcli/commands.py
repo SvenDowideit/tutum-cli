@@ -251,7 +251,7 @@ def images(quiet=False, jumpstarts=False, linux=False):
             image_list = tutum.Image.list(base_image=True)
         else:
             image_list = tutum.Image.list(is_private_image=True)
-        headers = ["Name", "Description"]
+        headers = ["NAME", "DESCRIPTION"]
         data_list = []
         name_list = []
         if len(image_list) != 0:
