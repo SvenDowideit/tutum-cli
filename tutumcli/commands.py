@@ -60,53 +60,53 @@ def apps(quiet=False, status=None):
         print e
 
 
-def application_details(identifiers):
+def details(identifiers):
     for identifier in identifiers:
         try:
-            app_details = utils.fetch_app(identifier)
-            print json.dumps(app_details.get_all_attributes(), indent=2)
+            app_or_container = utils.launch_queries_in_parallel(identifier)
+            print json.dumps(app_or_container.get_all_attributes(), indent=2)
         except Exception as e:
             print e
 
 
-def app_start(identifiers):
+def start(identifiers):
     for identifier in identifiers:
         try:
-            app_details = utils.fetch_app(identifier)
-            result = app_details.start()
+            app_or_container = utils.launch_queries_in_parallel(identifier)
+            result = app_or_container.start()
             if result:
-                print app_details.uuid
+                print app_or_container.uuid
         except Exception as e:
             print e
 
 
-def app_stop(identifiers):
+def stop(identifiers):
     for identifier in identifiers:
         try:
-            app_details = utils.fetch_app(identifier)
-            result = app_details.stop()
+            app_or_container = utils.launch_queries_in_parallel(identifier)
+            result = app_or_container.stop()
             if result:
-                print app_details.uuid
+                print app_or_container.uuid
         except Exception as e:
             print e
 
 
-def app_terminate(identifiers):
+def terminate(identifiers):
     for identifier in identifiers:
         try:
-            app_details = utils.fetch_app(identifier)
-            result = app_details.delete()
+            app_or_container = utils.launch_queries_in_parallel(identifier)
+            result = app_or_container.delete()
             if result:
-                print app_details.uuid
+                print app_or_container.uuid
         except Exception as e:
             print e
 
 
-def app_logs(identifiers):
+def logs(identifiers):
     for identifier in identifiers:
         try:
-            app_details = utils.fetch_app(identifier)
-            print app_details.logs
+            app_or_container = utils.launch_queries_in_parallel(identifier)
+            print app_or_container.logs
         except Exception as e:
             print e
 
@@ -190,57 +190,6 @@ def ps(app_identifier, quiet=False, status=None):
             utils.tabulate_result(data_list, headers)
     except Exception as e:
         print e
-
-
-def container_inspect(identifiers):
-    for identifier in identifiers:
-        try:
-            container_details = utils.fetch_container(identifier)
-            print json.dumps(container_details.get_all_attributes(), indent=2)
-        except Exception as e:
-            print e
-
-
-def container_start(identifiers):
-    for identifier in identifiers:
-        try:
-            container_details = utils.fetch_container(identifier)
-            result = container_details.start()
-            if result:
-                print container_details.uuid
-        except Exception as e:
-            print e
-
-
-def container_stop(identifiers):
-    for identifier in identifiers:
-        try:
-            container_details = utils.fetch_container(identifier)
-            result = container_details.stop()
-            if result:
-                print container_details.uuid
-        except Exception as e:
-            print e
-
-
-def container_terminate(identifiers):
-    for identifier in identifiers:
-        try:
-            container_details = utils.fetch_container(identifier)
-            result = container_details.delete()
-            if result:
-                print container_details.uuid
-        except Exception as e:
-            print e
-
-
-def container_logs(identifiers):
-    for identifier in identifiers:
-        try:
-            container_details = utils.fetch_container(identifier)
-            print container_details.logs
-        except Exception as e:
-            print e
 
 
 def images(quiet=False, jumpstarts=False, linux=False):

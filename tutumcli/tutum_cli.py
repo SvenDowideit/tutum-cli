@@ -25,8 +25,7 @@ parent_parser = argparse.ArgumentParser(add_help=False)
 
 # Commands
 parsers.add_login_parser(subparsers, parent_parser)
-parsers.add_apps_parser(subparsers, parent_parser)
-parsers.add_containers_parser(subparsers, parent_parser)
+parsers.add_apps_and_containers_parser(subparsers, parent_parser)
 parsers.add_images_parser(subparsers, parent_parser)
 
 
@@ -41,15 +40,15 @@ def main():
     elif args.command == "apps":
         commands.apps(args.quiet, args.status)
     elif args.command == "inspect":
-        commands.application_details(args.identifier)
+        commands.details(args.identifier)
     elif args.command == "start":
-        commands.app_start(args.identifier)
+        commands.start(args.identifier)
     elif args.command == "stop":
-        commands.app_stop(args.identifier)
+        commands.stop(args.identifier)
     elif args.command == "terminate":
-        commands.app_terminate(args.identifier)
+        commands.terminate(args.identifier)
     elif args.command == "logs":
-        commands.app_logs(args.identifier)
+        commands.logs(args.identifier)
     elif args.command == "scale":
         commands.app_scale(args.identifier, args.target_num_containers)
     elif args.command == "alias":
@@ -63,16 +62,6 @@ def main():
                          autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role)
     elif args.command == "ps":
             commands.ps(args.identifier, args.quiet, args.status)
-    elif args.command == "inspect-container":
-        commands.container_inspect(args.identifier)
-    elif args.command == "logs-container":
-        commands.container_logs(args.identifier)
-    elif args.command == "start-container":
-        commands.container_start(args.identifier)
-    elif args.command == "stop-container":
-        commands.container_stop(args.identifier)
-    elif args.command == "terminate-container":
-        commands.container_terminate(args.identifier)
     elif args.command == "images":
         commands.images(args.quiet, args.jumpstarts, args.linux)
     elif args.command == "add":

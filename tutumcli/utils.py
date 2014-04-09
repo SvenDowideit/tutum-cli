@@ -1,5 +1,6 @@
 import datetime
 import re
+import multiprocessing
 
 from tabulate import tabulate
 import tutum
@@ -36,32 +37,49 @@ def is_uuid4(identifier):
     return bool(match)
 
 
-def fetch_container(identifier):
+def fetch_container(identifier, raise_exceptions=True):
 
-    if is_uuid4(identifier):
-        return tutum.Container.fetch(identifier)
-    else:
-        objects_same_identifier = tutum.Container.list(unique_name=identifier) or \
-                                  tutum.Container.list(uuid__startswith=identifier)
-        if len(objects_same_identifier) == 1:
-            return objects_same_identifier[0]
-        elif len(objects_same_identifier) == 0:
-            raise ObjectNotFound("Cannot find a container with the identifier '%s'" % identifier)
-        raise NonUniqueIdentifier("More than one container has the same identifier, please use the long uuid")
+    try:
+        if is_uuid4(identifier):
+            try:
+                return tutum.Container.fetch(identifier)
+            except Exception:
+                raise ObjectNotFound("Cannot find a container with the identifier '%s'" % identifier)
+        else:
+            objects_same_identifier = tutum.Container.list(unique_name=identifier) or \
+                                      tutum.Container.list(uuid__startswith=identifier)
+            if len(objects_same_identifier) == 1:
+                return objects_same_identifier[0]
+            elif len(objects_same_identifier) == 0:
+                raise ObjectNotFound("Cannot find a container with the identifier '%s'" % identifier)
+            raise NonUniqueIdentifier("More than one container has the same identifier, please use the long uuid")
+
+    except (NonUniqueIdentifier, ObjectNotFound) as e:
+        if not raise_exceptions:
+                return e
+        raise e
 
 
-def fetch_app(identifier):
+def fetch_app(identifier, raise_exceptions=True):
 
-    if is_uuid4(identifier):
-        return tutum.Application.fetch(identifier)
-    else:
-        objects_same_identifier = tutum.Application.list(unique_name=identifier) or \
-                                  tutum.Application.list(uuid__startswith=identifier)
-        if len(objects_same_identifier) == 1:
-            return objects_same_identifier[0]
-        elif len(objects_same_identifier) == 0:
-            raise ObjectNotFound("Cannot find an application with the identifier '%s'" % identifier)
-        raise NonUniqueIdentifier("More than one application has the same identifier, please use the long uuid")
+    try:
+        if is_uuid4(identifier):
+            try:
+                return tutum.Application.fetch(identifier)
+            except Exception:
+                raise ObjectNotFound("Cannot find an application with the identifier '%s'" % identifier)
+        else:
+            objects_same_identifier = tutum.Application.list(unique_name=identifier) or \
+                                      tutum.Application.list(uuid__startswith=identifier)
+            if len(objects_same_identifier) == 1:
+                return objects_same_identifier[0]
+            elif len(objects_same_identifier) == 0:
+                raise ObjectNotFound("Cannot find an application with the identifier '%s'" % identifier)
+            raise NonUniqueIdentifier("More than one application has the same identifier, please use the long uuid")
+    except (NonUniqueIdentifier, ObjectNotFound) as e:
+        if not raise_exceptions:
+                return e
+        raise e
 
 
 def parse_ports(port_list):
@@ -116,5 +134,32 @@ def add_unicode_symbol_to_state(state):
     elif state == "Terminated":
         return u"\u2718 " + state
     return state
+
+
+def launch_queries_in_parallel(identifier):
+
+    pool = multiprocessing.Pool(processes=2)
+    apps_result = pool.apply_async(fetch_app, (identifier, False, ))
+    containers_result = pool.apply_async(fetch_container, (identifier, False, ))
+    pool.close()
+    pool.join()
+
+    app = apps_result.get()
+    container = containers_result.get()
+
+    if isinstance(app, ObjectNotFound) and isinstance(container, ObjectNotFound):
+        raise ObjectNotFound("Cannot find an neither an application nor a container with the identifier "
+                             "'%s'" % identifier)
+    elif isinstance(app, NonUniqueIdentifier) or isinstance(container, NonUniqueIdentifier):
+        raise NonUniqueIdentifier("More than one container and/or application has the same identifier "
+                                  "'%s', please use the long uuid" % identifier)
+    elif not isinstance(app, ObjectNotFound):
+        return app
+
+    elif not isinstance(container, ObjectNotFound):
+        return container
+
+    return None
+
 
 
