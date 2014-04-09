@@ -36,19 +36,16 @@ def authenticate():
         print e
 
 
-def apps(quiet=False, all_apps=False):
+def apps(quiet=False, status=None):
     try:
-        if all_apps:
-            app_list = tutum.Application.list()
-        else:
-            app_list = tutum.Application.list(state="Running") + tutum.Application.list(state="Partly running")
-        headers = ["Name", "UUID", "State", "Image", "Size", "Deployed datetime", "Web Hostname"]
+        app_list = tutum.Application.list(state=status)
+        headers = ["NAME", "UUID", "STATUS", "IMAGE", "SIZE (#)", "DEPLOYED", "WEB HOSTNAME"]
         data_list = []
         long_uuid_list = []
         if len(app_list) != 0:
             for app in app_list:
                 data_list.append([app.unique_name, app.uuid[:8], utils.add_unicode_symbol_to_state(app.state),
-                                  app.image_name, app.container_size,
+                                  app.image_name, "%s (%d)" % (app.container_size, app.current_num_containers),
                                   utils.get_humanize_local_datetime_from_utc_datetime_string(app.deployed_datetime),
                                   app.web_public_dns])
                 long_uuid_list.append(app.uuid)
@@ -157,19 +154,16 @@ def app_run(image, name, container_size, target_num_containers, run_command, ent
         print e
 
 
-def ps(app_identifier, quiet=False, all_containers=False):
+def ps(app_identifier, quiet=False, status=None):
     try:
-        state = "Running"
-        if all_containers:
-            state = None
         if app_identifier is None:
-            containers = tutum.Container.list(state=state)
+            containers = tutum.Container.list(state=status)
         elif utils.is_uuid4(app_identifier):
-            containers = tutum.Container.list(application__uuid=app_identifier, state=state)
+            containers = tutum.Container.list(application__uuid=app_identifier, state=status)
         else:
-            containers = tutum.Container.list(application__name=app_identifier, state=state) + \
-                         tutum.Container.list(application__uuid__startswith=app_identifier, state=state)
-        headers = ["Name", "UUID", "State", "Image", "Run Command", "Size", "Exit Code", "Deployed datetime", "Ports"]
+            containers = tutum.Container.list(application__name=app_identifier, state=status) + \
+                         tutum.Container.list(application__uuid__startswith=app_identifier, state=status)
+        headers = ["NAME", "UUID", "STATUS", "IMAGE", "RUN COMMAND", "SIZE", "EXIT CODE", "DEPLOYED", "PORTS"]
         data_list = []
         long_uuid_list = []
         if len(containers) != 0:

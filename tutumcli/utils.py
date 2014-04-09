@@ -9,7 +9,7 @@ from tutumcli.exceptions import NonUniqueIdentifier, ObjectNotFound, BadParamete
 
 
 def tabulate_result(data_list, headers):
-    print tabulate(data_list, headers, stralign="left")
+    print tabulate(data_list, headers, stralign="left", tablefmt="plain")
 
 
 def _from_utc_string_to_utc_datetime(utc_datetime_string):

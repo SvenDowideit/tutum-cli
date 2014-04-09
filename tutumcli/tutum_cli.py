@@ -39,7 +39,7 @@ def main():
     if args.command == "login":
         commands.authenticate()
     elif args.command == "apps":
-        commands.apps(args.quiet, args.all)
+        commands.apps(args.quiet, args.status)
     elif args.command == "inspect":
         commands.application_details(args.identifier)
     elif args.command == "start":
@@ -62,7 +62,7 @@ def main():
                          linked_to_application=args.link, autorestart=args.autorestart,
                          autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role)
     elif args.command == "ps":
-            commands.ps(args.identifier, args.quiet, args.all)
+            commands.ps(args.identifier, args.quiet, args.status)
     elif args.command == "inspect-container":
         commands.container_inspect(args.identifier)
     elif args.command == "logs-container":
