@@ -5,10 +5,11 @@ def add_login_parser(subparsers, parent_parser):
     subparsers.add_parser('login', help='Login into Tutum', description='Login into Tutum', parents=[parent_parser])
 
 
+def add_register_parser(subparsers, parent_parser):
+    subparsers.add_parser('register', help='Register into Tutum', description='Register into Tutum', parents=[parent_parser])
+
+
 def add_apps_and_containers_parser(subparsers, parent_parser):
-
-
-
     apps_parser = subparsers.add_parser('apps', help='List applications',
                                         description='List applications',
                                         parents=[parent_parser])

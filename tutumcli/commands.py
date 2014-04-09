@@ -1,6 +1,9 @@
 import getpass
 import ConfigParser
 import json
+import requests
+import sys
+import urlparse
 from os.path import join, expanduser
 
 from tutum.api import auth
@@ -14,6 +17,10 @@ TUTUM_FILE = '.tutum'
 AUTH_SECTION = 'auth'
 USER_OPTION = "user"
 APIKEY_OPTION = 'apikey'
+
+TUTUM_AUTH_ERROR_EXIT_CODE = 2
+TUTUM_REGISTER_ERROR_EXIT_CODE = 3
+EXCEPTION_EXIT_CODE = 4
 
 
 def authenticate():
@@ -32,8 +39,38 @@ def authenticate():
             print "Login succeeded!"
     except exceptions.TutumAuthError:
         print "Wrong username and/or password. Please try to login again"
+        sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
     except Exception as e:
         print e
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def register():
+    import tutum_cli
+
+    username = raw_input("Username: ")
+    password1 = 0
+    password2 = 1
+    while password1 != password2:
+        password1 = getpass.getpass()
+        password2 = getpass.getpass(prompt="Repeat your password: ")
+        if password1 != password2:
+            print "Your passwords do not match, please try again"
+        else:
+            break
+    email = raw_input("Email: ")
+
+    headers = {"Content-Type": "application/json", "User-Agent": "tutum/%s" % tutum_cli.VERSION}
+    data = {'username': username, "password1": password1, "password2": password2, "email": email}
+
+    r = requests.post(urlparse.urljoin(tutum.base_url, "register/"), data=json.dumps(data), headers=headers)
+
+    if r.status_code == 201:
+        print "Account created. Please check your email for activation instructions."
+
+    else:
+        print r.json()
+        sys.exit(TUTUM_REGISTER_ERROR_EXIT_CODE)
 
 
 def apps(quiet=False, status=None):
@@ -58,6 +95,7 @@ def apps(quiet=False, status=None):
             utils.tabulate_result(data_list, headers)
     except Exception as e:
         print e
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def details(identifiers):
@@ -152,6 +190,7 @@ def app_run(image, name, container_size, target_num_containers, run_command, ent
             print app.uuid
     except Exception as e:
         print e
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def ps(app_identifier, quiet=False, status=None):
@@ -190,6 +229,7 @@ def ps(app_identifier, quiet=False, status=None):
             utils.tabulate_result(data_list, headers)
     except Exception as e:
         print e
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def images(quiet=False, jumpstarts=False, linux=False):
@@ -217,6 +257,7 @@ def images(quiet=False, jumpstarts=False, linux=False):
             utils.tabulate_result(data_list, headers)
     except Exception as e:
         print e
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def add_image(repository, username, password, description):
@@ -227,6 +268,7 @@ def add_image(repository, username, password, description):
             print image.name
     except Exception as e:
         print e
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def remove_image(repositories):
