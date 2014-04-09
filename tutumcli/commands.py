@@ -1,12 +1,12 @@
 import getpass
 import ConfigParser
+import json
 from os.path import join, expanduser
-import pprint
 
 from tutum.api import auth
 from tutum.api import exceptions
-
 import tutum
+
 from tutumcli import utils
 
 
@@ -64,7 +64,7 @@ def application_details(identifiers):
     for identifier in identifiers:
         try:
             app_details = utils.fetch_app(identifier)
-            pprint.pprint(app_details.get_all_attributes())
+            print json.dumps(app_details.get_all_attributes(), indent=2)
         except Exception as e:
             print e
 
@@ -196,7 +196,7 @@ def container_inspect(identifiers):
     for identifier in identifiers:
         try:
             container_details = utils.fetch_container(identifier)
-            pprint.pprint(container_details.get_all_attributes())
+            print json.dumps(container_details.get_all_attributes(), indent=2)
         except Exception as e:
             print e
 
