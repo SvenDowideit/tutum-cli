@@ -1,6 +1,7 @@
-from tabulate import tabulate
 import datetime
 import re
+
+from tabulate import tabulate
 import tutum
 from dateutil import tz
 import ago
@@ -54,7 +55,7 @@ def fetch_app(identifier):
     if is_uuid4(identifier):
         return tutum.Application.fetch(identifier)
     else:
-        objects_same_identifier = tutum.Application.list(name=identifier) or \
+        objects_same_identifier = tutum.Application.list(unique_name=identifier) or \
                                   tutum.Application.list(uuid__startswith=identifier)
         if len(objects_same_identifier) == 1:
             return objects_same_identifier[0]
