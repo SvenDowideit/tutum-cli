@@ -149,7 +149,8 @@ def launch_queries_in_parallel(identifier):
 
     if isinstance(app, ObjectNotFound) and isinstance(container, ObjectNotFound):
         raise ObjectNotFound("Cannot find an application or a container with identifier '%s'" % identifier)
-    elif isinstance(app, NonUniqueIdentifier) or isinstance(container, NonUniqueIdentifier):
+    elif isinstance(app, NonUniqueIdentifier) or isinstance(container, NonUniqueIdentifier) or \
+            (not isinstance(app, Exception) and isinstance(container, Exception)):
         raise NonUniqueIdentifier("Identifier '%s' is being used by more than one container and/or application, "
                                   "please use the long uuid" % identifier)
     elif not isinstance(app, ObjectNotFound):
