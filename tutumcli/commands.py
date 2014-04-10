@@ -5,6 +5,8 @@ import requests
 import sys
 import urlparse
 from os.path import join, expanduser
+from os import getenv
+import docker
 
 from tutum.api import auth
 from tutum.api import exceptions
@@ -21,6 +23,7 @@ APIKEY_OPTION = 'apikey'
 TUTUM_AUTH_ERROR_EXIT_CODE = 2
 TUTUM_REGISTER_ERROR_EXIT_CODE = 3
 EXCEPTION_EXIT_CODE = 4
+DOCKER_NOT_RUNNING_EXIT_CODE = 5
 
 
 def authenticate():
@@ -71,6 +74,28 @@ def register():
     else:
         print r.json()
         sys.exit(TUTUM_REGISTER_ERROR_EXIT_CODE)
+
+
+def search(text):
+    try:
+        docker_client = docker.Client(base_url=getenv("DOCKER_HOST"))
+        results = docker_client.search(text)
+        headers = ["NAME", "DESCRIPTION", "STARS", "OFFICIAL", "TRUSTED"]
+        data_list = []
+        if len(results) != 0:
+            for result in results:
+                description = result["description"].replace("\n", "\\n")
+                description = description[:80] + " [...]" if len(result["description"]) > 80 else description
+                data_list.append([result["name"], description
+                                  , str(result["star_count"]),
+                                  u"\u2713" if result["is_official"] else "",
+                                  u"\u2713" if result["is_trusted"] else ""])
+        else:
+            data_list.append(["", "", "", "", ""])
+        utils.tabulate_result(data_list, headers)
+    except Exception:
+        print "Cannot connect to docker (is it running?)"
+        sys.exit(DOCKER_NOT_RUNNING_EXIT_CODE)
 
 
 def apps(quiet=False, status=None):
