@@ -4,9 +4,8 @@ import json
 import requests
 import sys
 import urlparse
+import re
 from os.path import join, expanduser
-from os import getenv
-import docker
 
 from tutum.api import auth
 from tutum.api import exceptions
@@ -23,7 +22,6 @@ APIKEY_OPTION = 'apikey'
 TUTUM_AUTH_ERROR_EXIT_CODE = 2
 TUTUM_REGISTER_ERROR_EXIT_CODE = 3
 EXCEPTION_EXIT_CODE = 4
-DOCKER_NOT_RUNNING_EXIT_CODE = 5
 
 
 def authenticate():
@@ -78,7 +76,7 @@ def register():
 
 def search(text):
     try:
-        docker_client = docker.Client(base_url=getenv("DOCKER_HOST"))
+        docker_client = utils.get_docker_client()
         results = docker_client.search(text)
         headers = ["NAME", "DESCRIPTION", "STARS", "OFFICIAL", "TRUSTED"]
         data_list = []
@@ -93,26 +91,40 @@ def search(text):
         else:
             data_list.append(["", "", "", "", ""])
         utils.tabulate_result(data_list, headers)
-    except Exception:
-        print "Cannot connect to docker (is it running?)"
-        sys.exit(DOCKER_NOT_RUNNING_EXIT_CODE)
+    except Exception as e:
+        print e
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def apps(quiet=False, status=None):
+def apps(quiet=False, status=None, remote=False, local=False):
     try:
-        app_list = tutum.Application.list(state=status)
         headers = ["NAME", "UUID", "STATUS", "IMAGE", "SIZE (#)", "DEPLOYED", "WEB HOSTNAME"]
         data_list = []
         long_uuid_list = []
-        if len(app_list) != 0:
+        if not remote:
+            current_apps = utils.get_current_apps_and_its_containers()
+            for current_app, app_config in current_apps.iteritems():
+                if not status or status == app_config["status"]:
+                    data_list.append([current_app, app_config["uuid"],
+                                      utils.add_unicode_symbol_to_state(app_config["status"]),
+                                      app_config["image"],
+                                      "%s (%d)" % (app_config["container_size"], len(app_config["containers"])),
+                                      utils.get_humanize_local_datetime_from_utc_datetime(app_config["deployed"]),
+                                      app_config["web_hostname"]])
+                    long_uuid_list.append(app_config["uuid"])
+
+        if not local:
+            app_list = tutum.Application.list(state=status)
             for app in app_list:
                 data_list.append([app.unique_name, app.uuid[:8], utils.add_unicode_symbol_to_state(app.state),
                                   app.image_name, "%s (%d)" % (app.container_size, app.current_num_containers),
                                   utils.get_humanize_local_datetime_from_utc_datetime_string(app.deployed_datetime),
                                   app.web_public_dns])
                 long_uuid_list.append(app.uuid)
-        else:
+
+        if len(data_list) == 0:
             data_list.append(["", "", "", "", "", "", ""])
+
         if quiet:
             for uuid in long_uuid_list:
                 print uuid
@@ -201,36 +213,79 @@ def app_alias(identifiers, dns):
 
 
 def app_run(image, name, container_size, target_num_containers, run_command, entrypoint, container_ports,
-            container_envvars, linked_to_application, autorestart, autoreplace, autodestroy, roles):
+            container_envvars, linked_to_application, autorestart, autoreplace, autodestroy, roles, local):
     try:
         ports = utils.parse_ports(container_ports)
         envvars = utils.parse_envvars(container_envvars)
-        app = tutum.Application.create(image=image, name=name, container_size=container_size,
-                                       target_num_containers=target_num_containers, run_command=run_command,
-                                       entrypoint=entrypoint, container_ports=ports,
-                                       container_envvars=envvars, linked_to_application=linked_to_application,
-                                       autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy, roles=roles)
-        result = app.save()
-        if result:
-            print app.uuid
+
+        if local:
+            docker_client = utils.get_docker_client()
+            image_options = utils.parse_image_name(image)
+            tag = image_options["tag"] if image_options["tag"] else "latest"
+            app_name, container_names = utils.get_app_and_containers_unique_name(name if name else
+                                                                                 utils.TUTUM_LOCAL_CONTAINER_NAME %
+                                                                                 image_options["short_name"],
+                                                                                 target_num_containers)
+            result = docker_client.pull(image_options["full_name"], tag)
+            if re.search("error", result) is not None or re.search("Error", result) is not None:
+                raise Exception(result)
+
+            for i in range(target_num_containers):
+                container_id = docker_client.create_container(image=":".join([image_options["full_name"], tag]),
+                                                              command=run_command, entrypoint=entrypoint,
+                                                              ports=[(int(port["inner_port"]),
+                                                                      port["protocol"]) for port in ports],
+                                                              environment=dict((envvar["key"],
+                                                                                envvar["value"]) for envvar in envvars),
+                                                              mem_limit=utils.CONTAINER_SIZE[container_size]["memory"],
+                                                              cpu_shares=utils.CONTAINER_SIZE[container_size]["cpu_shares"],
+                                                              name=container_names[i])
+                docker_client.start(container_id["Id"], port_bindings=dict((int(port["inner_port"]), None) for port in ports))
+                print container_id["Id"]
+        else:
+            app = tutum.Application.create(image=image, name=name, container_size=container_size,
+                                           target_num_containers=target_num_containers, run_command=run_command,
+                                           entrypoint=entrypoint, container_ports=ports,
+                                           container_envvars=envvars, linked_to_application=linked_to_application,
+                                           autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
+                                           roles=roles)
+            result = app.save()
+            if result:
+                print app.uuid
     except Exception as e:
         print e
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def ps(app_identifier, quiet=False, status=None):
+def ps(app_identifier, quiet=False, status=None, remote=False, local=False):
     try:
-        if app_identifier is None:
-            containers = tutum.Container.list(state=status)
-        elif utils.is_uuid4(app_identifier):
-            containers = tutum.Container.list(application__uuid=app_identifier, state=status)
-        else:
-            containers = tutum.Container.list(application__name=app_identifier, state=status) + \
-                         tutum.Container.list(application__uuid__startswith=app_identifier, state=status)
         headers = ["NAME", "UUID", "STATUS", "IMAGE", "RUN COMMAND", "SIZE", "EXIT CODE", "DEPLOYED", "PORTS"]
         data_list = []
         long_uuid_list = []
-        if len(containers) != 0:
+
+        if not remote:
+            current_apps = utils.get_current_apps_and_its_containers()
+            for current_app, app_config in current_apps.iteritems():
+                if not app_identifier or app_identifier in [app_config["uuid"], current_app]:
+                    for container in app_config["containers"]:
+                        if not status or status == container["status"]:
+                            data_list.append([container["name"], container["uuid"][:8],
+                                              utils.add_unicode_symbol_to_state(container["status"]),
+                                              container["image"], container["run_command"], container["size"],
+                                              container["exit_code"],
+                                              utils.get_humanize_local_datetime_from_utc_datetime(container["deployed"]),
+                                              container["ports"]])
+                            long_uuid_list.append(container["uuid"])
+
+        if not local:
+            if app_identifier is None:
+                containers = tutum.Container.list(state=status)
+            elif utils.is_uuid4(app_identifier):
+                containers = tutum.Container.list(application__uuid=app_identifier, state=status)
+            else:
+                containers = tutum.Container.list(application__name=app_identifier, state=status) + \
+                             tutum.Container.list(application__uuid__startswith=app_identifier, state=status)
+
             for container in containers:
                 ports_string = ""
                 for index, port in enumerate(container.container_ports):
@@ -245,8 +300,10 @@ def ps(app_identifier, quiet=False, status=None):
                                   utils.get_humanize_local_datetime_from_utc_datetime_string(container.deployed_datetime),
                                   ports_string])
                 long_uuid_list.append(container.uuid)
-        else:
+
+        if len(data_list) == 0:
             data_list.append(["", "", "", "", "", "", "", "", ""])
+
         if quiet:
             for uuid in long_uuid_list:
                 print uuid

@@ -25,6 +25,13 @@ def add_apps_and_containers_parser(subparsers, parent_parser):
                                                                                               'Stopped',
                                                                                               'Start failed',
                                                                                               'Stopped with errors'])
+    group_apps_up_local = apps_parser.add_mutually_exclusive_group()
+    group_apps_up_local.add_argument("-L", "--local",
+                                     help="List only applications running locally",
+                                     action='store_true')
+    group_apps_up_local.add_argument("-R", "--remote",
+                                     help="List only applications running in Tutum",
+                                     action='store_true')
 
     containers_parser = subparsers.add_parser('ps', help='List containers',
                                               description='List containers', parents=[parent_parser])
@@ -34,6 +41,14 @@ def add_apps_and_containers_parser(subparsers, parent_parser):
                                                                                                   'Stopped',
                                                                                                   'Start failed',
                                                                                                   'Stopped with errors'])
+    group_containers_up_local = containers_parser.add_mutually_exclusive_group()
+    group_containers_up_local.add_argument("-L", "--local",
+                                           help="List only applications running locally",
+                                           action='store_true')
+    group_containers_up_local.add_argument("-R", "--remote",
+                                           help="List only applications running in Tutum",
+                                           action='store_true')
+
 
     # Managing common options
     list_common_parser = argparse.ArgumentParser(add_help=False)
@@ -46,9 +61,11 @@ def add_apps_and_containers_parser(subparsers, parent_parser):
     create_app_parser.add_argument("-n", "--name", help="a human-readable name for the application "
                                                         "(default: image_tag without namespace)")
     create_app_parser.add_argument("-s", "--container_size", help="the size of the application containers "
-                                                                  "(default: XS, possible values: XS, S, M, L, XL)")
+                                                                  "(default: XS, possible values: XS, S, M, L, XL)",
+                                   default="XS")
     create_app_parser.add_argument("-t", "--target_num_containers", help="the number of containers to run "
-                                                                         "for this application (default: 1)", type=int)
+                                                                         "for this application (default: 1)", type=int,
+                                   default=1)
     create_app_parser.add_argument("-r", "--run_command",
                                    help="the command used to start the application containers "
                                         "(default: as defined in the image)")
@@ -77,6 +94,7 @@ def add_apps_and_containers_parser(subparsers, parent_parser):
     create_app_parser.add_argument('--role', help="Tutum API roles to grant the application, "
                                                   "i.e. 'global' (default: none, possible values: 'global')",
                                    action='append')
+    create_app_parser.add_argument("-L", "--local", help="Run the new application locally", action='store_true')
 
     subparsers.add_parser('inspect', help='Inspect an application or a container',
                           description='Inspect an application or a container',

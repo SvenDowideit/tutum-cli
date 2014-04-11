@@ -6,8 +6,21 @@ from tabulate import tabulate
 import tutum
 from dateutil import tz
 import ago
+import docker
+from os import getenv
 
-from tutumcli.exceptions import NonUniqueIdentifier, ObjectNotFound, BadParameter
+from tutumcli.exceptions import NonUniqueIdentifier, ObjectNotFound, BadParameter, DockerNotFound
+
+TUTUM_LOCAL_PREFIX = "local-"
+TUTUM_LOCAL_CONTAINER_NAME = TUTUM_LOCAL_PREFIX + "%s"
+
+CONTAINER_SIZE = {
+        "XS": {"cpu_shares": 256, "memory": 268435456},
+        "S": {"cpu_shares": 512, "memory": 536870912},
+        "M": {"cpu_shares": 1024, "memory": 1073741824},
+        "L": {"cpu_shares": 2048, "memory": 2147483648},
+        "XL": {"cpu_shares": 4096, "memory": 4294967286}
+}
 
 
 def tabulate_result(data_list, headers):
@@ -23,10 +36,14 @@ def _from_utc_string_to_utc_datetime(utc_datetime_string):
 
 
 def get_humanize_local_datetime_from_utc_datetime_string(utc_datetime_string):
-    local_now = datetime.datetime.now(tz.tzlocal())
     utc_target_datetime = _from_utc_string_to_utc_datetime(utc_datetime_string)
+    return get_humanize_local_datetime_from_utc_datetime(utc_target_datetime)
+
+
+def get_humanize_local_datetime_from_utc_datetime(utc_target_datetime):
+    local_now = datetime.datetime.now(tz.tzlocal())
     if utc_target_datetime:
-        local_target_datetime = _from_utc_string_to_utc_datetime(utc_datetime_string).replace(tzinfo=tz.gettz("UTC")).astimezone(tz=tz.tzlocal())
+        local_target_datetime = utc_target_datetime.replace(tzinfo=tz.gettz("UTC")).astimezone(tz=tz.tzlocal())
         return ago.human(local_now - local_target_datetime, precision=1)
     return ""
 
@@ -83,17 +100,16 @@ def fetch_app(identifier, raise_exceptions=True):
 
 
 def parse_ports(port_list):
+    parsed_ports = []
     if port_list is not None:
         parsed_ports = []
         for port in port_list:
             parsed_ports.append(_get_port_dict(port))
-    else:
-        parsed_ports = None
     return parsed_ports
 
 
 def _get_port_dict(port):
-    port_regexp = re.compile('^[0-9]{1,5}/(tcp|udp)$', re.I)
+    port_regexp = re.compile('^[0-9]{1,5}/(tcp|udp)$')
     match = port_regexp.match(port)
     if bool(match):
         port = port.split("/", 1)
@@ -104,17 +120,15 @@ def _get_port_dict(port):
 
 
 def parse_envvars(envvar_list):
+    parsed_envvars = []
     if envvar_list is not None:
-        parsed_envvars = []
         for envvar in envvar_list:
             parsed_envvars.append(_is_envvar(envvar))
-    else:
-        parsed_envvars = None
     return parsed_envvars
 
 
 def _is_envvar(envvar):
-    envvar_regexp = re.compile('^[a-zA-Z_]+[a-zA-Z0-9_]*=[^?!=]+$', re.I)
+    envvar_regexp = re.compile('^[a-zA-Z_]+[a-zA-Z0-9_]*=[^?!=]+$')
     match = envvar_regexp.match(envvar)
     if bool(match):
         envvar = envvar.split("=", 1)
@@ -160,3 +174,156 @@ def launch_queries_in_parallel(identifier):
         return container
 
     return None
+
+
+def get_docker_client():
+    try:
+        docker_client = docker.Client(base_url=getenv("DOCKER_HOST"))
+        docker_client.version()
+        return docker_client
+    except Exception:
+        raise DockerNotFound("Cannot connect to docker (is it running?)")
+
+
+def parse_image_name(image_name):
+    regexp = r"^(?P<full_name>((?P<registry_host>[a-z0-9\.\-]+\.[a-z0-9\.\-]+)/)?" \
+             r"(?P<name_without_host>((?P<namespace>[a-z0-9\.\-]+)/)?" \
+             r"(?P<short_name>[a-z0-9\.\-_]+)))(:(?P<tag>[a-z0-9\.\-]+))?$"
+    if not re.search(regexp, str(image_name)):
+        raise Exception("Invalid image name")
+    parsed_results = re.match(regexp, str(image_name)).groupdict()
+    parsed_results["index"] = "index.docker.io"
+    return parsed_results
+
+
+def get_app_and_containers_unique_name(name, num_containers=1):
+    current_apps = get_current_apps_and_its_containers()
+    similar_names = {}
+
+    for app_name, config in current_apps.iteritems():
+        if app_name.startswith(name):
+            similar_names[app_name] = config["containers"]
+
+    app_name = None
+    if not name in similar_names:
+        app_name = name
+    else:
+        i = 1
+        while not app_name:
+            new_name = name + "-" + str(i)
+            if not new_name in similar_names:
+                app_name = new_name
+                break
+            i += 1
+    return app_name, get_containers_unique_names(app_name, [], num_containers)
+
+
+def get_containers_unique_names(app_name, current_containers=[], num_containers=1):
+    container_names = []
+    for i in range(num_containers):
+        i = 1
+        container_name = None
+        while not container_name:
+            new_name = app_name + "-" + str(i)
+            if not new_name in current_containers and not new_name in container_names:
+                container_name = new_name
+                container_names.append(container_name)
+            i += 1
+    return container_names
+
+
+def get_current_apps_and_its_containers():
+    docker_client = get_docker_client()
+    stopped_running_containers = docker_client.containers(all=True, quiet=True)
+    current_apps = {}
+    deployed_datetime = datetime.datetime.utcnow()
+
+    for container in stopped_running_containers:
+        inspected_container = docker_client.inspect_container(container["Id"])
+        app_name = get_app_name_from_container_name(inspected_container['Name'][1:])
+        size_by_cpu = get_size_from_cpu_shares(inspected_container["Config"]["CpuShares"])
+        size_by_memory = get_size_from_memory(inspected_container["Config"]["Memory"])
+
+        if not app_name or not size_by_cpu or not size_by_memory or size_by_cpu != size_by_memory:
+            #it is not a tutum container
+            continue
+        app_config = current_apps.get(app_name, {"uuid": "", "status": "",
+                                                 "image": inspected_container["Config"]["Image"],
+                                                 "container_size": size_by_cpu,
+                                                 "deployed": "",
+                                                 "web_hostname": "", "containers": []})
+
+        container_status = "Running" if inspected_container["State"]["Running"] else "Stopped"
+        if container_status == "Stopped" and inspected_container["State"]["ExitCode"] != 0:
+            container_status = "Stopped with errors"
+        container_config = {"name": inspected_container['Name'][1:],
+                            "uuid": inspected_container["ID"],
+                            "status": container_status,
+                            "image": inspected_container["Config"]["Image"],
+                            "run_command": " ".join(inspected_container["Config"]["Cmd"]),
+                            "size": size_by_cpu,
+                            "exit_code": inspected_container["State"]["ExitCode"],
+                            "deployed": datetime.datetime.strptime(inspected_container["Created"].split(".")[0],
+                                                                   "%Y-%m-%dT%H:%M:%S")}
+        ports = ""
+        if inspected_container["HostConfig"]["PortBindings"] is not None:
+            for port, bindings in inspected_container["HostConfig"]["PortBindings"].iteritems():
+                port_number_protocol = port.split("/")
+                for binding in bindings:
+                    ports += "%s:%s->%s/%s, " % \
+                             (binding["HostIp"], binding["HostPort"], port_number_protocol[0], port_number_protocol[1])
+        ports = ports if ports == "" else ports[:-2]
+        container_config["ports"] = ports
+        app_config["containers"].append(container_config)
+
+        app_config["deployed"] = container_config["deployed"] \
+            if container_config["deployed"] < deployed_datetime else deployed_datetime
+
+        current_apps[app_name] = app_config
+
+    for app, app_config in current_apps.iteritems():
+        current_apps[app]["status"] = _calculate_local_app_status(app_config["containers"])
+
+    return current_apps
+
+
+def get_app_name_from_container_name(container_local_name):
+    local_name_regexp = re.compile('^local\-([a-zA-Z0-9_\-]+)\-([0-9]+)$')
+    match = local_name_regexp.match(container_local_name)
+    if bool(match):
+        split_name = container_local_name.split("-")
+        return "-".join(split_name[:-1])
+    return None
+
+
+def get_size_from_cpu_shares(cpu_shares_value):
+    for size, config in CONTAINER_SIZE.iteritems():
+        if config["cpu_shares"] == cpu_shares_value:
+            return size
+    return None
+
+
+def get_size_from_memory(memory_value):
+    for size, config in CONTAINER_SIZE.iteritems():
+        if config["memory"] == memory_value:
+            return size
+    return None
+
+
+def _calculate_local_app_status(container_list):
+    all_status = {}
+
+    for container in container_list:
+        number = all_status.get(container["status"], 0)
+        all_status[container["status"]] = number + 1
+
+    if all_status.get("Running", 0) != 0:
+        if all_status.get("Stopped", 0) == all_status.get("Stopped with errors", 0) == 0:
+            return "Running"
+        else:
+            return "Partly running"
+    else:
+        if all_status.get("Stopped", 0) == 0 and all_status.get("Stopped with errors", 0) != 0:
+            return "Stopped with errors"
+        else:
+            return "Stopped"

@@ -45,7 +45,7 @@ def main():
     elif args.command == "search":
         commands.search(args.text)
     elif args.command == "apps":
-        commands.apps(args.quiet, args.status)
+        commands.apps(args.quiet, args.status, args.remote, args.local)
     elif args.command == "inspect":
         commands.details(args.identifier)
     elif args.command == "start":
@@ -66,9 +66,9 @@ def main():
                          entrypoint=args.entrypoint, container_ports=args.port,
                          container_envvars=args.env,
                          linked_to_application=args.link, autorestart=args.autorestart,
-                         autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role)
+                         autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role, local=args.local)
     elif args.command == "ps":
-            commands.ps(args.identifier, args.quiet, args.status)
+            commands.ps(args.identifier, args.quiet, args.status, args.remote, args.local)
     elif args.command == "images":
         commands.images(args.quiet, args.jumpstarts, args.linux)
     elif args.command == "add":

@@ -8,3 +8,7 @@ class ObjectNotFound(RuntimeError):
 
 class BadParameter(RuntimeError):
     pass
+
+
+class DockerNotFound(RuntimeError):
+    pass
