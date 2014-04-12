@@ -118,8 +118,9 @@ def add_apps_and_containers_parser(subparsers, parent_parser):
                                   help="target number of containers to scale this application to",
                                   type=int)
 
-    alias_app_parser = subparsers.add_parser('alias', help="Change application's dns",
-                                             description="Change application's dns",
+    alias_app_parser = subparsers.add_parser('alias',
+                                             help="Change application's dns (only for applications running in Tutum)",
+                                             description="Change application's dns (only for applications running in Tutum)",
                                              parents=[parent_parser, list_common_parser])
     alias_app_parser.add_argument("dns", help="custom domain to use for this web application")
 

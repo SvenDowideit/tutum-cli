@@ -4,7 +4,6 @@ import json
 import requests
 import sys
 import urlparse
-import re
 from os.path import join, expanduser
 
 from tutum.api import auth
@@ -111,7 +110,7 @@ def apps(quiet=False, status=None, remote=False, local=False):
                                       "%s (%d)" % (app_config["container_size"], len(app_config["containers"])),
                                       utils.get_humanize_local_datetime_from_utc_datetime(app_config["deployed"]),
                                       app_config["web_hostname"]])
-                    long_uuid_list.append(app_config["uuid"])
+                    long_uuid_list.append(current_app)
 
         if not local:
             app_list = tutum.Application.list(state=status)
@@ -138,8 +137,11 @@ def apps(quiet=False, status=None, remote=False, local=False):
 def details(identifiers):
     for identifier in identifiers:
         try:
-            app_or_container = utils.launch_queries_in_parallel(identifier)
-            print json.dumps(app_or_container.get_all_attributes(), indent=2)
+            is_remote, app_or_container = utils.launch_queries_in_parallel(identifier)
+            if is_remote:
+                print json.dumps(app_or_container.get_all_attributes(), indent=2)
+            else:
+                print json.dumps(utils.details_local_object(app_or_container), indent=2, cls=utils.JsonDatetimeEncoder)
         except Exception as e:
             print e
 
@@ -147,10 +149,13 @@ def details(identifiers):
 def start(identifiers):
     for identifier in identifiers:
         try:
-            app_or_container = utils.launch_queries_in_parallel(identifier)
-            result = app_or_container.start()
-            if result:
-                print app_or_container.uuid
+            is_remote, app_or_container = utils.launch_queries_in_parallel(identifier)
+            if is_remote:
+                result = app_or_container.start()
+                if result:
+                    print app_or_container.uuid
+            else:
+                print utils.start_local_object(app_or_container)
         except Exception as e:
             print e
 
@@ -158,10 +163,13 @@ def start(identifiers):
 def stop(identifiers):
     for identifier in identifiers:
         try:
-            app_or_container = utils.launch_queries_in_parallel(identifier)
-            result = app_or_container.stop()
-            if result:
-                print app_or_container.uuid
+            is_remote, app_or_container = utils.launch_queries_in_parallel(identifier)
+            if is_remote:
+                result = app_or_container.stop()
+                if result:
+                    print app_or_container.uuid
+            else:
+                print utils.stop_local_object(app_or_container)
         except Exception as e:
             print e
 
@@ -169,10 +177,13 @@ def stop(identifiers):
 def terminate(identifiers):
     for identifier in identifiers:
         try:
-            app_or_container = utils.launch_queries_in_parallel(identifier)
-            result = app_or_container.delete()
-            if result:
-                print app_or_container.uuid
+            is_remote, app_or_container = utils.launch_queries_in_parallel(identifier)
+            if is_remote:
+                result = app_or_container.delete()
+                if result:
+                    print app_or_container.uuid
+            else:
+                print utils.terminate_local_object(app_or_container)
         except Exception as e:
             print e
 
@@ -180,8 +191,11 @@ def terminate(identifiers):
 def logs(identifiers):
     for identifier in identifiers:
         try:
-            app_or_container = utils.launch_queries_in_parallel(identifier)
-            print app_or_container.logs
+            is_remote, app_or_container = utils.launch_queries_in_parallel(identifier)
+            if is_remote:
+                print app_or_container.logs
+            else:
+                print utils.logs_local_object(app_or_container)
         except Exception as e:
             print e
 
@@ -189,12 +203,52 @@ def logs(identifiers):
 def app_scale(identifiers, target_num_containers):
     for identifier in identifiers:
         try:
-            app_details = utils.fetch_app(identifier)
-            if target_num_containers:
-                app_details.target_num_containers = target_num_containers
-                result = app_details.save()
-                if result:
-                    print app_details.uuid
+            is_remote, app_details = utils.fetch_app(identifier)
+
+            if is_remote:
+                if target_num_containers:
+                    app_details.target_num_containers = target_num_containers
+                    result = app_details.save()
+                    if result:
+                        print app_details.uuid
+            else:
+                image = utils.parse_image_name(app_details[identifier]["image"])
+                tag = image["tag"] if image["tag"] else "latest"
+                #if we found a local image, at least has one container
+                app = app_details[identifier]
+
+                num_containers = target_num_containers - len(app["containers"])
+
+                if num_containers > 0:
+
+                    container_names = utils.get_containers_unique_names(identifier,
+                                                                        [container["name"]
+                                                                         for container in app["containers"]],
+                                                                        num_containers)
+                    ports = utils.parse_ports(utils.get_ports_from_image(":".join([image["full_name"], tag])))
+                    ports += utils.get_port_list_from_string(app["containers"][0]["ports"])
+
+                    already_deployed = {}
+                    for container in app["containers"]:
+                        already_deployed[container["name"]] = container["name"] + "-link"
+                    utils.create_containers_for_an_app(image["full_name"],
+                                                       image["tag"],
+                                                       container_names,
+                                                       app["containers"][0]["run_command"],
+                                                       app["containers"][0]["entrypoint"],
+                                                       app["containers"][0]["size"],
+                                                       ports,
+                                                       app["containers"][0]["envvars"],
+                                                       already_deployed)
+                elif num_containers < 0:
+                    containers_to_destroy = min(len(app["containers"]), abs(num_containers))
+                    for i in range(containers_to_destroy):
+                        try:
+                            utils.terminate_local_object(app["containers"][i])
+                        except Exception as e:
+                            print e
+                            pass
+                print identifier
         except Exception as e:
             print e
 
@@ -202,7 +256,7 @@ def app_scale(identifiers, target_num_containers):
 def app_alias(identifiers, dns):
     for identifier in identifiers:
         try:
-            app_details = utils.fetch_app(identifier)
+            app_details = utils.fetch_remote_app(identifier)
             if dns is not None:
                 app_details.web_public_dns = dns
                 result = app_details.save()
@@ -219,29 +273,24 @@ def app_run(image, name, container_size, target_num_containers, run_command, ent
         envvars = utils.parse_envvars(container_envvars)
 
         if local:
-            docker_client = utils.get_docker_client()
             image_options = utils.parse_image_name(image)
             tag = image_options["tag"] if image_options["tag"] else "latest"
+            image_ports = utils.parse_ports(utils.get_ports_from_image(":".join([image_options["full_name"], tag])))
+            ports += image_ports
             app_name, container_names = utils.get_app_and_containers_unique_name(name if name else
                                                                                  utils.TUTUM_LOCAL_CONTAINER_NAME %
                                                                                  image_options["short_name"],
                                                                                  target_num_containers)
-            result = docker_client.pull(image_options["full_name"], tag)
-            if re.search("error", result) is not None or re.search("Error", result) is not None:
-                raise Exception(result)
-
-            for i in range(target_num_containers):
-                container_id = docker_client.create_container(image=":".join([image_options["full_name"], tag]),
-                                                              command=run_command, entrypoint=entrypoint,
-                                                              ports=[(int(port["inner_port"]),
-                                                                      port["protocol"]) for port in ports],
-                                                              environment=dict((envvar["key"],
-                                                                                envvar["value"]) for envvar in envvars),
-                                                              mem_limit=utils.CONTAINER_SIZE[container_size]["memory"],
-                                                              cpu_shares=utils.CONTAINER_SIZE[container_size]["cpu_shares"],
-                                                              name=container_names[i])
-                docker_client.start(container_id["Id"], port_bindings=dict((int(port["inner_port"]), None) for port in ports))
-                print container_id["Id"]
+            print ports
+            _ = utils.create_containers_for_an_app(image_options["full_name"],
+                                                   tag,
+                                                   container_names,
+                                                   run_command,
+                                                   entrypoint,
+                                                   container_size,
+                                                   ports,
+                                                   dict((envvar["key"], envvar["value"]) for envvar in envvars))
+            print app_name
         else:
             app = tutum.Application.create(image=image, name=name, container_size=container_size,
                                            target_num_containers=target_num_containers, run_command=run_command,
