@@ -19,8 +19,7 @@ USER_OPTION = "user"
 APIKEY_OPTION = 'apikey'
 
 TUTUM_AUTH_ERROR_EXIT_CODE = 2
-TUTUM_REGISTER_ERROR_EXIT_CODE = 3
-EXCEPTION_EXIT_CODE = 4
+EXCEPTION_EXIT_CODE = 3
 
 
 def authenticate():
@@ -38,39 +37,34 @@ def authenticate():
                 config.write(cfgfile)
             print "Login succeeded!"
     except exceptions.TutumAuthError:
-        print "Wrong username and/or password. Please try to login again"
+        registered, text = try_register(username, password)
+        if registered:
+            print text
+        else:
+            if any([key in text for key in ["password1", "password2"]]):
+                print ",".join(text["password1"]) if "password1" in text else ",".join(text["password2"])
+            else:
+                print "Wrong username and/or password. Please try to login again"
         sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
     except Exception as e:
         print e
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def register():
+def try_register(username, password):
     import tutum_cli
 
-    username = raw_input("Username: ")
-    password1 = 0
-    password2 = 1
-    while password1 != password2:
-        password1 = getpass.getpass()
-        password2 = getpass.getpass(prompt="Repeat your password: ")
-        if password1 != password2:
-            print "Your passwords do not match, please try again"
-        else:
-            break
     email = raw_input("Email: ")
 
     headers = {"Content-Type": "application/json", "User-Agent": "tutum/%s" % tutum_cli.VERSION}
-    data = {'username': username, "password1": password1, "password2": password2, "email": email}
+    data = {'username': username, "password1": password, "password2": password, "email": email}
 
     r = requests.post(urlparse.urljoin(tutum.base_url, "register/"), data=json.dumps(data), headers=headers)
 
     if r.status_code == 201:
-        print "Account created. Please check your email for activation instructions."
-
+        return True, "Account created. Please check your email for activation instructions."
     else:
-        print r.json()
-        sys.exit(TUTUM_REGISTER_ERROR_EXIT_CODE)
+        return False, r.json()["register"]
 
 
 def search(text):
