@@ -26,6 +26,7 @@ parent_parser = argparse.ArgumentParser(add_help=False)
 # Commands
 parsers.add_login_parser(subparsers, parent_parser)
 parsers.add_search_parser(subparsers, parent_parser)
+parsers.add_open_parser(subparsers, parent_parser)
 parsers.add_apps_and_containers_parser(subparsers, parent_parser)
 parsers.add_images_parser(subparsers, parent_parser)
 
@@ -41,6 +42,8 @@ def main():
         commands.authenticate()
     elif args.command == "search":
         commands.search(args.text)
+    elif args.command == "open":
+        commands.open_app()
     elif args.command == "apps":
         commands.apps(args.quiet, args.status, args.remote, args.local)
     elif args.command == "inspect":

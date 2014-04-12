@@ -4,6 +4,7 @@ import json
 import requests
 import sys
 import urlparse
+import webbrowser
 from os.path import join, expanduser
 
 from tutum.api import auth
@@ -84,6 +85,23 @@ def search(text):
         else:
             data_list.append(["", "", "", "", ""])
         utils.tabulate_result(data_list, headers)
+    except Exception as e:
+        print e
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def open_app():
+    try:
+        app_list = tutum.Application.list()
+        deployed_datetimes = {}
+        for app in app_list:
+            if app.web_public_dns and app.state in ["Running", "Partly running"]:
+                deployed_datetimes[utils.from_utc_string_to_utc_datetime(app.deployed_datetime)] = app.web_public_dns
+        if deployed_datetimes:
+            max_datetime = max(deployed_datetimes.keys())
+            webbrowser.open("http://" + deployed_datetimes[max_datetime])
+        else:
+            print "Error: There are not web applications Running or Partly Running"
     except Exception as e:
         print e
         sys.exit(EXCEPTION_EXIT_CODE)

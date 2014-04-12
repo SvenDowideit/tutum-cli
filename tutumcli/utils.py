@@ -28,7 +28,7 @@ def tabulate_result(data_list, headers):
     print tabulate(data_list, headers, stralign="left", tablefmt="plain")
 
 
-def _from_utc_string_to_utc_datetime(utc_datetime_string):
+def from_utc_string_to_utc_datetime(utc_datetime_string):
     if not utc_datetime_string:
         return None
     utc_date_object = datetime.datetime.strptime(utc_datetime_string, "%a, %d %b %Y %H:%M:%S +0000")
@@ -37,7 +37,7 @@ def _from_utc_string_to_utc_datetime(utc_datetime_string):
 
 
 def get_humanize_local_datetime_from_utc_datetime_string(utc_datetime_string):
-    utc_target_datetime = _from_utc_string_to_utc_datetime(utc_datetime_string)
+    utc_target_datetime = from_utc_string_to_utc_datetime(utc_datetime_string)
     return get_humanize_local_datetime_from_utc_datetime(utc_target_datetime)
 
 
@@ -338,7 +338,7 @@ def get_current_apps_and_its_containers():
                 for binding in bindings:
                     ports += "%s:%s->%s/%s, " % \
                              (binding["HostIp"], binding["HostPort"], port_number_protocol[0], port_number_protocol[1])
-        ports = ports if ports == "" else ports[:-2]
+        ports = ports if ports else ports[:-2]
         container_config["ports"] = ports
         app_config["containers"].append(container_config)
 

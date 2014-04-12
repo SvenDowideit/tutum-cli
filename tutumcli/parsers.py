@@ -5,6 +5,12 @@ def add_login_parser(subparsers, parent_parser):
     subparsers.add_parser('login', help='Login into Tutum', description='Login into Tutum', parents=[parent_parser])
 
 
+def add_open_parser(subparsers, parent_parser):
+    subparsers.add_parser('open', help='Open last web application created in Tutum',
+                          description='Open last web application created in Tutum',
+                          parents=[parent_parser])
+
+
 def add_search_parser(subparsers, parent_parser):
     search_parser = subparsers.add_parser('search', help='Search for images in the Docker Index',
                                           description='Search for images in the Docker Index',  parents=[parent_parser])
