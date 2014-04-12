@@ -137,9 +137,12 @@ def apps(quiet=False, status=None, remote=False, local=False):
 def details(identifiers):
     for identifier in identifiers:
         try:
-            is_remote, app_or_container = utils.launch_queries_in_parallel(identifier)
+            is_remote, is_app, app_or_container = utils.launch_queries_in_parallel(identifier)
             if is_remote:
-                print json.dumps(app_or_container.get_all_attributes(), indent=2)
+                if is_app:
+                    print json.dumps(tutum.Application.fetch(identifier).get_all_attributes(), indent=2)
+                else:
+                    print json.dumps(tutum.Container.fetch(identifier).get_all_attributes(), indent=2)
             else:
                 print json.dumps(utils.details_local_object(app_or_container), indent=2, cls=utils.JsonDatetimeEncoder)
         except Exception as e:
@@ -149,7 +152,7 @@ def details(identifiers):
 def start(identifiers):
     for identifier in identifiers:
         try:
-            is_remote, app_or_container = utils.launch_queries_in_parallel(identifier)
+            is_remote, is_app, app_or_container = utils.launch_queries_in_parallel(identifier)
             if is_remote:
                 result = app_or_container.start()
                 if result:
@@ -163,7 +166,7 @@ def start(identifiers):
 def stop(identifiers):
     for identifier in identifiers:
         try:
-            is_remote, app_or_container = utils.launch_queries_in_parallel(identifier)
+            is_remote, is_app, app_or_container = utils.launch_queries_in_parallel(identifier)
             if is_remote:
                 result = app_or_container.stop()
                 if result:
@@ -177,7 +180,7 @@ def stop(identifiers):
 def terminate(identifiers):
     for identifier in identifiers:
         try:
-            is_remote, app_or_container = utils.launch_queries_in_parallel(identifier)
+            is_remote, is_app, app_or_container = utils.launch_queries_in_parallel(identifier)
             if is_remote:
                 result = app_or_container.delete()
                 if result:
@@ -191,7 +194,7 @@ def terminate(identifiers):
 def logs(identifiers):
     for identifier in identifiers:
         try:
-            is_remote, app_or_container = utils.launch_queries_in_parallel(identifier)
+            is_remote, is_app, app_or_container = utils.launch_queries_in_parallel(identifier)
             if is_remote:
                 print app_or_container.logs
             else:

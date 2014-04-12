@@ -123,26 +123,25 @@ def fetch_local_app_container(identifier, raise_exceptions=True):
             raise NonUniqueIdentifier("Identifier '%s' is being used by more than one container and/or application, "
                                       "please use the long uuid" % identifier)
         elif len(identified_apps) == 1:
-            return identified_apps[0]
+            return True, identified_apps[0]
         elif len(identified_containers) == 1:
-            return identified_containers[0]
+            return False, identified_containers[0]
     except (NonUniqueIdentifier, ObjectNotFound) as e:
         if not raise_exceptions:
-                return e
+                return None, e
         raise e
 
 
 def fetch_app(identifier):
     remote = fetch_remote_app(identifier, False)
-    local = fetch_local_app_container(identifier, False)
+    is_app, local = fetch_local_app_container(identifier, False)
 
     if all([isinstance(remote, ObjectNotFound), isinstance(local, ObjectNotFound)]) or \
             (isinstance(remote, ObjectNotFound) and not isinstance(local, Exception) and
-             not is_local_object_an_app(local)):
+             not is_app):
         raise ObjectNotFound("Cannot find an application with the identifier '%s'" % identifier)
     elif any([isinstance(remote, NonUniqueIdentifier), isinstance(local, NonUniqueIdentifier)]) or \
-            sum([not isinstance(result, Exception) for result in [remote, local]]) > 1 and \
-            is_local_object_an_app(remote):
+            sum([not isinstance(result, Exception) for result in [remote, local]]) > 1 and is_app:
         raise NonUniqueIdentifier("Identifier '%s' is being used by more than one container and/or application, "
                                   "please use the long uuid" % identifier)
 
@@ -214,7 +213,7 @@ def launch_queries_in_parallel(identifier):
 
     app = apps_result.get()
     container = containers_result.get()
-    local_result = fetch_local_app_container(identifier, False)
+    is_app, local_result = fetch_local_app_container(identifier, False)
 
     if all([isinstance(app, ObjectNotFound),
             isinstance(container, ObjectNotFound),
@@ -227,13 +226,13 @@ def launch_queries_in_parallel(identifier):
         raise NonUniqueIdentifier("Identifier '%s' is being used by more than one container and/or application, "
                                   "please use the long uuid" % identifier)
     elif not isinstance(app, ObjectNotFound):
-        return True, app
+        return True, True, app
 
     elif not isinstance(container, ObjectNotFound):
-        return True, container
+        return True, False, container
 
     elif not isinstance(local_result, ObjectNotFound):
-        return False, local_result
+        return False, is_app, local_result
 
     return None, None
 
