@@ -335,14 +335,19 @@ def get_current_apps_and_its_containers():
                             "envvars": inspected_container["Config"]["Env"],
                             "deployed": datetime.datetime.strptime(inspected_container["Created"].split(".")[0],
                                                                    "%Y-%m-%dT%H:%M:%S")}
-        ports = ""
+        ports = []
         if inspected_container["HostConfig"]["PortBindings"] is not None:
             for port, bindings in inspected_container["HostConfig"]["PortBindings"].iteritems():
                 port_number_protocol = port.split("/")
                 for binding in bindings:
-                    ports += "%s:%s->%s/%s, " % \
-                             (binding["HostIp"], binding["HostPort"], port_number_protocol[0], port_number_protocol[1])
-        ports = ports if ports else ports[:-2]
+                    port_definition = "%s:%s->%s/%s" % \
+                                      (binding["HostIp"],
+                                       binding["HostPort"],
+                                       port_number_protocol[0],
+                                       port_number_protocol[1])
+                    ports.append(port_definition)
+
+        ports = ", ".join(ports) if ports else ""
         container_config["ports"] = ports
         app_config["containers"].append(container_config)
 

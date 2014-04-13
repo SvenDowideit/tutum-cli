@@ -366,13 +366,15 @@ def ps(app_identifier, quiet=False, status=None, remote=False, local=False):
             long_uuid_list = []
 
             for container in containers:
-                ports_string = ""
+                ports = []
                 for index, port in enumerate(container.container_ports):
+                    ports_string = ""
                     if port['outer_port'] is not None:
                         ports_string += "%s:%d->" % (container.public_dns, port['outer_port'])
                     ports_string += "%d/%s" % (port['inner_port'], port['protocol'])
-                    if index != len(container.container_ports) - 1:
-                        ports_string += ", "
+                    ports.append(ports_string)
+
+                ports_string = ", ".join(ports)
                 data_list.append([container.unique_name, container.uuid[:8],
                                   utils.add_unicode_symbol_to_state(container.state), container.image_name,
                                   container.run_command, container.container_size, container.exit_code,
