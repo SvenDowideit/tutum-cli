@@ -28,6 +28,7 @@ parsers.add_login_parser(subparsers, parent_parser)
 parsers.add_search_parser(subparsers, parent_parser)
 parsers.add_open_parser(subparsers, parent_parser)
 parsers.add_apps_and_containers_parser(subparsers, parent_parser)
+parsers.add_build_parser(subparsers, parent_parser)
 parsers.add_images_parser(subparsers, parent_parser)
 
 
@@ -68,7 +69,9 @@ def main():
                          linked_to_application=args.link, autorestart=args.autorestart,
                          autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role, local=args.local)
     elif args.command == "ps":
-            commands.ps(args.identifier, args.quiet, args.status, args.remote, args.local)
+        commands.ps(args.identifier, args.quiet, args.status, args.remote, args.local)
+    elif args.command == "build":
+        commands.build(args.name, args.directory, args.quiet, args.nocache)
     elif args.command == "images":
         commands.images(args.quiet, args.jumpstarts, args.linux)
     elif args.command == "add":

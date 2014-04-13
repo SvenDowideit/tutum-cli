@@ -529,6 +529,28 @@ def get_ports_from_image(image_name_with_tag):
     return docker_client.inspect_image(image_name_with_tag)["container_config"]["ExposedPorts"].keys()
 
 
+def build_dockerfile(filepath, ports, cmd):
+    with open(filepath, "w") as dockerfile:
+        base_image = "FROM tutum/buildstep\n\n"
+        expose_ports = " ".join(["EXPOSE", ports]) + "\n\n" if ports else ""
+        cmd = " ".join(["CMD", str(cmd)]) + "\n\n" if cmd else ""
+
+        for line in [base_image, expose_ports, cmd]:
+            if line:
+                dockerfile.write(line)
+
+
+def print_stream_line(line):
+    dict_or_tuple = eval(line.replace("}{", "},{"))
+    if isinstance(dict_or_tuple, dict):
+        dict_or_tuple = (dict_or_tuple, )
+    for message in dict_or_tuple:
+        string = ""
+        for key in message.keys():
+            string += str(message[key]).replace("\n", "")
+        print string
+
+
 class JsonDatetimeEncoder(json.JSONEncoder):
 
     def default(self, obj):

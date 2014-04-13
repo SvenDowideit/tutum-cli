@@ -5,7 +5,9 @@ import requests
 import sys
 import urlparse
 import webbrowser
-from os.path import join, expanduser
+import yaml
+import re
+from os.path import join, expanduser, abspath, isfile
 
 from tutum.api import auth
 from tutum.api import exceptions
@@ -296,7 +298,6 @@ def app_run(image, name, container_size, target_num_containers, run_command, ent
                                                                                  utils.TUTUM_LOCAL_CONTAINER_NAME %
                                                                                  image_options["short_name"],
                                                                                  target_num_containers)
-            print ports
             _ = utils.create_containers_for_an_app(image_options["full_name"],
                                                    tag,
                                                    container_names,
@@ -373,6 +374,52 @@ def ps(app_identifier, quiet=False, status=None, remote=False, local=False):
                 print uuid
         else:
             utils.tabulate_result(data_list, headers)
+    except Exception as e:
+        print e
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def build(image_name, working_directory, quiet, nocache):
+    try:
+        directory = abspath(working_directory)
+        dockerfile_path = join(directory, "Dockerfile")
+
+        if not isfile(dockerfile_path):
+            procfile_path = join(directory, "Procfile")
+            ports = ""
+            cmd = []
+            process = ""
+            if isfile(procfile_path):
+                cmd = ["/start"]
+                with open(procfile_path) as procfile:
+                    dataMap = yaml.load(procfile)
+                if len(dataMap) > 1:
+                    while not process or (not process in dataMap):
+                        process = raw_input("Process type to build, %s: " % dataMap.keys())
+
+                if (len(dataMap) == 1 and "web" in dataMap) or (process == "web"):
+                    ports = "80"
+                    process = "web"
+
+            else:
+                while not process:
+                    process = raw_input("Run command: ")
+
+            cmd.append(process)
+
+            if process != "web":
+                port_regexp = re.compile('^\d{1,5}(\s\d{1,5})*$')
+                while not ports or bool(port_regexp.match(ports)):
+                    ports = raw_input("Exposed Ports (ports separated by whitespace) i.e. 80 8000: ") or ""
+
+            utils.build_dockerfile(dockerfile_path, ports, cmd)
+
+        docker_client = utils.get_docker_client()
+        output = docker_client.build(path=directory, tag=image_name, quiet=quiet, nocache=nocache, rm=True)
+        for line in output:
+            if not quiet:
+                utils.print_stream_line(line)
+        print image_name
     except Exception as e:
         print e
         sys.exit(EXCEPTION_EXIT_CODE)

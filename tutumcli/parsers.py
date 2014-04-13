@@ -5,16 +5,16 @@ def add_login_parser(subparsers, parent_parser):
     subparsers.add_parser('login', help='Login into Tutum', description='Login into Tutum', parents=[parent_parser])
 
 
-def add_open_parser(subparsers, parent_parser):
-    subparsers.add_parser('open', help='Open last web application created in Tutum',
-                          description='Open last web application created in Tutum',
-                          parents=[parent_parser])
-
-
 def add_search_parser(subparsers, parent_parser):
     search_parser = subparsers.add_parser('search', help='Search for images in the Docker Index',
                                           description='Search for images in the Docker Index',  parents=[parent_parser])
     search_parser.add_argument("text", help="Text to search")
+
+
+def add_open_parser(subparsers, parent_parser):
+    subparsers.add_parser('open', help='Open last web application created in Tutum',
+                          description='Open last web application created in Tutum',
+                          parents=[parent_parser])
 
 
 def add_apps_and_containers_parser(subparsers, parent_parser):
@@ -125,6 +125,14 @@ def add_apps_and_containers_parser(subparsers, parent_parser):
                                              description="Change application's dns (only for applications running in Tutum)",
                                              parents=[parent_parser, list_common_parser])
     alias_app_parser.add_argument("dns", help="custom domain to use for this web application")
+
+
+def add_build_parser(subparsers, parent_parser):
+    build_parser = subparsers.add_parser('build', help='Build an image', description='Build an image', parents=[parent_parser])
+    build_parser.add_argument("name", help="Image name")
+    build_parser.add_argument("-d", "--directory", help="Working directory", default=".")
+    build_parser.add_argument("-q", "--quiet", help="Print minimum information", action='store_true')
+    build_parser.add_argument("--nocache", help="Do not use the cache when building the image", action='store_true')
 
 
 def add_images_parser(subparsers, parent_parser):
