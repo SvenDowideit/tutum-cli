@@ -136,12 +136,21 @@ def add_build_parser(subparsers, parent_parser):
 
 
 def add_images_parser(subparsers, parent_parser):
-    images_parser = subparsers.add_parser('images', help='List private images', description='List private images',
+    images_parser = subparsers.add_parser('images', help='List private and local images',
+                                          description='List private and local images',
                                           parents=[parent_parser])
     images_parser.add_argument("-q", "--quiet", help="Print only image names", action='store_true')
+
     image_list_options = images_parser.add_mutually_exclusive_group()
     image_list_options.add_argument("-j", "--jumpstarts", help="List jumpstart images", action='store_true')
     image_list_options.add_argument("-l", "--linux", help="List linux images", action='store_true')
+    group_apps_up_local = images_parser.add_mutually_exclusive_group()
+    group_apps_up_local.add_argument("-L", "--local",
+                                     help="List only local images",
+                                     action='store_true')
+    group_apps_up_local.add_argument("-R", "--remote",
+                                     help="List only private images in Tutum",
+                                     action='store_true')
 
     add_new_image_parser = subparsers.add_parser('add', help='Add a private image', description='Add a private image',
                                                  parents=[parent_parser])

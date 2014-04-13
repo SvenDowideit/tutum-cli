@@ -73,7 +73,7 @@ def main():
     elif args.command == "build":
         commands.build(args.name, args.directory, args.quiet, args.nocache)
     elif args.command == "images":
-        commands.images(args.quiet, args.jumpstarts, args.linux)
+        commands.images(args.quiet, args.jumpstarts, args.linux, args.local, args.remote)
     elif args.command == "add":
         commands.add_image(args.repository, args.username, args.password, args.description)
     elif args.command == "remove":

@@ -425,29 +425,59 @@ def build(image_name, working_directory, quiet, nocache):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def images(quiet=False, jumpstarts=False, linux=False):
+def images(quiet=False, jumpstarts=False, linux=False, local=False, remote=False):
     try:
-        if jumpstarts:
-            image_list = tutum.Image.list(starred=True)
-        elif linux:
-            image_list = tutum.Image.list(base_image=True)
-        else:
-            image_list = tutum.Image.list(is_private_image=True)
-        headers = ["NAME", "DESCRIPTION"]
-        data_list = []
-        name_list = []
-        if len(image_list) != 0:
-            for image in image_list:
-                data_list.append([image.name, image.description])
-                name_list.append(image.name)
-        else:
-            data_list.append(["", ""])
+        if not local:
+            headers = ["NAME", "DESCRIPTION"]
+            data_list = []
+            name_list = []
+            if jumpstarts:
+                image_list = tutum.Image.list(starred=True)
+            elif linux:
+                image_list = tutum.Image.list(base_image=True)
+            else:
+                image_list = tutum.Image.list(is_private_image=True)
+            if len(image_list) != 0:
+                for image in image_list:
+                    data_list.append([image.name, image.description])
+                    name_list.append(image.name)
+            else:
+                data_list.append(["", ""])
 
-        if quiet:
-            for name in name_list:
-                print name
-        else:
-            utils.tabulate_result(data_list, headers)
+            if quiet:
+                for name in name_list:
+                    print name
+            else:
+                print "---- REMOTE IMAGES IN TUTUM ----"
+                utils.tabulate_result(data_list, headers)
+                if not remote:
+                    print
+
+        if not remote and not (linux or jumpstarts):
+            headers = ["NAME", "ID", "CREATED", "PARENT ID", "VIRTUAL SIZE", "SIZE"]
+            docker_client = utils.get_docker_client()
+            local_images = docker_client.images(quiet=quiet)
+            data_list = []
+
+            if not quiet:
+                if len(local_images) != 0:
+                    for repotags in local_images:
+                        for repotag in repotags["RepoTags"]:
+                            data_list.append([repotag, repotags["Id"],
+                                              utils.get_humanize_local_datetime_from_utc_datetime(
+                                                  utils.from_utc_timestamp_to_utc_datetime(int(repotags["Created"]))),
+                                              repotags["ParentId"],
+                                              repotags["VirtualSize"],
+                                              repotags["Size"]])
+                else:
+                    data_list.append(["", "", "", "", "", ""])
+                print "---- LOCAL IMAGES ----"
+                utils.tabulate_result(data_list, headers)
+            else:
+                for uuid in local_images:
+                    print uuid
+
+
     except Exception as e:
         print e
         sys.exit(EXCEPTION_EXIT_CODE)

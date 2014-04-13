@@ -36,6 +36,10 @@ def from_utc_string_to_utc_datetime(utc_datetime_string):
     return utc_date_object
 
 
+def from_utc_timestamp_to_utc_datetime(timestamp):
+    return datetime.datetime.utcfromtimestamp(timestamp)
+
+
 def get_humanize_local_datetime_from_utc_datetime_string(utc_datetime_string):
     utc_target_datetime = from_utc_string_to_utc_datetime(utc_datetime_string)
     return get_humanize_local_datetime_from_utc_datetime(utc_target_datetime)
