@@ -113,10 +113,33 @@ def open_app():
 def apps(quiet=False, status=None, remote=False, local=False):
     try:
         headers = ["NAME", "UUID", "STATUS", "IMAGE", "SIZE (#)", "DEPLOYED", "WEB HOSTNAME"]
-        data_list = []
-        long_uuid_list = []
+
+        if not local:
+            app_list = tutum.Application.list(state=status)
+            data_list = []
+            long_uuid_list = []
+            for app in app_list:
+                data_list.append([app.unique_name, app.uuid[:8], utils.add_unicode_symbol_to_state(app.state),
+                                  app.image_name, "%s (%d)" % (app.container_size, app.current_num_containers),
+                                  utils.get_humanize_local_datetime_from_utc_datetime_string(app.deployed_datetime),
+                                  app.web_public_dns])
+                long_uuid_list.append(app.uuid)
+            if len(data_list) == 0:
+                data_list.append(["", "", "", "", "", "", ""])
+
+            if quiet:
+                for uuid in long_uuid_list:
+                    print uuid
+            else:
+                print "---- APPS IN TUTUM ----"
+                utils.tabulate_result(data_list, headers)
+                if not remote:
+                    print
+
         if not remote:
             current_apps = utils.get_current_apps_and_its_containers()
+            data_list = []
+            name_list = []
             for current_app, app_config in current_apps.iteritems():
                 if not status or status == app_config["status"]:
                     data_list.append([current_app, app_config["uuid"],
@@ -125,25 +148,17 @@ def apps(quiet=False, status=None, remote=False, local=False):
                                       "%s (%d)" % (app_config["container_size"], len(app_config["containers"])),
                                       utils.get_humanize_local_datetime_from_utc_datetime(app_config["deployed"]),
                                       app_config["web_hostname"]])
-                    long_uuid_list.append(current_app)
+                    name_list.append(current_app)
 
-        if not local:
-            app_list = tutum.Application.list(state=status)
-            for app in app_list:
-                data_list.append([app.unique_name, app.uuid[:8], utils.add_unicode_symbol_to_state(app.state),
-                                  app.image_name, "%s (%d)" % (app.container_size, app.current_num_containers),
-                                  utils.get_humanize_local_datetime_from_utc_datetime_string(app.deployed_datetime),
-                                  app.web_public_dns])
-                long_uuid_list.append(app.uuid)
+            if len(data_list) == 0:
+                data_list.append(["", "", "", "", "", "", ""])
 
-        if len(data_list) == 0:
-            data_list.append(["", "", "", "", "", "", ""])
-
-        if quiet:
-            for uuid in long_uuid_list:
-                print uuid
-        else:
-            utils.tabulate_result(data_list, headers)
+            if quiet:
+                for uuid in name_list:
+                    print uuid
+            else:
+                print "---- LOCAL APPS ----"
+                utils.tabulate_result(data_list, headers)
     except Exception as e:
         print e
         sys.exit(EXCEPTION_EXIT_CODE)
@@ -337,22 +352,6 @@ def app_run(image, name, container_size, target_num_containers, run_command, ent
 def ps(app_identifier, quiet=False, status=None, remote=False, local=False):
     try:
         headers = ["NAME", "UUID", "STATUS", "IMAGE", "RUN COMMAND", "SIZE", "EXIT CODE", "DEPLOYED", "PORTS"]
-        data_list = []
-        long_uuid_list = []
-
-        if not remote:
-            current_apps = utils.get_current_apps_and_its_containers()
-            for current_app, app_config in current_apps.iteritems():
-                if not app_identifier or app_identifier in [app_config["uuid"], current_app]:
-                    for container in app_config["containers"]:
-                        if not status or status == container["status"]:
-                            data_list.append([container["name"], container["uuid"][:8],
-                                              utils.add_unicode_symbol_to_state(container["status"]),
-                                              container["image"], container["run_command"], container["size"],
-                                              container["exit_code"],
-                                              utils.get_humanize_local_datetime_from_utc_datetime(container["deployed"]),
-                                              container["ports"]])
-                            long_uuid_list.append(container["uuid"])
 
         if not local:
             if app_identifier is None:
@@ -362,6 +361,9 @@ def ps(app_identifier, quiet=False, status=None, remote=False, local=False):
             else:
                 containers = tutum.Container.list(application__name=app_identifier, state=status) + \
                              tutum.Container.list(application__uuid__startswith=app_identifier, state=status)
+
+            data_list = []
+            long_uuid_list = []
 
             for container in containers:
                 ports_string = ""
@@ -377,15 +379,43 @@ def ps(app_identifier, quiet=False, status=None, remote=False, local=False):
                                   utils.get_humanize_local_datetime_from_utc_datetime_string(container.deployed_datetime),
                                   ports_string])
                 long_uuid_list.append(container.uuid)
+            if len(data_list) == 0:
+                data_list.append(["", "", "", "", "", "", "", "", ""])
 
-        if len(data_list) == 0:
-            data_list.append(["", "", "", "", "", "", "", "", ""])
+            if quiet:
+                for uuid in long_uuid_list:
+                    print uuid
+            else:
+                print "---- CONTAINERS IN TUTUM ----"
+                utils.tabulate_result(data_list, headers)
+                if not remote:
+                    print
 
-        if quiet:
-            for uuid in long_uuid_list:
-                print uuid
-        else:
-            utils.tabulate_result(data_list, headers)
+        if not remote:
+            current_apps = utils.get_current_apps_and_its_containers()
+            data_list = []
+            long_uuid_list = []
+            for current_app, app_config in current_apps.iteritems():
+                if not app_identifier or app_identifier in [app_config["uuid"], current_app]:
+                    for container in app_config["containers"]:
+                        if not status or status == container["status"]:
+                            data_list.append([container["name"], container["uuid"][:8],
+                                              utils.add_unicode_symbol_to_state(container["status"]),
+                                              container["image"], container["run_command"], container["size"],
+                                              container["exit_code"],
+                                              utils.get_humanize_local_datetime_from_utc_datetime(container["deployed"]),
+                                              container["ports"]])
+                            long_uuid_list.append(container["uuid"])
+            if len(data_list) == 0:
+                data_list.append(["", "", "", "", "", "", "", "", ""])
+
+            if quiet:
+                for uuid in long_uuid_list:
+                    print uuid
+            else:
+                print "---- LOCAL CONTAINERS ----"
+                utils.tabulate_result(data_list, headers)
+
     except Exception as e:
         print e
         sys.exit(EXCEPTION_EXIT_CODE)
