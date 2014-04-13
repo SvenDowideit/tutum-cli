@@ -528,9 +528,13 @@ def create_containers_for_an_app(image, tag, container_names, run_command, entry
     return deployed_ids
 
 
-def get_ports_from_image(image_name_with_tag):
+def get_ports_from_image(image, tag):
     docker_client = get_docker_client()
-    return docker_client.inspect_image(image_name_with_tag)["container_config"]["ExposedPorts"].keys()
+    result = docker_client.pull(image, tag)
+    if re.search("error", result) is not None or re.search("Error", result) is not None:
+        raise Exception(result)
+    images = docker_client.images(name=image)
+    return docker_client.inspect_image(images[0]["Id"])["container_config"]["ExposedPorts"].keys()
 
 
 def build_dockerfile(filepath, ports, cmd):

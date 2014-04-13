@@ -14,6 +14,7 @@ from tutum.api import exceptions
 import tutum
 
 from tutumcli import utils
+from tutumcli.exceptions import ObjectNotFound
 
 
 TUTUM_FILE = '.tutum'
@@ -242,7 +243,7 @@ def app_scale(identifiers, target_num_containers):
                                                                         [container["name"]
                                                                          for container in app["containers"]],
                                                                         num_containers)
-                    ports = utils.parse_ports(utils.get_ports_from_image(":".join([image["full_name"], tag])))
+                    ports = utils.parse_ports(utils.get_ports_from_image(image["full_name"], tag))
                     ports += utils.get_port_list_from_string(app["containers"][0]["ports"])
 
                     already_deployed = {}
@@ -284,7 +285,7 @@ def app_alias(identifiers, dns):
 
 
 def app_run(image, name, container_size, target_num_containers, run_command, entrypoint, container_ports,
-            container_envvars, linked_to_application, autorestart, autoreplace, autodestroy, roles, local):
+            container_envvars, linked_to_applications, autorestart, autoreplace, autodestroy, roles, local):
     try:
         ports = utils.parse_ports(container_ports)
         envvars = utils.parse_envvars(container_envvars)
@@ -292,12 +293,22 @@ def app_run(image, name, container_size, target_num_containers, run_command, ent
         if local:
             image_options = utils.parse_image_name(image)
             tag = image_options["tag"] if image_options["tag"] else "latest"
-            image_ports = utils.parse_ports(utils.get_ports_from_image(":".join([image_options["full_name"], tag])))
+            image_ports = utils.parse_ports(utils.get_ports_from_image(image_options["full_name"], tag))
             ports += image_ports
             app_name, container_names = utils.get_app_and_containers_unique_name(name if name else
                                                                                  utils.TUTUM_LOCAL_CONTAINER_NAME %
                                                                                  image_options["short_name"],
                                                                                  target_num_containers)
+            already_deployed = {}
+            if linked_to_applications:
+                for link in linked_to_applications:
+                    is_app, app = utils.fetch_local_app_container(link)
+                    if is_app:
+                        for container in app[link]["containers"]:
+                            already_deployed[container["name"]] = container["name"] + "-link"
+                    else:
+                        raise ObjectNotFound("Cannot find a local application with the identifier '%s'" % link)
+
             _ = utils.create_containers_for_an_app(image_options["full_name"],
                                                    tag,
                                                    container_names,
@@ -305,13 +316,14 @@ def app_run(image, name, container_size, target_num_containers, run_command, ent
                                                    entrypoint,
                                                    container_size,
                                                    ports,
-                                                   dict((envvar["key"], envvar["value"]) for envvar in envvars))
+                                                   dict((envvar["key"], envvar["value"]) for envvar in envvars),
+                                                   already_deployed)
             print app_name
         else:
             app = tutum.Application.create(image=image, name=name, container_size=container_size,
                                            target_num_containers=target_num_containers, run_command=run_command,
                                            entrypoint=entrypoint, container_ports=ports,
-                                           container_envvars=envvars, linked_to_application=linked_to_application,
+                                           container_envvars=envvars, linked_to_application=linked_to_applications,
                                            autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
                                            roles=roles)
             result = app.save()
