@@ -431,29 +431,30 @@ def build(image_name, working_directory, quiet, nocache):
         if not isfile(dockerfile_path):
             procfile_path = join(directory, "Procfile")
             ports = ""
-            cmd = []
-            process = ""
+            process = ''
             if isfile(procfile_path):
-                cmd = ["/start"]
+                cmd = ['"/start"']
                 with open(procfile_path) as procfile:
                     dataMap = yaml.load(procfile)
                 if len(dataMap) > 1:
                     while not process or (not process in dataMap):
                         process = raw_input("Process type to build, %s: " % dataMap.keys())
+                    process = '"%s"' % process
 
-                if (len(dataMap) == 1 and "web" in dataMap) or (process == "web"):
+                if (len(dataMap) == 1 and 'web' in dataMap) or (process == 'web'):
                     ports = "80"
-                    process = "web"
+                    process = '"web"'
+
+                cmd.append(process)
 
             else:
                 while not process:
                     process = raw_input("Run command: ")
+                cmd = process
 
-            cmd.append(process)
-
-            if process != "web":
+            if process != '"web"':
                 port_regexp = re.compile('^\d{1,5}(\s\d{1,5})*$')
-                while not ports or bool(port_regexp.match(ports)):
+                while not ports or not bool(port_regexp.match(ports)):
                     ports = raw_input("Exposed Ports (ports separated by whitespace) i.e. 80 8000: ") or ""
 
             utils.build_dockerfile(dockerfile_path, ports, cmd)

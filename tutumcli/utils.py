@@ -10,7 +10,7 @@ import ago
 import docker
 from os import getenv
 
-from tutumcli.exceptions import NonUniqueIdentifier, ObjectNotFound, BadParameter, DockerNotFound
+from tutumcli.exceptions import NonUniqueIdentifier, ObjectNotFound, BadParameter, DockerNotFound, PublicImageNotFound
 
 TUTUM_LOCAL_PREFIX = "local-"
 TUTUM_LOCAL_CONTAINER_NAME = TUTUM_LOCAL_PREFIX + "%s"
@@ -512,9 +512,10 @@ def create_containers_for_an_app(image, tag, container_names, run_command, entry
                                  ports={}, env_vars={}, already_deployed={}):
     docker_client = get_docker_client()
     deployed_ids = []
-    result = docker_client.pull(image, tag)
-    if re.search("error", result) is not None or re.search("Error", result) is not None:
-        raise Exception(result)
+    try:
+        pull_image(image, tag)
+    except PublicImageNotFound:
+        pass
 
     for i in range(len(container_names)):
         container_id = docker_client.create_container(image=":".join([image, tag]),
@@ -533,20 +534,47 @@ def create_containers_for_an_app(image, tag, container_names, run_command, entry
     return deployed_ids
 
 
-def get_ports_from_image(image, tag):
+def pull_image(image, tag):
     docker_client = get_docker_client()
     result = docker_client.pull(image, tag)
-    if re.search("error", result) is not None or re.search("Error", result) is not None:
+    for line in result:
+        if re.search("error", line) is not None or re.search("Error", line) is not None:
+            raise PublicImageNotFound("Could not pull image %s:%s" % (image, tag))
+
+
+def get_ports_from_image(image, tag):
+    docker_client = get_docker_client()
+    result = None
+    try:
+        pull_image(image, tag)
+    except PublicImageNotFound as e:
+        result = str(e)
+    try:
+        images = docker_client.images(name=image)
+        return docker_client.inspect_image(
+            get_image_id_from_imagelist(image, tag, images))["container_config"]["ExposedPorts"].keys()
+    except Exception:
         raise Exception(result)
-    images = docker_client.images(name=image)
-    return docker_client.inspect_image(images[0]["Id"])["container_config"]["ExposedPorts"].keys()
 
 
-def build_dockerfile(filepath, ports, cmd):
+def get_image_id_from_imagelist(reponame, tag, image_list):
+    for img in image_list:
+        for repotag in img['RepoTags']:
+            repo_tag = repotag.split(":")
+            assert len(repo_tag) == 2, "Error when reading tags from %s" % repotag
+            if repo_tag[0] == reponame and repo_tag[1] == tag:
+                return img["Id"]
+    raise Exception("Image %s:%s not in %s" % (reponame, tag, image_list))
+
+
+def build_dockerfile(filepath, ports, command):
     with open(filepath, "w") as dockerfile:
         base_image = "FROM tutum/buildstep\n\n"
         expose_ports = " ".join(["EXPOSE", ports]) + "\n\n" if ports else ""
-        cmd = " ".join(["CMD", str(cmd)]) + "\n\n" if cmd else ""
+        if isinstance(command, list):
+            command = ','.join(command)
+            command = '[%s]' % command
+        cmd = " ".join(["CMD", command])
 
         for line in [base_image, expose_ports, cmd]:
             if line:
@@ -561,7 +589,7 @@ def print_stream_line(line):
         string = ""
         for key in message.keys():
             string += str(message[key]).replace("\n", "")
-        print string
+        print string.encode('utf8')
 
 
 class JsonDatetimeEncoder(json.JSONEncoder):

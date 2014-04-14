@@ -12,3 +12,7 @@ class BadParameter(RuntimeError):
 
 class DockerNotFound(RuntimeError):
     pass
+
+
+class PublicImageNotFound(RuntimeError):
+    pass
