@@ -310,7 +310,7 @@ def app_run(image, name, container_size, target_num_containers, run_command, ent
             tag = image_options["tag"] if image_options["tag"] else "latest"
             image_ports = utils.parse_ports(utils.get_ports_from_image(image_options["full_name"], tag))
             ports += image_ports
-            app_name, container_names = utils.get_app_and_containers_unique_name(name if name else
+            app_name, container_names = utils.get_app_and_containers_unique_name("local-"+name if name else
                                                                                  utils.TUTUM_LOCAL_CONTAINER_NAME %
                                                                                  image_options["short_name"],
                                                                                  target_num_containers)
