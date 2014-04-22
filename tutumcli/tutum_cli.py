@@ -29,6 +29,7 @@ parsers.add_register_parser(subparsers, parent_parser)
 parsers.add_search_parser(subparsers, parent_parser)
 parsers.add_apps_and_containers_parser(subparsers, parent_parser)
 parsers.add_images_parser(subparsers, parent_parser)
+parsers.add_push_parser(subparsers, parent_parser)
 
 
 def main():
@@ -77,6 +78,8 @@ def main():
         commands.remove_image(args.repository)
     elif args.command == "update":
         commands.update_image(args.repository, args.username, args.password, args.description)
+    elif args.command == "push":
+        commands.push_image(args.name, args.tag)
 
 if __name__ == "__main__":
     main()

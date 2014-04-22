@@ -134,3 +134,11 @@ def add_images_parser(subparsers, parent_parser):
     update_image_parser.add_argument("-u", "--username", help="New username to authenticate with the registry")
     update_image_parser.add_argument("-p", "--password", help="New username password")
     update_image_parser.add_argument("-d", "--description", help="New image description")
+
+
+def add_push_parser(subparsers, parent_parser):
+    push_parser = subparsers.add_parser('push', help='Push an image or a repository to Tutum registry',
+                                        description='Push an image or a repository to Tutum registry',
+                                        parents=[parent_parser])
+    push_parser.add_argument('-t', '--tag', help='Tag an image into a repository')
+    push_parser.add_argument('name', help='Name of the image or the repository')

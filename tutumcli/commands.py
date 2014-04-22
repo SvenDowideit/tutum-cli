@@ -322,3 +322,54 @@ def update_image(repositories, username, password, description):
                 print image.name
         except Exception as e:
             print e
+
+
+def push_image(name, tag):
+    docker_client = docker.Client(base_url=getenv("DOCKER_HOST"))
+    repository = name
+
+    #tagging
+    if tag:
+        repository = 'r.tutum.co/%s/%s' % (tutum.user, tag)
+        try:
+            print 'Tagging %s as %s ...' % (name, repository)
+            docker_client.tag(name, repository)
+        except Exception as e:
+            print e
+            sys.exit(EXCEPTION_EXIT_CODE)
+
+    #login via docker
+    if tag:
+        print 'Login to Tutum Registry, using your Tutum account.'
+        username = raw_input('Username: ')
+        password = getpass.getpass()
+        try:
+            result = docker_client.login(username, password, registry='https://r.tutum.co/v1/')
+            if isinstance(result, dict):
+                print result.get('Status', None)
+        except Exception as e:
+            print e
+            sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
+    else:
+        print 'Login to a docker registry server, if no server is specified "https://index.docker.io/v1/" is the default.'
+        registry = raw_input('Registry: ')
+        username = raw_input('Username: ')
+        password = getpass.getpass()
+        email = raw_input('Email: ')
+        try:
+            result = docker_client.login(username, password=password, email=email, registry=registry)
+            if isinstance(result, dict):
+                print result.get('Status', None)
+        except Exception as e:
+            print e
+            sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
+
+    #pushing
+    if tag:
+        print 'Pushing %s to Tutum as private image ...' % repository
+    else:
+        print 'Pushing %s ...' % repository
+
+    outputs = docker_client.push(repository, stream=True)
+    for line in outputs:
+        utils.print_stream_line(line)
