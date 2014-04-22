@@ -582,7 +582,7 @@ def update_image(repositories, username, password, description):
 
 
 def push_image(name, tag):
-    docker_client = docker.Client(base_url=getenv("DOCKER_HOST"))
+    docker_client = utils.get_docker_client()
     repository = name
 
     #tagging
