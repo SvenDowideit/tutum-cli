@@ -130,6 +130,11 @@ def fetch_local_app_container(identifier, raise_exceptions=True):
             return True, identified_apps[0]
         elif len(identified_containers) == 1:
             return False, identified_containers[0]
+    except DockerNotFound:
+        if not raise_exceptions:
+                return None, \
+                       ObjectNotFound("Cannot find an application or a container with identifier '%s'" % identifier)
+        raise ObjectNotFound("Cannot find an application or a container with identifier '%s'" % identifier)
     except (NonUniqueIdentifier, ObjectNotFound) as e:
         if not raise_exceptions:
                 return None, e

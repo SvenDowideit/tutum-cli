@@ -14,7 +14,7 @@ from tutum.api import exceptions
 import tutum
 
 from tutumcli import utils
-from tutumcli.exceptions import ObjectNotFound
+from tutumcli.exceptions import ObjectNotFound, DockerNotFound
 
 
 TUTUM_FILE = '.tutum'
@@ -114,6 +114,13 @@ def apps(quiet=False, status=None, remote=False, local=False):
     try:
         headers = ["NAME", "UUID", "STATUS", "IMAGE", "SIZE (#)", "DEPLOYED", "WEB HOSTNAME"]
 
+        print_headers = True
+        current_apps = {}
+        try:
+            current_apps = utils.get_current_apps_and_its_containers()
+        except DockerNotFound:
+            print_headers = False
+
         if not local:
             app_list = tutum.Application.list(state=status)
             data_list = []
@@ -131,13 +138,13 @@ def apps(quiet=False, status=None, remote=False, local=False):
                 for uuid in long_uuid_list:
                     print uuid
             else:
-                print "---- APPS IN TUTUM ----"
+                if print_headers:
+                    print "---- APPS IN TUTUM ----"
                 utils.tabulate_result(data_list, headers)
                 if not remote:
                     print
 
-        if not remote:
-            current_apps = utils.get_current_apps_and_its_containers()
+        if not remote and print_headers:
             data_list = []
             name_list = []
             for current_app, app_config in current_apps.iteritems():
@@ -310,7 +317,7 @@ def app_run(image, name, container_size, target_num_containers, run_command, ent
             tag = image_options["tag"] if image_options["tag"] else "latest"
             image_ports = utils.parse_ports(utils.get_ports_from_image(image_options["full_name"], tag))
             ports += image_ports
-            app_name, container_names = utils.get_app_and_containers_unique_name(name if name else
+            app_name, container_names = utils.get_app_and_containers_unique_name("local-"+name if name else
                                                                                  utils.TUTUM_LOCAL_CONTAINER_NAME %
                                                                                  image_options["short_name"],
                                                                                  target_num_containers)
@@ -353,6 +360,13 @@ def ps(app_identifier, quiet=False, status=None, remote=False, local=False):
     try:
         headers = ["NAME", "UUID", "STATUS", "IMAGE", "RUN COMMAND", "SIZE", "EXIT CODE", "DEPLOYED", "PORTS"]
 
+        print_headers = True
+        current_apps = {}
+        try:
+            current_apps = utils.get_current_apps_and_its_containers()
+        except DockerNotFound:
+            print_headers = False
+
         if not local:
             if app_identifier is None:
                 containers = tutum.Container.list(state=status)
@@ -388,13 +402,13 @@ def ps(app_identifier, quiet=False, status=None, remote=False, local=False):
                 for uuid in long_uuid_list:
                     print uuid
             else:
-                print "---- CONTAINERS IN TUTUM ----"
+                if print_headers:
+                    print "---- CONTAINERS IN TUTUM ----"
                 utils.tabulate_result(data_list, headers)
                 if not remote:
                     print
 
-        if not remote:
-            current_apps = utils.get_current_apps_and_its_containers()
+        if not remote and print_headers:
             data_list = []
             long_uuid_list = []
             for current_app, app_config in current_apps.iteritems():
