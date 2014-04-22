@@ -409,7 +409,6 @@ def ps(app_identifier, quiet=False, status=None, remote=False, local=False):
                     print
 
         if not remote and print_headers:
-            current_apps = utils.get_current_apps_and_its_containers()
             data_list = []
             long_uuid_list = []
             for current_app, app_config in current_apps.iteritems():
