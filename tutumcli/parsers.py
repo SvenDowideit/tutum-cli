@@ -178,5 +178,6 @@ def add_push_parser(subparsers, parent_parser):
     push_parser = subparsers.add_parser('push', help='Push an image or a repository to Tutum registry',
                                         description='Push an image or a repository to Tutum registry',
                                         parents=[parent_parser])
-    push_parser.add_argument('-t', '--tag', help='Tag an image into a repository')
+
     push_parser.add_argument('name', help='Name of the image or the repository')
+    push_parser.add_argument('--public', help='Push image or repository to public registry',action='store_true')

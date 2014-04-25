@@ -580,14 +580,101 @@ def update_image(repositories, username, password, description):
         except Exception as e:
             print e
 
+def push(name, public):
 
-def push_image(name, tag):
-    docker_client = utils.get_docker_client()
-    repository = name
+    AUTH_ERROR = 'auth_error'
+    NO_ERROR = 'no_error'
 
-    #tagging
-    if tag:
-        repository = 'r.tutum.co/%s/%s' % (tutum.user, tag)
+    def print_stream_line(output):
+
+        if "}{" in output:
+            lines = output.replace('}{', '}}{{').split('}{')
+        else:
+            lines = [output]
+        last_id = None
+        for line in lines:
+            formatted_output = ''
+            try:
+                obj = json.loads(line)
+                status = obj.get('status', None)
+                id = obj.get('id', None)
+                progress = obj.get('progress', None)
+                error = obj.get('error',None)
+
+                if error:
+                    print ''
+                    print error
+                    sys.exit(EXCEPTION_EXIT_CODE)
+
+                if status and id and progress:
+                    if id != last_id:
+                        formatted_output = '\n%s: %s %s' % (id, status, progress)
+                    else:
+                        formatted_output = '\r%s: %s %s\033[K' % (id, status, progress)
+
+                elif status and id:
+                    if id != last_id:
+                        formatted_output = '\n%s: %s' % (id, status)
+                    else:
+                        formatted_output = '\r%s: %s\033[K' % (id, status)
+                else:
+                    formatted_output = '\n%s' % status
+            except ValueError:
+                print line
+                sys.exit(EXCEPTION_EXIT_CODE)
+            last_id = id
+
+            sys.stdout.write(formatted_output)
+            sys.stdout.flush()
+
+    def push_to_public(repository):
+        print 'Pushing %s to public registry ...' % repository
+
+        output_stream = docker_client.push(repository, stream=True)
+        output_status = NO_ERROR
+        for line in output_stream:
+            if 'status 401' in line.lower():
+                output_status = AUTH_ERROR
+                continue
+            print_stream_line(line)
+
+        if output_status == NO_ERROR:
+            print ''
+            sys.exit()
+
+        if output_status == AUTH_ERROR:
+            print 'Please login prior to push:'
+            username = raw_input('Username: ')
+            password = getpass.getpass()
+            email = raw_input('Email: ')
+            try:
+                result = docker_client.login(username, password=password, email=email)
+                if isinstance(result, dict):
+                    print result.get('Status', None)
+            except Exception as e:
+                print e
+                sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
+            push_to_public(repository)
+
+    def push_to_tutum(repository):
+        print 'Pushing %s to Tutum private registry ...' % repository
+
+        user = tutum.user
+        apikey = tutum.apikey
+        if user is None or apikey is None:
+            print 'Not authorized'
+            sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
+
+        try:
+            docker_client.login(user, apikey, registry='https://r.tutum.co/v1/')
+        except Exception as e:
+            print e
+            sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
+
+        if repository:
+            repository = filter(None, repository.split('/'))[-1]
+        repository = 'r.tutum.co/%s/%s' % (user, repository)
+
         try:
             print 'Tagging %s as %s ...' % (name, repository)
             docker_client.tag(name, repository)
@@ -595,38 +682,13 @@ def push_image(name, tag):
             print e
             sys.exit(EXCEPTION_EXIT_CODE)
 
-    #login via docker
-    if tag:
-        print 'Login to Tutum Registry, using your Tutum account.'
-        username = raw_input('Username: ')
-        password = getpass.getpass()
-        try:
-            result = docker_client.login(username, password, registry='https://r.tutum.co/v1/')
-            if isinstance(result, dict):
-                print result.get('Status', None)
-        except Exception as e:
-            print e
-            sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
-    else:
-        print 'Login to a docker registry server, if no server is specified "https://index.docker.io/v1/" is the default.'
-        registry = raw_input('Registry: ')
-        username = raw_input('Username: ')
-        password = getpass.getpass()
-        email = raw_input('Email: ')
-        try:
-            result = docker_client.login(username, password=password, email=email, registry=registry)
-            if isinstance(result, dict):
-                print result.get('Status', None)
-        except Exception as e:
-            print e
-            sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
+        output_stream = docker_client.push(repository, stream=True)
+        for line in output_stream:
+            print_stream_line(line)
+        print ''
 
-    #pushing
-    if tag:
-        print 'Pushing %s to Tutum as private image ...' % repository
+    docker_client = utils.get_docker_client()
+    if public:
+        push_to_public(name)
     else:
-        print 'Pushing %s ...' % repository
-
-    outputs = docker_client.push(repository, stream=True)
-    for line in outputs:
-        utils.print_stream_line(line)
+        push_to_tutum(name)

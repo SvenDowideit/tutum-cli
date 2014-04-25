@@ -82,7 +82,7 @@ def main():
     elif args.command == "update":
         commands.update_image(args.repository, args.username, args.password, args.description)
     elif args.command == "push":
-        commands.push_image(args.name, args.tag)
+        commands.push(args.name, args.public)
 
 if __name__ == "__main__":
     main()
