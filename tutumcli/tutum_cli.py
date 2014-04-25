@@ -83,6 +83,8 @@ def main():
         commands.update_image(args.repository, args.username, args.password, args.description)
     elif args.command == "push":
         commands.push(args.name, args.public)
+    elif args.command == "set":
+        commands.change_app_setting(args.autorestart, args.autoreplace, args.autodestroy, args.identifier)
 
 if __name__ == "__main__":
     main()

@@ -702,3 +702,25 @@ def push(name, public):
         push_to_public(name)
     else:
         push_to_tutum(name)
+
+
+def change_app_setting(autorestart,autoreplace, autodestroy, identifiers):
+    exception = False
+
+    for identifier in identifiers:
+        try:
+            app_details = utils.fetch_remote_app(identifier, raise_exceptions=True)
+            if app_details is not None:
+                app_details.autorestart = autorestart
+                app_details.autoreplace = autoreplace
+                app_details.autodestroy = autodestroy
+                result = app_details.save()
+                if result:
+                    print app_details.uuid
+        except Exception as e:
+            print e
+            exception = True
+            continue
+
+    if exception:
+        sys.exit(EXCEPTION_EXIT_CODE)

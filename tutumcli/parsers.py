@@ -126,6 +126,15 @@ def add_apps_and_containers_parser(subparsers, parent_parser):
                                              parents=[parent_parser, list_common_parser])
     alias_app_parser.add_argument("dns", help="custom domain to use for this web application")
 
+    change_app_setting_parser = subparsers.add_parser('set', help='Change crash-recovery and auto-destroy setting for running applications',
+                                                      description='Change crash-recovery and auto-destroy setting for running applications',
+                                                      parents=[parent_parser, list_common_parser])
+    change_app_setting_parser.add_argument('--autorestart', help="whether the containers should be restarted if they stop "
+                                                         "(default: OFF)", choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
+    change_app_setting_parser.add_argument('--autoreplace', help="whether the containers should be replaced with a new one if "
+                                                         "they stop (default: OFF)", choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
+    change_app_setting_parser.add_argument('--autodestroy', help="whether the containers should be terminated if "
+                                                         "they stop (default: OFF)", choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
 
 def add_build_parser(subparsers, parent_parser):
     build_parser = subparsers.add_parser('build', help='Build an image', description='Build an image', parents=[parent_parser])
