@@ -47,6 +47,8 @@ def authenticate():
         else:
             if any([key in text for key in ["password1", "password2"]]):
                 print ",".join(text["password1"]) if "password1" in text else ",".join(text["password2"])
+            elif text:
+                print text
             else:
                 print "Wrong username and/or password. Please try to login again"
         sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
@@ -67,8 +69,16 @@ def try_register(username, password):
 
     if r.status_code == 201:
         return True, "Account created. Please check your email for activation instructions."
+    elif r.status_code == 429:
+        return False, "Too many retries. Please login again later."
     else:
-        return False, r.json()["register"]
+        text = r
+        try:
+            text = r.json()["register"]
+        except Exception:
+            pass
+
+        return False, text
 
 
 def search(text):
