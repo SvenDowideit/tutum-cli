@@ -45,13 +45,14 @@ def authenticate():
         if registered:
             print text
         else:
-            if any([key in text for key in ["password1", "password2"]]):
-                print ",".join(text["password1"]) if "password1" in text else ",".join(text["password2"])
-            elif text:
-                print text
-            else:
+            if 'username: A user with that username already exists.' in text:
                 print "Wrong username and/or password. Please try to login again"
-        sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
+                sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
+            text = text.replace('password1', 'password')
+            text = text.replace('password2', 'password')
+            text = text.replace('\npassword: This field is required.', '', 1)
+            print text
+            sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
     except Exception as e:
         print e
         sys.exit(EXCEPTION_EXIT_CODE)
@@ -67,18 +68,23 @@ def try_register(username, password):
 
     r = requests.post(urlparse.urljoin(tutum.base_url, "register/"), data=json.dumps(data), headers=headers)
 
-    if r.status_code == 201:
-        return True, "Account created. Please check your email for activation instructions."
-    elif r.status_code == 429:
-        return False, "Too many retries. Please login again later."
-    else:
-        text = r
-        try:
-            text = r.json()["register"]
-        except Exception:
-            pass
-
-        return False, text
+    try:
+        if r.status_code == 201:
+            return True, "Account created. Please check your email for activation instructions."
+        elif r.status_code == 429:
+            return False, "Too many retries. Please login again later."
+        else:
+            messages = r.json()['register']
+            if isinstance(messages,dict):
+                text = []
+                for key in messages.keys():
+                    text.append("%s: %s" % (key, '\n'.join(messages[key])))
+                text = '\n'.join(text)
+            else:
+                text = messages
+            return False, text
+    except:
+        return False, r.text
 
 
 def search(text):
