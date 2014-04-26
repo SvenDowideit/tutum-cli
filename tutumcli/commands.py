@@ -187,9 +187,9 @@ def details(identifiers):
             is_remote, is_app, app_or_container = utils.launch_queries_in_parallel(identifier)
             if is_remote:
                 if is_app:
-                    print json.dumps(tutum.Application.fetch(identifier).get_all_attributes(), indent=2)
+                    print json.dumps(tutum.Application.fetch(app_or_container.uuid).get_all_attributes(), indent=2)
                 else:
-                    print json.dumps(tutum.Container.fetch(identifier).get_all_attributes(), indent=2)
+                    print json.dumps(tutum.Container.fetch(app_or_container.uuid).get_all_attributes(), indent=2)
             else:
                 print json.dumps(utils.details_local_object(app_or_container), indent=2, cls=utils.JsonDatetimeEncoder)
         except Exception as e:
