@@ -5,14 +5,16 @@ def add_login_parser(subparsers, parent_parser):
     subparsers.add_parser('login', help='Login into Tutum', description='Login into Tutum', parents=[parent_parser])
 
 
-def add_register_parser(subparsers, parent_parser):
-    subparsers.add_parser('register', help='Register into Tutum', description='Register into Tutum', parents=[parent_parser])
-
-
 def add_search_parser(subparsers, parent_parser):
     search_parser = subparsers.add_parser('search', help='Search for images in the Docker Index',
                                           description='Search for images in the Docker Index',  parents=[parent_parser])
     search_parser.add_argument("text", help="Text to search")
+
+
+def add_open_parser(subparsers, parent_parser):
+    subparsers.add_parser('open', help='Open last web application created in Tutum',
+                          description='Open last web application created in Tutum',
+                          parents=[parent_parser])
 
 
 def add_apps_and_containers_parser(subparsers, parent_parser):
@@ -25,6 +27,13 @@ def add_apps_and_containers_parser(subparsers, parent_parser):
                                                                                               'Stopped',
                                                                                               'Start failed',
                                                                                               'Stopped with errors'])
+    group_apps_up_local = apps_parser.add_mutually_exclusive_group()
+    group_apps_up_local.add_argument("-L", "--local",
+                                     help="List only applications running locally",
+                                     action='store_true')
+    group_apps_up_local.add_argument("-R", "--remote",
+                                     help="List only applications running in Tutum",
+                                     action='store_true')
 
     containers_parser = subparsers.add_parser('ps', help='List containers',
                                               description='List containers', parents=[parent_parser])
@@ -34,6 +43,14 @@ def add_apps_and_containers_parser(subparsers, parent_parser):
                                                                                                   'Stopped',
                                                                                                   'Start failed',
                                                                                                   'Stopped with errors'])
+    group_containers_up_local = containers_parser.add_mutually_exclusive_group()
+    group_containers_up_local.add_argument("-L", "--local",
+                                           help="List only applications running locally",
+                                           action='store_true')
+    group_containers_up_local.add_argument("-R", "--remote",
+                                           help="List only applications running in Tutum",
+                                           action='store_true')
+
 
     # Managing common options
     list_common_parser = argparse.ArgumentParser(add_help=False)
@@ -46,9 +63,11 @@ def add_apps_and_containers_parser(subparsers, parent_parser):
     create_app_parser.add_argument("-n", "--name", help="a human-readable name for the application "
                                                         "(default: image_tag without namespace)")
     create_app_parser.add_argument("-s", "--container_size", help="the size of the application containers "
-                                                                  "(default: XS, possible values: XS, S, M, L, XL)")
+                                                                  "(default: XS, possible values: XS, S, M, L, XL)",
+                                   default="XS")
     create_app_parser.add_argument("-t", "--target_num_containers", help="the number of containers to run "
-                                                                         "for this application (default: 1)", type=int)
+                                                                         "for this application (default: 1)", type=int,
+                                   default=1)
     create_app_parser.add_argument("-r", "--run_command",
                                    help="the command used to start the application containers "
                                         "(default: as defined in the image)")
@@ -77,6 +96,7 @@ def add_apps_and_containers_parser(subparsers, parent_parser):
     create_app_parser.add_argument('--role', help="Tutum API roles to grant the application, "
                                                   "i.e. 'global' (default: none, possible values: 'global')",
                                    action='append')
+    create_app_parser.add_argument("-L", "--local", help="Run the new application locally", action='store_true')
 
     subparsers.add_parser('inspect', help='Inspect an application or a container',
                           description='Inspect an application or a container',
@@ -100,19 +120,37 @@ def add_apps_and_containers_parser(subparsers, parent_parser):
                                   help="target number of containers to scale this application to",
                                   type=int)
 
-    alias_app_parser = subparsers.add_parser('alias', help="Change application's dns",
-                                             description="Change application's dns",
+    alias_app_parser = subparsers.add_parser('alias',
+                                             help="Change application's dns (only for applications running in Tutum)",
+                                             description="Change application's dns (only for applications running in Tutum)",
                                              parents=[parent_parser, list_common_parser])
     alias_app_parser.add_argument("dns", help="custom domain to use for this web application")
 
 
+def add_build_parser(subparsers, parent_parser):
+    build_parser = subparsers.add_parser('build', help='Build an image', description='Build an image', parents=[parent_parser])
+    build_parser.add_argument("name", help="Image name")
+    build_parser.add_argument("-d", "--directory", help="Working directory", default=".")
+    build_parser.add_argument("-q", "--quiet", help="Print minimum information", action='store_true')
+    build_parser.add_argument("--nocache", help="Do not use the cache when building the image", action='store_true')
+
+
 def add_images_parser(subparsers, parent_parser):
-    images_parser = subparsers.add_parser('images', help='List private images', description='List private images',
+    images_parser = subparsers.add_parser('images', help='List private and local images',
+                                          description='List private and local images',
                                           parents=[parent_parser])
     images_parser.add_argument("-q", "--quiet", help="Print only image names", action='store_true')
+
     image_list_options = images_parser.add_mutually_exclusive_group()
     image_list_options.add_argument("-j", "--jumpstarts", help="List jumpstart images", action='store_true')
     image_list_options.add_argument("-l", "--linux", help="List linux images", action='store_true')
+    group_apps_up_local = images_parser.add_mutually_exclusive_group()
+    group_apps_up_local.add_argument("-L", "--local",
+                                     help="List only local images",
+                                     action='store_true')
+    group_apps_up_local.add_argument("-R", "--remote",
+                                     help="List only private images in Tutum",
+                                     action='store_true')
 
     add_new_image_parser = subparsers.add_parser('add', help='Add a private image', description='Add a private image',
                                                  parents=[parent_parser])
@@ -134,3 +172,12 @@ def add_images_parser(subparsers, parent_parser):
     update_image_parser.add_argument("-u", "--username", help="New username to authenticate with the registry")
     update_image_parser.add_argument("-p", "--password", help="New username password")
     update_image_parser.add_argument("-d", "--description", help="New image description")
+
+
+def add_push_parser(subparsers, parent_parser):
+    push_parser = subparsers.add_parser('push', help='Push an image or a repository to Tutum registry',
+                                        description='Push an image or a repository to Tutum registry',
+                                        parents=[parent_parser])
+
+    push_parser.add_argument('name', help='Name of the image or the repository')
+    push_parser.add_argument('--public', help='Push image or repository to public registry',action='store_true')

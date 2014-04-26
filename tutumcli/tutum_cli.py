@@ -25,10 +25,12 @@ parent_parser = argparse.ArgumentParser(add_help=False)
 
 # Commands
 parsers.add_login_parser(subparsers, parent_parser)
-parsers.add_register_parser(subparsers, parent_parser)
 parsers.add_search_parser(subparsers, parent_parser)
+parsers.add_open_parser(subparsers, parent_parser)
 parsers.add_apps_and_containers_parser(subparsers, parent_parser)
+parsers.add_build_parser(subparsers, parent_parser)
 parsers.add_images_parser(subparsers, parent_parser)
+parsers.add_push_parser(subparsers, parent_parser)
 
 
 def main():
@@ -40,12 +42,12 @@ def main():
     args = parser.parse_args()
     if args.command == "login":
         commands.authenticate()
-    elif args.command == "register":
-        commands.register()
     elif args.command == "search":
         commands.search(args.text)
+    elif args.command == "open":
+        commands.open_app()
     elif args.command == "apps":
-        commands.apps(args.quiet, args.status)
+        commands.apps(args.quiet, args.status, args.remote, args.local)
     elif args.command == "inspect":
         commands.details(args.identifier)
     elif args.command == "start":
@@ -65,18 +67,22 @@ def main():
                          target_num_containers=args.target_num_containers, run_command=args.run_command,
                          entrypoint=args.entrypoint, container_ports=args.port,
                          container_envvars=args.env,
-                         linked_to_application=args.link, autorestart=args.autorestart,
-                         autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role)
+                         linked_to_applications=args.link, autorestart=args.autorestart,
+                         autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role, local=args.local)
     elif args.command == "ps":
-            commands.ps(args.identifier, args.quiet, args.status)
+        commands.ps(args.identifier, args.quiet, args.status, args.remote, args.local)
+    elif args.command == "build":
+        commands.build(args.name, args.directory, args.quiet, args.nocache)
     elif args.command == "images":
-        commands.images(args.quiet, args.jumpstarts, args.linux)
+        commands.images(args.quiet, args.jumpstarts, args.linux, args.local, args.remote)
     elif args.command == "add":
         commands.add_image(args.repository, args.username, args.password, args.description)
     elif args.command == "remove":
         commands.remove_image(args.repository)
     elif args.command == "update":
         commands.update_image(args.repository, args.username, args.password, args.description)
+    elif args.command == "push":
+        commands.push(args.name, args.public)
 
 if __name__ == "__main__":
     main()
