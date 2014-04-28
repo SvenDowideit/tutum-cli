@@ -5,10 +5,10 @@ import requests
 import sys
 import urlparse
 import webbrowser
-import yaml
 import re
 from os.path import join, expanduser, abspath, isfile
 
+import yaml
 from tutum.api import auth
 from tutum.api import exceptions
 import tutum
@@ -490,7 +490,7 @@ def build(image_name, working_directory, quiet, nocache):
             utils.build_dockerfile(dockerfile_path, ports, cmd)
 
         docker_client = utils.get_docker_client()
-        output = docker_client.build(path=directory, tag=image_name, quiet=quiet, nocache=nocache, rm=True)
+        output = docker_client.build(path=directory, tag=image_name, quiet=quiet, nocache=nocache, rm=True, stream=True)
         for line in output:
             if not quiet:
                 utils.print_stream_line(line)
@@ -596,52 +596,13 @@ def update_image(repositories, username, password, description):
         except Exception as e:
             print e
 
+
 def push(name, public):
 
     AUTH_ERROR = 'auth_error'
     NO_ERROR = 'no_error'
 
-    def print_stream_line(output):
 
-        if "}{" in output:
-            lines = output.replace('}{', '}}{{').split('}{')
-        else:
-            lines = [output]
-        last_id = None
-        for line in lines:
-            formatted_output = ''
-            try:
-                obj = json.loads(line)
-                status = obj.get('status', None)
-                id = obj.get('id', None)
-                progress = obj.get('progress', None)
-                error = obj.get('error',None)
-
-                if error:
-                    print ''
-                    print error
-                    sys.exit(EXCEPTION_EXIT_CODE)
-
-                if status and id and progress:
-                    if id != last_id:
-                        formatted_output = '\n%s: %s %s' % (id, status, progress)
-                    else:
-                        formatted_output = '\r%s: %s %s\033[K' % (id, status, progress)
-
-                elif status and id:
-                    if id != last_id:
-                        formatted_output = '\n%s: %s' % (id, status)
-                    else:
-                        formatted_output = '\r%s: %s\033[K' % (id, status)
-                else:
-                    formatted_output = '\n%s' % status
-            except ValueError:
-                print line
-                sys.exit(EXCEPTION_EXIT_CODE)
-            last_id = id
-
-            sys.stdout.write(formatted_output)
-            sys.stdout.flush()
 
     def push_to_public(repository):
         print 'Pushing %s to public registry ...' % repository
@@ -652,7 +613,7 @@ def push(name, public):
             if 'status 401' in line.lower():
                 output_status = AUTH_ERROR
                 continue
-            print_stream_line(line)
+            utils.print_stream_line(line)
 
         if output_status == NO_ERROR:
             print ''
@@ -700,7 +661,7 @@ def push(name, public):
 
         output_stream = docker_client.push(repository, stream=True)
         for line in output_stream:
-            print_stream_line(line)
+            utils.print_stream_line(line)
         print ''
 
     docker_client = utils.get_docker_client()

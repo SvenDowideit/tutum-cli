@@ -2,6 +2,7 @@ import datetime
 import re
 import multiprocessing
 import json
+import sys
 
 from tabulate import tabulate
 import tutum
@@ -586,17 +587,6 @@ def build_dockerfile(filepath, ports, command):
                 dockerfile.write(line)
 
 
-def print_stream_line(line):
-    dict_or_tuple = eval(line.replace("}{", "},{"))
-    if isinstance(dict_or_tuple, dict):
-        dict_or_tuple = (dict_or_tuple, )
-    for message in dict_or_tuple:
-        string = ""
-        for key in message.keys():
-            string += str(message[key]).replace("\n", "")
-        print string.encode('utf8')
-
-
 class JsonDatetimeEncoder(json.JSONEncoder):
 
     def default(self, obj):
@@ -604,3 +594,48 @@ class JsonDatetimeEncoder(json.JSONEncoder):
             return str(obj)
 
         return json.JSONEncoder.default(self, obj)
+
+
+def print_stream_line(output):
+    from tutumcli.commands import EXCEPTION_EXIT_CODE
+    if "}{" in output:
+        lines = output.replace('}{', '}}{{').split('}{')
+    else:
+        lines = [output]
+    last_id = None
+    for line in lines:
+        formatted_output = ''
+        try:
+            obj = json.loads(line)
+            status = obj.get('status', None)
+            id = obj.get('id', None)
+            progress = obj.get('progress', None)
+            error = obj.get('error', None)
+
+            if error:
+                print ''
+                print error
+                sys.exit(EXCEPTION_EXIT_CODE)
+
+            if status and id and progress:
+                if id != last_id:
+                    formatted_output = '\n%s: %s %s' % (id, status, progress)
+                else:
+                    formatted_output = '\r%s: %s %s\033[K' % (id, status, progress)
+
+            elif status and id:
+                if id != last_id:
+                    formatted_output = '\n%s: %s' % (id, status)
+                else:
+                    formatted_output = '\r%s: %s\033[K' % (id, status)
+            elif status:
+                formatted_output = '\n%s' % status
+            else:
+                for key in obj.keys():
+                    formatted_output = '%s' % obj.get(key, '')
+            last_id = id
+        except ValueError:
+            sys.stdout.write(line)
+
+        sys.stdout.write(formatted_output)
+        sys.stdout.flush()
