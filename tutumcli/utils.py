@@ -602,7 +602,7 @@ def print_stream_line(output):
         lines = output.replace('}{', '}}{{').split('}{')
     else:
         lines = [output]
-    last_id = None
+    print_stream_line.last_id = None
     for line in lines:
         formatted_output = ''
         try:
@@ -618,22 +618,22 @@ def print_stream_line(output):
                 sys.exit(EXCEPTION_EXIT_CODE)
 
             if status and id and progress:
-                if id != last_id:
+                if id != print_stream_line.last_id:
                     formatted_output = '\n%s: %s %s' % (id, status, progress)
                 else:
                     formatted_output = '\r%s: %s %s\033[K' % (id, status, progress)
-
+                print_stream_line.last_id = id
             elif status and id:
-                if id != last_id:
+                if id != print_stream_line.last_id:
                     formatted_output = '\n%s: %s' % (id, status)
                 else:
                     formatted_output = '\r%s: %s\033[K' % (id, status)
+                print_stream_line.last_id = id
             elif status:
                 formatted_output = '\n%s' % status
             else:
                 for key in obj.keys():
                     formatted_output = '%s' % obj.get(key, '')
-            last_id = id
         except ValueError:
             sys.stdout.write(line)
 
