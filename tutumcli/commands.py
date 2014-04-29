@@ -530,7 +530,13 @@ def images(quiet=False, jumpstarts=False, linux=False, local=False, remote=False
 
         if not remote and not (linux or jumpstarts):
             headers = ["NAME", "ID", "CREATED", "PARENT ID", "VIRTUAL SIZE", "SIZE"]
-            docker_client = utils.get_docker_client()
+            try:
+                docker_client = utils.get_docker_client()
+            except DockerNotFound:
+                if local:
+                    sys.exit(EXCEPTION_EXIT_CODE)
+                else:
+                    sys.exit()
             local_images = docker_client.images(quiet=quiet)
             data_list = []
 
