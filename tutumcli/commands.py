@@ -244,6 +244,22 @@ def terminate(identifiers):
             print e
 
 
+def redeploy(identifiers, tag):
+    for identifier in identifiers:
+        try:
+            is_remote, is_app, app_or_container = utils.launch_queries_in_parallel(identifier)
+            if is_remote:
+                if is_app:
+                    result = app_or_container.redeploy(tag)
+                    if result:
+                        print app_or_container.uuid
+                else:
+                    print 'The identifier provided is not an application'
+        except Exception as e:
+             print e
+
+
+
 def logs(identifiers):
     for identifier in identifiers:
         try:

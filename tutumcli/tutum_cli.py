@@ -60,6 +60,8 @@ def main():
         commands.logs(args.identifier)
     elif args.command == "scale":
         commands.app_scale(args.identifier, args.target_num_containers)
+    elif args.command == 'redeploy':
+        commands.redeploy(args.identifier, args.tag)
     elif args.command == "alias":
         commands.app_alias(args.identifier, args.dns)
     elif args.command == "run":

@@ -115,6 +115,11 @@ def add_apps_and_containers_parser(subparsers, parent_parser):
     subparsers.add_parser('logs', help='Get logs from an application or a container',
                           description='Get logs from an application or a container',
                           parents=[parent_parser, list_common_parser])
+    redeploy_parser = subparsers.add_parser('redeploy',
+                                            help='Redeploy an application ',
+                                            description='Redeploy an application',
+                                            parents=[parent_parser, list_common_parser])
+    redeploy_parser.add_argument('-t', '--tag', help='tag of an application or a container')
     scale_app_parser = subparsers.add_parser('scale', help='Scale an application', description='Scale an application',
                                              parents=[parent_parser, list_common_parser])
     scale_app_parser.add_argument("target_num_containers",
