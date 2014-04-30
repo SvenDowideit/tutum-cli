@@ -97,6 +97,7 @@ def add_apps_and_containers_parser(subparsers, parent_parser):
                                                   "i.e. 'global' (default: none, possible values: 'global')",
                                    action='append')
     create_app_parser.add_argument("-L", "--local", help="Run the new application locally", action='store_true')
+    create_app_parser.add_argument("-P", "--parallel", help="Run the application in parallel", action='store_true')
 
     subparsers.add_parser('inspect', help='Inspect an application or a container',
                           description='Inspect an application or a container',

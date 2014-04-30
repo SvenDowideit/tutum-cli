@@ -323,7 +323,7 @@ def app_alias(identifiers, dns):
 
 
 def app_run(image, name, container_size, target_num_containers, run_command, entrypoint, container_ports,
-            container_envvars, linked_to_applications, autorestart, autoreplace, autodestroy, roles, local):
+            container_envvars, linked_to_applications, autorestart, autoreplace, autodestroy, roles, local, parallel):
     try:
         ports = utils.parse_ports(container_ports)
         envvars = utils.parse_envvars(container_envvars)
@@ -363,7 +363,7 @@ def app_run(image, name, container_size, target_num_containers, run_command, ent
                                            entrypoint=entrypoint, container_ports=ports,
                                            container_envvars=envvars, linked_to_application=linked_to_applications,
                                            autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
-                                           roles=roles)
+                                           roles=roles, parallel_deployment=parallel)
             result = app.save()
             if result:
                 print app.uuid

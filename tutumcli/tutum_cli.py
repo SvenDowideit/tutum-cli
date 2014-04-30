@@ -68,7 +68,8 @@ def main():
                          entrypoint=args.entrypoint, container_ports=args.port,
                          container_envvars=args.env,
                          linked_to_applications=args.link, autorestart=args.autorestart,
-                         autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role, local=args.local)
+                         autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role, local=args.local,
+                         parallel=args.parallel)
     elif args.command == "ps":
         commands.ps(args.identifier, args.quiet, args.status, args.remote, args.local)
     elif args.command == "build":
