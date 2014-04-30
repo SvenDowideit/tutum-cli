@@ -17,11 +17,11 @@ TUTUM_LOCAL_PREFIX = "local-"
 TUTUM_LOCAL_CONTAINER_NAME = TUTUM_LOCAL_PREFIX + "%s"
 
 CONTAINER_SIZE = {
-        "XS": {"cpu_shares": 256, "memory": 268435456},
-        "S": {"cpu_shares": 512, "memory": 536870912},
-        "M": {"cpu_shares": 1024, "memory": 1073741824},
-        "L": {"cpu_shares": 2048, "memory": 2147483648},
-        "XL": {"cpu_shares": 4096, "memory": 4294967286}
+        "XS": {"memory": 268435456},
+        "S": {"memory": 536870912},
+        "M": {"memory": 1073741824},
+        "L": {"memory": 2147483648},
+        "XL": {"memory": 4294967286}
 }
 
 
@@ -312,15 +312,15 @@ def get_current_apps_and_its_containers():
     for container in stopped_running_containers:
         inspected_container = docker_client.inspect_container(container["Id"])
         app_name = get_app_name_from_container_name(inspected_container['Name'][1:])
-        size_by_cpu = get_size_from_cpu_shares(inspected_container["Config"]["CpuShares"])
+
         size_by_memory = get_size_from_memory(inspected_container["Config"]["Memory"])
 
-        if not app_name or not size_by_cpu or not size_by_memory or size_by_cpu != size_by_memory:
+        if not app_name or not size_by_memory :
             #it is not a tutum container
             continue
         app_config = current_apps.get(app_name, {"uuid": "", "status": "",
                                                  "image": inspected_container["Config"]["Image"],
-                                                 "container_size": size_by_cpu,
+                                                 "container_size": size_by_memory,
                                                  "deployed": "",
                                                  "web_hostname": "", "containers": []})
 
@@ -336,7 +336,7 @@ def get_current_apps_and_its_containers():
                             if inspected_container["Config"]["Cmd"] else "",
                             "entrypoint": " ".join(inspected_container["Config"]["Entrypoint"])
                             if inspected_container["Config"]["Entrypoint"] else "",
-                            "size": size_by_cpu,
+                            "size": size_by_memory,
                             "exit_code": inspected_container["State"]["ExitCode"],
                             "envvars": inspected_container["Config"]["Env"],
                             "deployed": datetime.datetime.strptime(inspected_container["Created"].split(".")[0],
@@ -375,14 +375,6 @@ def get_app_name_from_container_name(container_local_name):
         split_name = container_local_name.split("-")
         return "-".join(split_name[:-1])
     return None
-
-
-def get_size_from_cpu_shares(cpu_shares_value):
-    for size, config in CONTAINER_SIZE.iteritems():
-        if config["cpu_shares"] == cpu_shares_value:
-            return size
-    return None
-
 
 def get_size_from_memory(memory_value):
     for size, config in CONTAINER_SIZE.iteritems():
@@ -530,7 +522,6 @@ def create_containers_for_an_app(image, tag, container_names, run_command, entry
                                                               port["protocol"]) for port in ports],
                                                       environment=env_vars,
                                                       mem_limit=CONTAINER_SIZE[container_size]["memory"],
-                                                      cpu_shares=CONTAINER_SIZE[container_size]["cpu_shares"],
                                                       name=container_names[i])
         docker_client.start(container_id["Id"],
                             links=already_deployed,
