@@ -42,9 +42,12 @@ Now you can start using it:
         stop                Stop an application or a container
         terminate           Terminate an application or a container
         logs                Get logs from an application or a container
+        redeploy            Redeploy an application
         scale               Scale an application
         alias               Change application's dns (only for applications
                             running in Tutum)
+        set                 Change crash-recovery and auto-destroy setting for
+                            running applications
         build               Build an image
         images              List private and local images
         add                 Add a private image
