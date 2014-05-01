@@ -3,91 +3,108 @@ import logging
 import sys
 import codecs
 
+from . import __version__
 from tutumcli import parsers
 from tutumcli import commands
 
 
-VERSION = "0.7.3.2"
-
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
-
 
 logging.basicConfig()
 
-# Main parser
-parser = argparse.ArgumentParser(description="Tutum's CLI", prog="tutum")
-parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + VERSION)
+# Top parser
+parser = argparse.ArgumentParser(description="Tutum's CLI", prog='tutum')
+parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
+subparsers = parser.add_subparsers(title="Tutum's CLI commands", dest='cmd')
 
-subparsers = parser.add_subparsers(title="Tutum's CLI commands", dest='command')
-
-# Common options
-parent_parser = argparse.ArgumentParser(add_help=False)
 
 # Commands
-parsers.add_login_parser(subparsers, parent_parser)
-parsers.add_search_parser(subparsers, parent_parser)
-parsers.add_open_parser(subparsers, parent_parser)
-parsers.add_apps_and_containers_parser(subparsers, parent_parser)
-parsers.add_build_parser(subparsers, parent_parser)
-parsers.add_images_parser(subparsers, parent_parser)
-parsers.add_push_parser(subparsers, parent_parser)
+parsers.add_apps_parser(subparsers)
+parsers.add_containers_parser(subparsers)
+parsers.add_images_parser(subparsers)
+parsers.add_login_parser(subparsers)
 
 
 def main():
     if len(sys.argv) == 1:
-        parser.print_help()
-        sys.exit(0)
+        sys.argv.append('-h')
+    elif len(sys.argv) == 2 and sys.argv[1] in ['apps', 'containers', 'images']:
+        sys.argv.append('-h')
+    elif len(sys.argv) == 3:
+        if sys.argv[1] == 'apps' and sys.argv[2] in ['alias', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
+                                                     'start', 'stop', 'terminate']:
+            sys.argv.append('-h')
+        elif sys.argv[1] == 'containers' and sys.argv[2] in ['inspect', 'logs', 'start', 'stop', 'terminate']:
+            sys.argv.append('-h')
+        elif sys.argv[1] == 'images' and sys.argv[2] in ['build', 'register', 'push', 'rm', 'search', 'update']:
+            sys.argv.append('-h')
 
-    # Parse args
+
+    # dispatch commands
     args = parser.parse_args()
-    if args.command == "login":
+    if args.cmd == 'login':
         commands.authenticate()
-    elif args.command == "search":
-        commands.search(args.text)
-    elif args.command == "open":
-        commands.open_app()
-    elif args.command == "apps":
-        commands.apps(args.quiet, args.status, args.remote, args.local)
-    elif args.command == "inspect":
-        commands.details(args.identifier)
-    elif args.command == "start":
-        commands.start(args.identifier)
-    elif args.command == "stop":
-        commands.stop(args.identifier)
-    elif args.command == "terminate":
-        commands.terminate(args.identifier)
-    elif args.command == "logs":
-        commands.logs(args.identifier)
-    elif args.command == "scale":
-        commands.app_scale(args.identifier, args.target_num_containers)
-    elif args.command == 'redeploy':
-        commands.redeploy(args.identifier, args.tag)
-    elif args.command == "alias":
-        commands.app_alias(args.identifier, args.dns)
-    elif args.command == "run":
-        commands.app_run(image=args.image, name=args.name, container_size=args.container_size,
-                         target_num_containers=args.target_num_containers, run_command=args.run_command,
-                         entrypoint=args.entrypoint, container_ports=args.port,
-                         container_envvars=args.env,
-                         linked_to_applications=args.link, autorestart=args.autorestart,
-                         autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role, local=args.local,
-                         parallel=args.parallel)
-    elif args.command == "ps":
-        commands.ps(args.identifier, args.quiet, args.status, args.remote, args.local)
-    elif args.command == "build":
-        commands.build(args.name, args.directory, args.quiet, args.nocache)
-    elif args.command == "images":
-        commands.images(args.quiet, args.jumpstarts, args.linux, args.local, args.remote)
-    elif args.command == "add":
-        commands.add_image(args.repository, args.username, args.password, args.description)
-    elif args.command == "remove":
-        commands.remove_image(args.repository)
-    elif args.command == "update":
-        commands.update_image(args.repository, args.username, args.password, args.description)
-    elif args.command == "push":
-        commands.push(args.name, args.public)
-    elif args.command == "set":
-        commands.change_app_setting(args.autorestart, args.autoreplace, args.autodestroy, args.identifier)
+    elif args.cmd == 'apps':
+        if args.subcmd == 'alias':
+            commands.apps_alias(args.identifier, args.dns)
+        elif args.subcmd == 'inspect':
+            commands.inspect(args.identifier)
+        elif args.subcmd == 'logs':
+            commands.logs(args.identifier)
+        elif args.subcmd == 'open':
+            commands.apps_open()
+        elif args.subcmd == 'ps':
+            commands.apps_ps(args.quiet, args.status, args.remote, args.local)
+        elif args.subcmd == 'redeploy':
+            commands.apps_redeploy(args.identifier, args.tag)
+        elif args.subcmd == 'run':
+            commands.apps_run(image=args.image, name=args.name, container_size=args.container_size,
+                             target_num_containers=args.target_num_containers, run_command=args.run_command,
+                             entrypoint=args.entrypoint, container_ports=args.port,
+                             container_envvars=args.env,
+                             linked_to_applications=args.link, autorestart=args.autorestart,
+                             autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role,
+                             local=args.local,
+                             parallel=args.parallel)
+        elif args.subcmd == 'scale':
+            commands.apps_scale(args.identifier, args.target_num_containers)
+        elif args.subcmd == 'set':
+            commands.apps_set(args.autorestart, args.autoreplace, args.autodestroy, args.identifier)
+        elif args.subcmd == 'start':
+            commands.start(args.identifier)
+        elif args.subcmd == 'stop':
+            commands.stop(args.identifier)
+        elif args.subcmd == 'terminate':
+            commands.terminate(args.identifier)
+    elif args.cmd == 'containers':
+        if args.subcmd == 'inspect':
+            commands.inspect(args.identifier)
+        elif args.subcmd == 'logs':
+            commands.logs(args.identifier)
+        elif args.subcmd == 'ps':
+            commands.ps(args.identifier, args.quiet, args.status, args.remote, args.local)
+        elif args.subcmd == 'start':
+            commands.start(args.identifier)
+        elif args.subcmd == 'stop':
+            commands.stop(args.identifier)
+        elif args.subcmd == 'terminate':
+            commands.terminate(args.identifier)
+    elif args.cmd == 'images':
+        if args.subcmd == 'build':
+            commands.images_build(args.name, args.directory, args.quiet, args.nocache)
+        elif args.subcmd == 'list':
+            commands.images_list(args.quiet, args.jumpstarts, args.linux, args.local, args.remote)
+        elif args.subcmd == 'register':
+            commands.images_register(args.repository, args.username, args.password, args.description)
+        elif args.subcmd == 'push':
+            commands.images_push(args.name, args.public)
+        elif args.subcmd == 'rm':
+            commands.images_remove(args.repository)
+        elif args.subcmd == 'search':
+            commands.images_search(args.text)
+        elif args.subcmd == 'update':
+            commands.images_update(args.repository, args.username, args.password, args.description)
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     main()

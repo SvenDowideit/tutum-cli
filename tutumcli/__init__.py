@@ -1,1 +1,1 @@
-__author__ = 'Bernardo Pericacho. bernardo@tutum.co'
+__version__ = '0.7.3.2'

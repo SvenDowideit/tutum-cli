@@ -1,19 +1,43 @@
+import re
+import os
+import codecs
+
 from setuptools import setup, find_packages
 
+
+def read(*parts):
+    path = os.path.join(os.path.dirname(__file__), *parts)
+    with codecs.open(path, encoding='utf-8') as fobj:
+        return fobj.read()
+
+
+def find_version(*file_paths):
+    version_file = read(*file_paths)
+    version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
+                              version_file, re.M)
+    if version_match:
+        return version_match.group(1)
+    raise RuntimeError('Unable to find version string.')
+
+with open('requirements.txt') as f:
+    install_requires = f.read().splitlines()
+    
+print find_version('tutumcli', '__init__.py')
+print install_requires
+    
 setup(
-    name = "tutum",
-    version = "0.7.3.2",
-    packages = find_packages(),
-    install_requires = ['ago==0.0.6', 'docker-py==0.3.1', 'python-dateutil==2.2', 'python-tutum==0.6.7', 'PyYAML==3.11',
-                        'requests>=2.2.1', 'six==1.6.1', 'tabulate==0.7.2', 'wsgiref==0.1.2'],
+    name='tutum',
+    version=('tutumcli', '__init__.py'),
+    packages=find_packages(),
+    install_requires=install_requires,
     entry_points={
         'console_scripts':
             ['tutum = tutumcli.tutum_cli:main']
-        },
-    author = "Tutum, Inc.",
-    author_email = "info@tutum.co",
-    description = "CLI for Tutum",
-    license = "Apache v2",
-    keywords = "tutum docker cli",
-    url = "http://www.tutum.co/",
+    },
+    author='Tutum, Inc.',
+    author_email='info@tutum.co',
+    description='CLI for Tutum',
+    license='Apache v2',
+    keywords='tutum docker cli',
+    url='http://www.tutum.co/',
 )

@@ -87,7 +87,7 @@ def try_register(username, password):
         return False, r.text
 
 
-def search(text):
+def images_search(text):
     try:
         docker_client = utils.get_docker_client()
         results = docker_client.search(text)
@@ -109,7 +109,7 @@ def search(text):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def open_app():
+def apps_open():
     try:
         app_list = tutum.Application.list()
         deployed_datetimes = {}
@@ -126,7 +126,7 @@ def open_app():
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def apps(quiet=False, status=None, remote=False, local=False):
+def apps_ps(quiet=False, status=None, remote=False, local=False):
     try:
         headers = ["NAME", "UUID", "STATUS", "IMAGE", "SIZE (#)", "DEPLOYED", "WEB HOSTNAME"]
 
@@ -187,7 +187,7 @@ def apps(quiet=False, status=None, remote=False, local=False):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def details(identifiers):
+def inspect(identifiers):
     for identifier in identifiers:
         try:
             is_remote, is_app, app_or_container = utils.launch_queries_in_parallel(identifier)
@@ -244,7 +244,7 @@ def terminate(identifiers):
             print e
 
 
-def redeploy(identifiers, tag):
+def apps_redeploy(identifiers, tag):
     for identifier in identifiers:
         try:
             is_remote, is_app, app_or_container = utils.launch_queries_in_parallel(identifier)
@@ -272,7 +272,7 @@ def logs(identifiers):
             print e
 
 
-def app_scale(identifiers, target_num_containers):
+def apps_scale(identifiers, target_num_containers):
     for identifier in identifiers:
         try:
             is_remote, app_details = utils.fetch_app(identifier)
@@ -325,7 +325,7 @@ def app_scale(identifiers, target_num_containers):
             print e
 
 
-def app_alias(identifiers, dns):
+def apps_alias(identifiers, dns):
     for identifier in identifiers:
         try:
             app_details = utils.fetch_remote_app(identifier)
@@ -338,7 +338,7 @@ def app_alias(identifiers, dns):
             print e
 
 
-def app_run(image, name, container_size, target_num_containers, run_command, entrypoint, container_ports,
+def apps_run(image, name, container_size, target_num_containers, run_command, entrypoint, container_ports,
             container_envvars, linked_to_applications, autorestart, autoreplace, autodestroy, roles, local, parallel):
     try:
         ports = utils.parse_ports(container_ports)
@@ -469,7 +469,7 @@ def ps(app_identifier, quiet=False, status=None, remote=False, local=False):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def build(image_name, working_directory, quiet, nocache):
+def images_build(image_name, working_directory, quiet, nocache):
     try:
         directory = abspath(working_directory)
         dockerfile_path = join(directory, "Dockerfile")
@@ -516,7 +516,7 @@ def build(image_name, working_directory, quiet, nocache):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def images(quiet=False, jumpstarts=False, linux=False, local=False, remote=False):
+def images_list(quiet=False, jumpstarts=False, linux=False, local=False, remote=False):
     try:
         if not local:
             headers = ["NAME", "DESCRIPTION"]
@@ -580,7 +580,7 @@ def images(quiet=False, jumpstarts=False, linux=False, local=False, remote=False
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def add_image(repository, username, password, description):
+def images_register(repository, username, password, description):
     try:
         image = tutum.Image.create(name=repository, username=username, password=password, description=description)
         result = image.save()
@@ -591,7 +591,7 @@ def add_image(repository, username, password, description):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def remove_image(repositories):
+def images_remove(repositories):
     for repository in repositories:
         try:
             image = tutum.Image.fetch(repository)
@@ -602,7 +602,7 @@ def remove_image(repositories):
             print e
 
 
-def update_image(repositories, username, password, description):
+def images_update(repositories, username, password, description):
     for repository in repositories:
         try:
             image = tutum.Image.fetch(repository)
@@ -619,7 +619,7 @@ def update_image(repositories, username, password, description):
             print e
 
 
-def push(name, public):
+def images_push(name, public):
 
     AUTH_ERROR = 'auth_error'
     NO_ERROR = 'no_error'
@@ -693,7 +693,7 @@ def push(name, public):
         push_to_tutum(name)
 
 
-def change_app_setting(autorestart,autoreplace, autodestroy, identifiers):
+def apps_set(autorestart,autoreplace, autodestroy, identifiers):
     exception = False
 
     for identifier in identifiers:
