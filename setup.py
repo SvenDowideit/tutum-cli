@@ -22,12 +22,9 @@ def find_version(*file_paths):
 with open('requirements.txt') as f:
     install_requires = f.read().splitlines()
     
-print find_version('tutumcli', '__init__.py')
-print install_requires
-    
 setup(
     name='tutum',
-    version=('tutumcli', '__init__.py'),
+    version=find_version('tutumcli', '__init__.py'),
     packages=find_packages(),
     install_requires=install_requires,
     entry_points={
@@ -39,5 +36,5 @@ setup(
     description='CLI for Tutum',
     license='Apache v2',
     keywords='tutum docker cli',
-    url='http://www.tutum.co/',
+    url='http://www.tutum.co/'
 )
