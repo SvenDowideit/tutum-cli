@@ -1,3 +1,17 @@
+def add_login_parser(subparsers):
+    # tutum login
+    subparsers.add_parser('login', help='Login into Tutum', description='Login into Tutum')
+
+
+def add_build_parser(subparsers):
+    # tutum build
+    build_parser = subparsers.add_parser('build', help='Build an image', description='Build an image')
+    build_parser.add_argument('name', help='image name')
+    build_parser.add_argument('-d', '--directory', help='working directory', default='.')
+    build_parser.add_argument('-q', '--quiet', help='print minimum information', action='store_true')
+    build_parser.add_argument('--nocache', help='do not use the cache when building the image', action='store_true')
+
+
 def add_apps_parser(subparsers):
     # tutum apps
     apps_parser = subparsers.add_parser('apps', help='Applications related operations',
@@ -194,8 +208,3 @@ def add_images_parser(subparsers):
     update_parser.add_argument('-u', '--username', help='new username to authenticate with the registry')
     update_parser.add_argument('-p', '--password', help='new username password')
     update_parser.add_argument('-d', '--description', help='new image description')
-
-
-def add_login_parser(subparsers):
-    # tutum login
-    subparsers.add_parser('login', help='Login into Tutum', description='Login into Tutum')

@@ -18,8 +18,9 @@ parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + _
 subparsers = parser.add_subparsers(title="Tutum's CLI commands", dest='cmd')
 
 
-# Commands
+# Command Parsers
 parsers.add_apps_parser(subparsers)
+parsers.add_build_parser(subparsers)
 parsers.add_containers_parser(subparsers)
 parsers.add_images_parser(subparsers)
 parsers.add_login_parser(subparsers)
@@ -28,7 +29,7 @@ parsers.add_login_parser(subparsers)
 def main():
     if len(sys.argv) == 1:
         sys.argv.append('-h')
-    elif len(sys.argv) == 2 and sys.argv[1] in ['apps', 'containers', 'images']:
+    elif len(sys.argv) == 2 and sys.argv[1] in ['apps', 'build', 'containers', 'images', ]:
         sys.argv.append('-h')
     elif len(sys.argv) == 3:
         if sys.argv[1] == 'apps' and sys.argv[2] in ['alias', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
@@ -36,14 +37,16 @@ def main():
             sys.argv.append('-h')
         elif sys.argv[1] == 'containers' and sys.argv[2] in ['inspect', 'logs', 'start', 'stop', 'terminate']:
             sys.argv.append('-h')
-        elif sys.argv[1] == 'images' and sys.argv[2] in ['build', 'register', 'push', 'rm', 'search', 'update']:
+        elif sys.argv[1] == 'images' and sys.argv[2] in ['register', 'push', 'rm', 'search', 'update']:
             sys.argv.append('-h')
 
 
     # dispatch commands
     args = parser.parse_args()
     if args.cmd == 'login':
-        commands.authenticate()
+        commands.login()
+    if args.cmd == 'build':
+        commands.build(args.name, args.directory, args.quiet, args.nocache)
     elif args.cmd == 'apps':
         if args.subcmd == 'alias':
             commands.apps_alias(args.identifier, args.dns)
@@ -88,9 +91,7 @@ def main():
         elif args.subcmd == 'terminate':
             commands.containers_terminate(args.identifier)
     elif args.cmd == 'images':
-        if args.subcmd == 'build':
-            commands.images_build(args.name, args.directory, args.quiet, args.nocache)
-        elif args.subcmd == 'list':
+        if args.subcmd == 'list':
             commands.images_list(args.quiet, args.jumpstarts, args.linux)
         elif args.subcmd == 'register':
             commands.images_register(args.repository, args.description)

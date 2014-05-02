@@ -29,7 +29,7 @@ TUTUM_AUTH_ERROR_EXIT_CODE = 2
 EXCEPTION_EXIT_CODE = 3
 
 
-def authenticate():
+def login():
     def try_register(_username, _password):
         email = raw_input("Email: ")
 
@@ -81,6 +81,53 @@ def authenticate():
             text = text.replace('\npassword: This field is required.', '', 1)
             print text
             sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
+    except Exception as e:
+        print e
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def build(image_name, working_directory, quiet, nocache):
+    try:
+        directory = abspath(working_directory)
+        dockerfile_path = join(directory, "Dockerfile")
+
+        if not isfile(dockerfile_path):
+            procfile_path = join(directory, "Procfile")
+            ports = ""
+            process = ''
+            if isfile(procfile_path):
+                cmd = ['"/start"']
+                with open(procfile_path) as procfile:
+                    datamap = yaml.load(procfile)
+                if len(datamap) > 1:
+                    while not process or (not process in datamap):
+                        process = raw_input("Process type to build, %s: " % datamap.keys())
+                    process = '"%s"' % process
+
+                if (len(datamap) == 1 and 'web' in datamap) or (process == 'web'):
+                    ports = "80"
+                    process = '"web"'
+
+                cmd.append(process)
+
+            else:
+                while not process:
+                    process = raw_input("Run command: ")
+                cmd = process
+
+            if process != '"web"':
+                port_regexp = re.compile('^\d{1,5}(\s\d{1,5})*$')
+                while not ports or not bool(port_regexp.match(ports)):
+                    ports = raw_input("Exposed Ports (ports separated by whitespace) i.e. 80 8000: ") or ""
+
+            utils.build_dockerfile(dockerfile_path, ports, cmd)
+
+        docker_client = utils.get_docker_client()
+        output = docker_client.build(path=directory, tag=image_name, quiet=quiet, nocache=nocache, rm=True, stream=True)
+        for line in output:
+            if not quiet:
+                utils.print_stream_line(line)
+        print image_name
     except Exception as e:
         print e
         sys.exit(EXCEPTION_EXIT_CODE)
@@ -350,53 +397,6 @@ def containers_terminate(identifiers):
             print e
 
 
-def images_build(image_name, working_directory, quiet, nocache):
-    try:
-        directory = abspath(working_directory)
-        dockerfile_path = join(directory, "Dockerfile")
-
-        if not isfile(dockerfile_path):
-            procfile_path = join(directory, "Procfile")
-            ports = ""
-            process = ''
-            if isfile(procfile_path):
-                cmd = ['"/start"']
-                with open(procfile_path) as procfile:
-                    datamap = yaml.load(procfile)
-                if len(datamap) > 1:
-                    while not process or (not process in datamap):
-                        process = raw_input("Process type to build, %s: " % datamap.keys())
-                    process = '"%s"' % process
-
-                if (len(datamap) == 1 and 'web' in datamap) or (process == 'web'):
-                    ports = "80"
-                    process = '"web"'
-
-                cmd.append(process)
-
-            else:
-                while not process:
-                    process = raw_input("Run command: ")
-                cmd = process
-
-            if process != '"web"':
-                port_regexp = re.compile('^\d{1,5}(\s\d{1,5})*$')
-                while not ports or not bool(port_regexp.match(ports)):
-                    ports = raw_input("Exposed Ports (ports separated by whitespace) i.e. 80 8000: ") or ""
-
-            utils.build_dockerfile(dockerfile_path, ports, cmd)
-
-        docker_client = utils.get_docker_client()
-        output = docker_client.build(path=directory, tag=image_name, quiet=quiet, nocache=nocache, rm=True, stream=True)
-        for line in output:
-            if not quiet:
-                utils.print_stream_line(line)
-        print image_name
-    except Exception as e:
-        print e
-        sys.exit(EXCEPTION_EXIT_CODE)
-
-
 def images_list(quiet=False, jumpstarts=False, linux=False):
     try:
 
@@ -442,7 +442,6 @@ def images_register(repository, description):
 
 
 def images_push(name, public):
-
     def push_to_public(repository):
         print 'Pushing %s to public registry ...' % repository
 
