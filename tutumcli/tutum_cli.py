@@ -48,58 +48,56 @@ def main():
         if args.subcmd == 'alias':
             commands.apps_alias(args.identifier, args.dns)
         elif args.subcmd == 'inspect':
-            commands.inspect(args.identifier)
+            commands.apps_inspect(args.identifier)
         elif args.subcmd == 'logs':
-            commands.logs(args.identifier)
+            commands.apps_logs(args.identifier)
         elif args.subcmd == 'open':
             commands.apps_open()
         elif args.subcmd == 'ps':
-            commands.apps_ps(args.quiet, args.status, args.remote, args.local)
+            commands.apps_ps(args.quiet, args.status)
         elif args.subcmd == 'redeploy':
             commands.apps_redeploy(args.identifier, args.tag)
         elif args.subcmd == 'run':
             commands.apps_run(image=args.image, name=args.name, container_size=args.container_size,
-                             target_num_containers=args.target_num_containers, run_command=args.run_command,
-                             entrypoint=args.entrypoint, container_ports=args.port,
-                             container_envvars=args.env,
-                             linked_to_applications=args.link, autorestart=args.autorestart,
-                             autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role,
-                             local=args.local,
-                             parallel=args.parallel)
+                              target_num_containers=args.target_num_containers, run_command=args.run_command,
+                              entrypoint=args.entrypoint, container_ports=args.port, container_envvars=args.env,
+                              linked_to_applications=args.link, autorestart=args.autorestart,
+                              autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role,
+                              parallel=args.parallel)
         elif args.subcmd == 'scale':
             commands.apps_scale(args.identifier, args.target_num_containers)
         elif args.subcmd == 'set':
             commands.apps_set(args.autorestart, args.autoreplace, args.autodestroy, args.identifier)
         elif args.subcmd == 'start':
-            commands.start(args.identifier)
+            commands.apps_start(args.identifier)
         elif args.subcmd == 'stop':
-            commands.stop(args.identifier)
+            commands.apps_stop(args.identifier)
         elif args.subcmd == 'terminate':
-            commands.terminate(args.identifier)
+            commands.apps_terminate(args.identifier)
     elif args.cmd == 'containers':
         if args.subcmd == 'inspect':
-            commands.inspect(args.identifier)
+            commands.containers_inspect(args.identifier)
         elif args.subcmd == 'logs':
-            commands.logs(args.identifier)
+            commands.containers_logs(args.identifier)
         elif args.subcmd == 'ps':
-            commands.ps(args.identifier, args.quiet, args.status, args.remote, args.local)
+            commands.containers_ps(args.identifier, args.quiet, args.status)
         elif args.subcmd == 'start':
-            commands.start(args.identifier)
+            commands.containers_start(args.identifier)
         elif args.subcmd == 'stop':
-            commands.stop(args.identifier)
+            commands.containers_stop(args.identifier)
         elif args.subcmd == 'terminate':
-            commands.terminate(args.identifier)
+            commands.containers_terminate(args.identifier)
     elif args.cmd == 'images':
         if args.subcmd == 'build':
             commands.images_build(args.name, args.directory, args.quiet, args.nocache)
         elif args.subcmd == 'list':
-            commands.images_list(args.quiet, args.jumpstarts, args.linux, args.local, args.remote)
+            commands.images_list(args.quiet, args.jumpstarts, args.linux)
         elif args.subcmd == 'register':
             commands.images_register(args.repository, args.username, args.password, args.description)
         elif args.subcmd == 'push':
             commands.images_push(args.name, args.public)
         elif args.subcmd == 'rm':
-            commands.images_remove(args.repository)
+            commands.images_rm(args.repository)
         elif args.subcmd == 'search':
             commands.images_search(args.text)
         elif args.subcmd == 'update':

@@ -30,10 +30,6 @@ def add_apps_parser(subparsers):
     ps_parser.add_argument('-q', '--quiet', help='print only long uuids', action='store_true')
     ps_parser.add_argument('-s', '--status', help='filter applications by status',
                            choices=['Running', 'Partly running', 'Stopped', 'Start failed', 'Stopped with errors'])
-    ps_exclusive_group = ps_parser.add_mutually_exclusive_group()
-    ps_exclusive_group.add_argument('-L', '--local', help='list only applications running locally', action='store_true')
-    ps_exclusive_group.add_argument('-R', '--remote', help='list only applications running in Tutum',
-                                    action='store_true')
 
     # tutum apps redeploy
     redeploy_parser = apps_subparser.add_parser('redeploy', help='Redeploy an application ',
@@ -60,28 +56,22 @@ def add_apps_parser(subparsers):
                             help='the command prefix used to start the application containers '
                                  '(default: as defined in the image)')
     run_parser.add_argument('-p', '--port',
-                            help='set ports i.e. "80/tcp"'
-                                 '(default: as defined in the image)', action='append')
+                            help='set ports i.e. "80/tcp" (default: as defined in the image)', action='append')
     run_parser.add_argument('-e', '--env',
                             help='set environment variables i.e. "ENVVAR=foo" '
                                  '(default: as defined in the image, plus any link- or role-generated variables)',
                             action='append')
     run_parser.add_argument('-l', '--link',
                             help="an application's uuid (either long or short) or name to link this application "
-                                 "to, i.e. 80ff1635-2d56-478d-a97f-9b59c720e513'] (default: none)",
-                            action='append')
+                                 "to, i.e. 80ff1635-2d56-478d-a97f-9b59c720e513'] (default: none)", action='append')
     run_parser.add_argument('--autorestart', help='whether the containers should be restarted if they stop '
                                                   '(default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     run_parser.add_argument('--autoreplace', help='whether the containers should be replaced with a new one if '
-                                                  'they stop (default: OFF)',
-                            choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
+                                                  'they stop (default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     run_parser.add_argument('--autodestroy', help='whether the containers should be terminated if '
-                                                  'they stop (default: OFF)',
-                            choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
+                                                  'they stop (default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     run_parser.add_argument('--role', help='Tutum API roles to grant the application, '
-                                           'i.e. "global" (default: none, possible values: "global"',
-                            action='append')
-    run_parser.add_argument('-L', '--local', help='run the new application locally', action='store_true')
+                                           'i.e. "global" (default: none, possible values: "global"', action='append')
     run_parser.add_argument('-P', '--parallel', help='run the application in parallel', action='store_true')
 
     # tutum apps scale
@@ -138,11 +128,6 @@ def add_containers_parser(subparsers):
     ps_parser.add_argument('-q', '--quiet', help='print only long uuids', action='store_true')
     ps_parser.add_argument('-s', '--status', help='filter containers by status',
                            choices=['Running', 'Stopped', 'Start failed', 'Stopped with errors'])
-    ps_exclusive_group = ps_parser.add_mutually_exclusive_group()
-    ps_exclusive_group.add_argument('-L', '--local', help='list only applications running locally',
-                                    action='store_true')
-    ps_exclusive_group.add_argument('-R', '--remote', help='list only applications running in Tutum',
-                                    action='store_true')
 
     # tutum containers start
     start_parser = containers_subparser.add_parser('start', help='Start a container', description='Start a container')
@@ -172,25 +157,22 @@ def add_images_parser(subparsers):
     build_parser.add_argument('--nocache', help='do not use the cache when building the image', action='store_true')
 
     # tutum images list
-    list_parser = images_subparser.add_parser('list', help='List private and local images',
-                                              description='List private and local images')
+    list_parser = images_subparser.add_parser('list', help='List private images',
+                                              description='List private images')
     list_parser.add_argument('-q', '--quiet', help='print only image names', action='store_true')
 
-    list_exclusive_group_1 = list_parser.add_mutually_exclusive_group()
-    list_exclusive_group_1.add_argument('-j', '--jumpstarts', help='list jumpstart images', action='store_true')
-    list_exclusive_group_1.add_argument('-l', '--linux', help='list linux images', action='store_true')
+    list_exclusive_group = list_parser.add_mutually_exclusive_group()
+    list_exclusive_group.add_argument('-j', '--jumpstarts', help='list jumpstart images', action='store_true')
+    list_exclusive_group.add_argument('-l', '--linux', help='list linux images', action='store_true')
 
-    list_exclusive_group_2 = list_parser.add_mutually_exclusive_group()
-    list_exclusive_group_2.add_argument('-L', '--local', help='list only local images', action='store_true')
-    list_exclusive_group_2.add_argument('-R', '--remote', help='list only private images in Tutum', action='store_true')
-
-    # tutum images pull
-    pull_parser = images_subparser.add_parser('register', help='register an image from a private repository to Tutum',
-                                              description='register an image from a private repository to Tutum')
-    pull_parser.add_argument('repository', help='full image repository, i.e. quay.io/tutum/test-repo')
-    pull_parser.add_argument('username', help='username to authenticate with the registry')
-    pull_parser.add_argument('password', help='username password')
-    pull_parser.add_argument('-d', '--description', help='Image description')
+    # tutum images register
+    register_parser = images_subparser.add_parser('register',
+                                                  help='Register an image from a private repository to Tutum',
+                                                  description='Register an image from a private repository to Tutum')
+    register_parser.add_argument('repository', help='full image repository, i.e. quay.io/tutum/test-repo')
+    register_parser.add_argument('username', help='username to authenticate with the registry')
+    register_parser.add_argument('password', help='username password')
+    register_parser.add_argument('-d', '--description', help='Image description')
 
     # tutum images push
     push_parser = images_subparser.add_parser('push', help='Push an image or a repository to Tutum registry',
