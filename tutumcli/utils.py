@@ -88,15 +88,15 @@ def fetch_remote_app(identifier, raise_exceptions=True):
 
 
 def parse_ports(port_list):
-    def _get_port_dict(port):
+    def _get_port_dict(_port):
         port_regexp = re.compile('^[0-9]{1,5}/(tcp|udp)$')
-        match = port_regexp.match(port)
+        match = port_regexp.match(_port)
         if bool(match):
-            port = port.split("/", 1)
-            inner_port = int(port[0])
-            protocol = port[1].lower()
+            _port = _port.split("/", 1)
+            inner_port = int(_port[0])
+            protocol = _port[1].lower()
             return {'protocol': protocol, 'inner_port': inner_port}
-        raise BadParameter("Port argument %s does not match with 'port/protocol'. Example: 80/tcp" % port)
+        raise BadParameter("Port argument %s does not match with 'port/protocol'. Example: 80/tcp" % _port)
 
     parsed_ports = []
     if port_list is not None:
@@ -108,30 +108,20 @@ def parse_ports(port_list):
 
 def parse_envvars(envvar_list):
 
-    def _is_envvar(envvar):
+    def _is_envvar(_envvar):
         envvar_regexp = re.compile('^[a-zA-Z_]+[a-zA-Z0-9_]*=[^?!=]+$')
-        match = envvar_regexp.match(envvar)
+        match = envvar_regexp.match(_envvar)
         if bool(match):
-            envvar = envvar.split("=", 1)
-            return {'key': envvar[0], 'value': envvar[1]}
+            _envvar = _envvar.split("=", 1)
+            return {'key': _envvar[0], 'value': _envvar[1]}
         raise BadParameter("Environment Variable argument %s does not match with 'KEY=VALUE'."
-                           " Example: ENVVAR=foo" % envvar)
+                           " Example: ENVVAR=foo" % _envvar)
 
     parsed_envvars = []
     if envvar_list is not None:
         for envvar in envvar_list:
             parsed_envvars.append(_is_envvar(envvar))
     return parsed_envvars
-
-
-    def _is_envvar(envvar):
-        envvar_regexp = re.compile('^[a-zA-Z_]+[a-zA-Z0-9_]*=[^?!=]+$')
-        match = envvar_regexp.match(envvar)
-        if bool(match):
-            envvar = envvar.split("=", 1)
-            return {'key': envvar[0], 'value': envvar[1]}
-        raise BadParameter(
-            "Environment Variable argument %s does not match with 'KEY=VALUE'. Example: ENVVAR=foo" % envvar)
 
 
 def add_unicode_symbol_to_state(state):
@@ -182,7 +172,7 @@ def print_stream_line(output):
         try:
             obj = json.loads(line)
             status = obj.get('status', None)
-            id = obj.get('id', None)
+            identifier = obj.get('id', None)
             progress = obj.get('progress', None)
             error = obj.get('error', None)
 
@@ -191,18 +181,18 @@ def print_stream_line(output):
                 print error
                 break
 
-            if status and id and progress:
-                if id != print_stream_line.last_id:
-                    formatted_output = '\n%s: %s %s' % (id, status, progress)
+            if status and identifier and progress:
+                if identifier != print_stream_line.last_id:
+                    formatted_output = '\n%s: %s %s' % (identifier, status, progress)
                 else:
-                    formatted_output = '\r%s: %s %s\033[K' % (id, status, progress)
-                print_stream_line.last_id = id
-            elif status and id:
-                if id != print_stream_line.last_id:
-                    formatted_output = '\n%s: %s' % (id, status)
+                    formatted_output = '\r%s: %s %s\033[K' % (identifier, status, progress)
+                print_stream_line.last_id = identifier
+            elif status and identifier:
+                if identifier != print_stream_line.last_id:
+                    formatted_output = '\n%s: %s' % (identifier, status)
                 else:
-                    formatted_output = '\r%s: %s\033[K' % (id, status)
-                print_stream_line.last_id = id
+                    formatted_output = '\r%s: %s\033[K' % (identifier, status)
+                print_stream_line.last_id = identifier
             elif status:
                 formatted_output = '\n%s' % status
             else:

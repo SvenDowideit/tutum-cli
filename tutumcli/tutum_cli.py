@@ -93,7 +93,7 @@ def main():
         elif args.subcmd == 'list':
             commands.images_list(args.quiet, args.jumpstarts, args.linux)
         elif args.subcmd == 'register':
-            commands.images_register(args.repository, args.username, args.password, args.description)
+            commands.images_register(args.repository, args.description)
         elif args.subcmd == 'push':
             commands.images_push(args.name, args.public)
         elif args.subcmd == 'rm':

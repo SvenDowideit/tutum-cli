@@ -15,25 +15,26 @@ from tutum.api import auth
 from tutum.api import exceptions
 
 from tutumcli import utils
+from . import __version__
 
 
 TUTUM_FILE = '.tutum'
 AUTH_SECTION = 'auth'
 USER_OPTION = "user"
 APIKEY_OPTION = 'apikey'
+AUTH_ERROR = 'auth_error'
+NO_ERROR = 'no_error'
 
 TUTUM_AUTH_ERROR_EXIT_CODE = 2
 EXCEPTION_EXIT_CODE = 3
 
 
 def authenticate():
-    def try_register(username, password):
-        import tutum_cli
-
+    def try_register(_username, _password):
         email = raw_input("Email: ")
 
-        headers = {"Content-Type": "application/json", "User-Agent": "tutum/%s" % tutum_cli.VERSION}
-        data = {'username': username, "password1": password, "password2": password, "email": email}
+        headers = {"Content-Type": "application/json", "User-Agent": "tutum/%s" % __version__}
+        data = {'username': _username, "password1": _password, "password2": _password, "email": email}
 
         r = requests.post(urlparse.urljoin(tutum.base_url, "register/"), data=json.dumps(data), headers=headers)
 
@@ -45,14 +46,14 @@ def authenticate():
             else:
                 messages = r.json()['register']
                 if isinstance(messages, dict):
-                    text = []
+                    _text = []
                     for key in messages.keys():
-                        text.append("%s: %s" % (key, '\n'.join(messages[key])))
-                    text = '\n'.join(text)
+                        _text.append("%s: %s" % (key, '\n'.join(messages[key])))
+                    _text = '\n'.join(_text)
                 else:
-                    text = messages
-                return False, text
-        except:
+                    _text = messages
+                return False, _text
+        except Exception:
             return False, r.text
 
     username = raw_input("Username: ")
@@ -361,13 +362,13 @@ def images_build(image_name, working_directory, quiet, nocache):
             if isfile(procfile_path):
                 cmd = ['"/start"']
                 with open(procfile_path) as procfile:
-                    dataMap = yaml.load(procfile)
-                if len(dataMap) > 1:
-                    while not process or (not process in dataMap):
-                        process = raw_input("Process type to build, %s: " % dataMap.keys())
+                    datamap = yaml.load(procfile)
+                if len(datamap) > 1:
+                    while not process or (not process in datamap):
+                        process = raw_input("Process type to build, %s: " % datamap.keys())
                     process = '"%s"' % process
 
-                if (len(dataMap) == 1 and 'web' in dataMap) or (process == 'web'):
+                if (len(datamap) == 1 and 'web' in datamap) or (process == 'web'):
                     ports = "80"
                     process = '"web"'
 
@@ -426,7 +427,7 @@ def images_list(quiet=False, jumpstarts=False, linux=False):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def images_register(repository, username, password, description):
+def images_register(repository, description):
     print 'Please input username and password of the repository:'
     username = raw_input('Username: ')
     password = getpass.getpass()
@@ -441,8 +442,6 @@ def images_register(repository, username, password, description):
 
 
 def images_push(name, public):
-    AUTH_ERROR = 'auth_error'
-    NO_ERROR = 'no_error'
 
     def push_to_public(repository):
         print 'Pushing %s to public registry ...' % repository
