@@ -1,3 +1,4 @@
+from __future__ import print_function
 import getpass
 import ConfigParser
 import json
@@ -67,22 +68,22 @@ def login():
             config.set(AUTH_SECTION, APIKEY_OPTION, api_key)
             with open(join(expanduser('~'), TUTUM_FILE), 'w') as cfgfile:
                 config.write(cfgfile)
-            print "Login succeeded!"
+            print("Login succeeded!")
     except exceptions.TutumAuthError:
         registered, text = try_register(username, password)
         if registered:
-            print text
+            print(text)
         else:
             if 'username: A user with that username already exists.' in text:
-                print "Wrong username and/or password. Please try to login again"
+                print("Wrong username and/or password. Please try to login again", file=sys.stderr)
                 sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
             text = text.replace('password1', 'password')
             text = text.replace('password2', 'password')
             text = text.replace('\npassword: This field is required.', '', 1)
-            print text
+            print(text, file=sys.stderr)
             sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
     except Exception as e:
-        print e
+        print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
@@ -127,13 +128,14 @@ def build(image_name, working_directory, quiet, nocache):
         for line in output:
             if not quiet:
                 utils.print_stream_line(line)
-        print image_name
+        print(image_name)
     except Exception as e:
-        print e
+        print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def apps_alias(identifiers, dns):
+    has_exception = False
     for identifier in identifiers:
         try:
             app_details = utils.fetch_remote_app(identifier)
@@ -141,27 +143,38 @@ def apps_alias(identifiers, dns):
                 app_details.web_public_dns = dns
                 result = app_details.save()
                 if result:
-                    print app_details.uuid
+                    print(app_details.uuid)
         except Exception as e:
-            print e
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def apps_inspect(identifiers):
+    has_exception = False
     for identifier in identifiers:
         try:
             app = utils.fetch_remote_app(identifier)
-            print json.dumps(tutum.Application.fetch(app.uuid).get_all_attributes(), indent=2)
+            print(json.dumps(tutum.Application.fetch(app.uuid).get_all_attributes(), indent=2))
         except Exception as e:
-            print e
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def apps_logs(identifiers):
+    has_exception = False
     for identifier in identifiers:
         try:
             app = utils.fetch_remote_app(identifier)
-            print app.logs
+            print(app.logs)
         except Exception as e:
-            print e
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def apps_open():
@@ -175,9 +188,9 @@ def apps_open():
             max_datetime = max(deployed_datetimes.keys())
             webbrowser.open("http://" + deployed_datetimes[max_datetime])
         else:
-            print "Error: There are not web applications Running or Partly Running"
+            print("Error: There are not web applications Running or Partly Running")
     except Exception as e:
-        print e
+        print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
@@ -198,24 +211,28 @@ def apps_ps(quiet=False, status=None):
 
         if quiet:
             for uuid in long_uuid_list:
-                print uuid
+                print(uuid)
         else:
             utils.tabulate_result(data_list, headers)
 
     except Exception as e:
-        print e
+        print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def apps_redeploy(identifiers, tag):
+    has_exception = False
     for identifier in identifiers:
         try:
             app = utils.fetch_remote_app(identifier)
             result = app.redeploy(tag)
             if result:
-                print app.uuid
+                print(app.uuid)
         except Exception as e:
-            print e
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def apps_run(image, name, container_size, target_num_containers, run_command, entrypoint, container_ports,
@@ -231,27 +248,30 @@ def apps_run(image, name, container_size, target_num_containers, run_command, en
                                        roles=roles, parallel_deployment=parallel)
         result = app.save()
         if result:
-            print app.uuid
+            print(app.uuid)
     except Exception as e:
-        print e
+        print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def apps_scale(identifiers, target_num_containers):
+    has_exception = False
     for identifier in identifiers:
         try:
             app = utils.fetch_remote_app(identifier)
             app.target_num_containers = target_num_containers
             result = app.save()
             if result:
-                print app.uuid
+                print(app.uuid)
         except Exception as e:
-            print e
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def apps_set(autorestart, autoreplace, autodestroy, identifiers):
-    exception = False
-
+    has_exception = False
     for identifier in identifiers:
         try:
             app_details = utils.fetch_remote_app(identifier, raise_exceptions=True)
@@ -261,64 +281,83 @@ def apps_set(autorestart, autoreplace, autodestroy, identifiers):
                 app_details.autodestroy = autodestroy
                 result = app_details.save()
                 if result:
-                    print app_details.uuid
+                    print(app_details.uuid)
         except Exception as e:
-            print e
-            exception = True
-            continue
-    if exception:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def apps_start(identifiers):
+    has_exception = False
     for identifier in identifiers:
         try:
             app = utils.fetch_remote_app(identifier)
             result = app.start()
             if result:
-                print app.uuid
+                print(app.uuid)
         except Exception as e:
-            print e
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def apps_stop(identifiers):
+    has_exception = False
     for identifier in identifiers:
         try:
             app = utils.fetch_remote_app(identifier)
             result = app.stop()
             if result:
-                print app.uuid
+                print(app.uuid)
         except Exception as e:
-            print e
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def apps_terminate(identifiers):
+    has_exception = False
     for identifier in identifiers:
         try:
             app = utils.fetch_remote_app(identifier)
             result = app.delete()
             if result:
-                print app.uuid
+                print(app.uuid)
         except Exception as e:
-            print e
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def containers_inspect(identifiers):
+    has_exception = False
     for identifier in identifiers:
         try:
             app = utils.fetch_remote_container(identifier)
-            print json.dumps(tutum.Container.fetch(app.uuid).get_all_attributes(), indent=2)
+            print(json.dumps(tutum.Container.fetch(app.uuid).get_all_attributes(), indent=2))
         except Exception as e:
-            print e
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def containers_logs(identifiers):
+    has_exception = False
     for identifier in identifiers:
         try:
             container = utils.fetch_remote_container(identifier)
-            print container.logs
+            print(container.logs)
         except Exception as e:
-            print e
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def containers_ps(app_identifier, quiet=False, status=None):
@@ -356,45 +395,57 @@ def containers_ps(app_identifier, quiet=False, status=None):
             data_list.append(["", "", "", "", "", "", "", "", ""])
         if quiet:
             for uuid in long_uuid_list:
-                print uuid
+                print(uuid)
         else:
             utils.tabulate_result(data_list, headers)
     except Exception as e:
-        print e
+        print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def containers_start(identifiers):
+    has_exception = False
     for identifier in identifiers:
         try:
             container = utils.fetch_remote_container(identifier)
             result = container.start()
             if result:
-                print container.uuid
+                print(container.uuid)
         except Exception as e:
-            print e
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def containers_stop(identifiers):
+    has_exception = False
     for identifier in identifiers:
         try:
             container = utils.fetch_remote_container(identifier)
             result = container.stop()
             if result:
-                print container.uuid
+                print(container.uuid)
         except Exception as e:
-            print e
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def containers_terminate(identifiers):
+    has_exception = False
     for identifier in identifiers:
         try:
             container = utils.fetch_remote_container(identifier)
             result = container.delete()
             if result:
-                print container.uuid
+                print(container.uuid)
         except Exception as e:
-            print e
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def images_list(quiet=False, jumpstarts=False, linux=False):
@@ -418,32 +469,32 @@ def images_list(quiet=False, jumpstarts=False, linux=False):
 
         if quiet:
             for name in name_list:
-                print name
+                print(name)
         else:
             utils.tabulate_result(data_list, headers)
 
     except Exception as e:
-        print e
+        print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def images_register(repository, description):
-    print 'Please input username and password of the repository:'
+    print('Please input username and password of the repository:')
     username = raw_input('Username: ')
     password = getpass.getpass()
     try:
         image = tutum.Image.create(name=repository, username=username, password=password, description=description)
         result = image.save()
         if result:
-            print image.name
+            print(image.name)
     except Exception as e:
-        print e
+        print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def images_push(name, public):
     def push_to_public(repository):
-        print 'Pushing %s to public registry ...' % repository
+        print('Pushing %s to public registry ...' % repository)
 
         output_stream = docker_client.push(repository, stream=True)
         output_status = NO_ERROR
@@ -454,37 +505,37 @@ def images_push(name, public):
             utils.print_stream_line(line)
 
         if output_status == NO_ERROR:
-            print ''
+            print('')
             sys.exit()
 
         if output_status == AUTH_ERROR:
-            print 'Please login prior to push:'
+            print('Please login prior to push:')
             username = raw_input('Username: ')
             password = getpass.getpass()
             email = raw_input('Email: ')
             try:
                 result = docker_client.login(username, password=password, email=email)
                 if isinstance(result, dict):
-                    print result.get('Status', None)
+                    print(result.get('Status', None))
             except Exception as e:
-                print e
+                print(e, file=sys.stderr)
                 sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
             push_to_public(repository)
 
     def push_to_tutum(repository):
-        print 'Pushing %s to Tutum private registry ...' % repository
+        print('Pushing %s to Tutum private registry ...' % repository)
 
         user = tutum.user
         apikey = tutum.apikey
         if user is None or apikey is None:
-            print 'Not authorized'
+            print('Not authorized')
             sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
 
         try:
             registry = os.getenv('TUTUM_REGISTRY_URL') or 'https://r.tutum.co/v1/'
             docker_client.login(user, apikey, registry=registry)
         except Exception as e:
-            print e
+            print(e, file=sys.stderr)
             sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
 
         if repository:
@@ -492,16 +543,16 @@ def images_push(name, public):
         repository = '%s/%s/%s' % (registry.split('//')[-1].split('/')[0], user, repository)
 
         try:
-            print 'Tagging %s as %s ...' % (name, repository)
+            print('Tagging %s as %s ...' % (name, repository))
             docker_client.tag(name, repository)
         except Exception as e:
-            print e
+            print(e, file=sys.stderr)
             sys.exit(EXCEPTION_EXIT_CODE)
 
         output_stream = docker_client.push(repository, stream=True)
         for line in output_stream:
             utils.print_stream_line(line)
-        print ''
+        print('')
 
     docker_client = utils.get_docker_client()
     if public:
@@ -511,14 +562,18 @@ def images_push(name, public):
 
 
 def images_rm(repositories):
+    has_exception = False
     for repository in repositories:
         try:
             image = tutum.Image.fetch(repository)
             result = image.delete()
             if result:
-                print repository
+                print(repository)
         except Exception as e:
-            print e
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def images_search(text):
@@ -538,7 +593,7 @@ def images_search(text):
             data_list.append(["", "", "", "", ""])
         utils.tabulate_result(data_list, headers)
     except Exception as e:
-        print e
+        print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
@@ -554,6 +609,6 @@ def images_update(repositories, username, password, description):
                 image.description = description
             result = image.save()
             if result:
-                print image.name
+                print(image.name)
         except Exception as e:
-            print e
+            print(e, file=sys.stderr)

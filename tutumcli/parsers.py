@@ -163,13 +163,6 @@ def add_images_parser(subparsers):
                                           description='Image related operations')
     images_subparser = images_parser.add_subparsers(title='tutum images commands', dest='subcmd')
 
-    # tutum images build
-    build_parser = images_subparser.add_parser('build', help='Build an image', description='Build an image')
-    build_parser.add_argument('name', help='image name')
-    build_parser.add_argument('-d', '--directory', help='working directory', default='.')
-    build_parser.add_argument('-q', '--quiet', help='print minimum information', action='store_true')
-    build_parser.add_argument('--nocache', help='do not use the cache when building the image', action='store_true')
-
     # tutum images list
     list_parser = images_subparser.add_parser('list', help='List private images',
                                               description='List private images')

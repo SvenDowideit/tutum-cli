@@ -1,3 +1,4 @@
+from __future__ import print_function
 import datetime
 import re
 import json
@@ -14,7 +15,7 @@ from tutumcli.exceptions import NonUniqueIdentifier, ObjectNotFound, BadParamete
 
 
 def tabulate_result(data_list, headers):
-    print tabulate(data_list, headers, stralign="left", tablefmt="plain")
+    print (tabulate(data_list, headers, stralign="left", tablefmt="plain"))
 
 
 def from_utc_string_to_utc_datetime(utc_datetime_string):
@@ -107,7 +108,6 @@ def parse_ports(port_list):
 
 
 def parse_envvars(envvar_list):
-
     def _is_envvar(_envvar):
         envvar_regexp = re.compile('^[a-zA-Z_]+[a-zA-Z0-9_]*=[^?!=]+$')
         match = envvar_regexp.match(_envvar)
@@ -177,8 +177,8 @@ def print_stream_line(output):
             error = obj.get('error', None)
 
             if error:
-                print ''
-                print error
+                print('', file=sys.stderr)
+                print(error, file=sys.stderr)
                 break
 
             if status and identifier and progress:
