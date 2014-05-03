@@ -31,6 +31,7 @@ setup(
         'console_scripts':
             ['tutum = tutumcli.tutum_cli:main']
     },
+    include_package_data=True,
     author='Tutum, Inc.',
     author_email='info@tutum.co',
     description='CLI for Tutum',

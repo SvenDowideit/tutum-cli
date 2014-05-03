@@ -1,0 +1,7 @@
+include Dockerfile
+include LICENSE
+include requirements.txt
+include *.rst
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *.un~
