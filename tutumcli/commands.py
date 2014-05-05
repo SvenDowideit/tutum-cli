@@ -87,7 +87,7 @@ def login():
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def build(image_name, working_directory, quiet, nocache):
+def build(tag, working_directory, quiet, nocache):
     try:
         directory = abspath(working_directory)
         dockerfile_path = join(directory, "Dockerfile")
@@ -124,11 +124,11 @@ def build(image_name, working_directory, quiet, nocache):
             utils.build_dockerfile(dockerfile_path, ports, cmd)
 
         docker_client = utils.get_docker_client()
-        output = docker_client.build(path=directory, tag=image_name, quiet=quiet, nocache=nocache, rm=True, stream=True)
+        output = docker_client.build(path=directory, tag=tag, quiet=quiet, nocache=nocache, rm=True, stream=True)
         for line in output:
             if not quiet:
                 utils.print_stream_line(line)
-        print(image_name)
+        print(tag)
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)

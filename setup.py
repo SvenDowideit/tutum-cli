@@ -29,7 +29,7 @@ setup(
     install_requires=install_requires,
     entry_points={
         'console_scripts':
-            ['tutum = tutumcli.tutum_cli:main']
+        ['tutum = tutumcli.tutum_cli:main']
     },
     include_package_data=True,
     author='Tutum, Inc.',

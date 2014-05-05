@@ -6,10 +6,11 @@ def add_login_parser(subparsers):
 def add_build_parser(subparsers):
     # tutum build
     build_parser = subparsers.add_parser('build', help='Build an image', description='Build an image')
-    build_parser.add_argument('name', help='image name')
-    build_parser.add_argument('-d', '--directory', help='working directory', default='.')
     build_parser.add_argument('-q', '--quiet', help='print minimum information', action='store_true')
     build_parser.add_argument('--nocache', help='do not use the cache when building the image', action='store_true')
+    build_parser.add_argument('-t', '--tag', help='repository name (and optionally a tag) to be applied '
+                                                  'to the resulting image in case of success')
+    build_parser.add_argument('directory', help='working directory')
 
 
 def add_apps_parser(subparsers):

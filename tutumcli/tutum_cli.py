@@ -40,13 +40,12 @@ def main():
         elif sys.argv[1] == 'images' and sys.argv[2] in ['register', 'push', 'rm', 'search', 'update']:
             sys.argv.append('-h')
 
-
     # dispatch commands
     args = parser.parse_args()
     if args.cmd == 'login':
         commands.login()
     if args.cmd == 'build':
-        commands.build(args.name, args.directory, args.quiet, args.nocache)
+        commands.build(args.tag, args.directory, args.quiet, args.nocache)
     elif args.cmd == 'apps':
         if args.subcmd == 'alias':
             commands.apps_alias(args.identifier, args.dns)
