@@ -100,38 +100,30 @@ Applications
 .. sourcecode:: none
 
     $ tutum apps
-    usage: tutum apps [-h]
-                      
-                      {alias,inspect,logs,open,ps,redeploy,run,scale,set,start,stop,terminate}
-                      ...
-    
-    Applications related operations
-    
+    usage: tutum [-h] [-v] {app,build,container,image,login} ...
+
+    Tutum's CLI
+
     optional arguments:
       -h, --help            show this help message and exit
+      -v, --version         show program's version number and exit
 
-    tutum apps commands:
-      {alias,inspect,logs,open,ps,redeploy,run,scale,set,start,stop,terminate}
-        alias               Change application's dns (only for Tutum applications)
-        inspect             Inspect an application
-        logs                Get logs from an application
-        open                Open last web application created in Tutum
-        ps                  List applications
-        redeploy            Redeploy an application
-        run                 Create and run an application
-        scale               Scale an application
-        set                 Set crash-recovery and auto-destroy of Turum
-                            applications
-        start               Start an application
-        stop                Stop an application
-        terminate           Terminate an application
-    $ tutum apps run tutum/redis -t 3
+    Tutum's CLI commands:
+      {app,build,container,image,login}
+        app                 Application-related operations
+        build               Build an image using an existing Dockerfile, or create
+                            one using buildstep
+        container           Container-related operations
+        image               Image-related operations
+        login               Login into Tutum
+
+    $ tutum app run tutum/redis -t 3
     5f07bce6-d285-43bc-b917-9f0fa8e1110d
-    $ tutum apps ps
+    $ tutum app ps
     NAME     UUID      STATUS      IMAGE                 SIZE (#)    DEPLOYED          WEB HOSTNAME
     couchdb  da0dcfcc  ▶ Running   tutum/couchdb:latest  XS (2)      27 minutes ago
     redis    5f07bce6  ⚙ Starting  tutum/redis:latest    XS (3)
-    $ tutum apps ps
+    $ tutum app ps
     NAME     UUID      STATUS     IMAGE                 SIZE (#)    DEPLOYED          WEB HOSTNAME
     couchdb  da0dcfcc  ▶ Running  tutum/couchdb:latest  XS (2)      28 minutes ago
 
@@ -141,15 +133,15 @@ Containers
 
 .. sourcecode:: none
 
-    $ tutum containers 
-    usage: tutum containers [-h] {inspect,logs,ps,start,stop,terminate} ...
-    
-    Containers related operations
-    
+    $ tutum container
+    usage: tutum container [-h] {inspect,logs,ps,start,stop,terminate} ...
+
+    Container-related operations
+
     optional arguments:
       -h, --help            show this help message and exit
-    
-    tutum apps commands:
+
+    tutum container commands:
       {inspect,logs,ps,start,stop,terminate}
         inspect             Inspect a container
         logs                Get logs from a container
@@ -157,14 +149,15 @@ Containers
         start               Start a container
         stop                Stop a container
         terminate           Terminate a container
-    $ tutum containers ps
+
+    $ tutum container ps
     NAME       UUID      STATUS     IMAGE                 RUN COMMAND    SIZE      EXIT CODE  DEPLOYED        PORTS
     couchdb-2  15d412f7  ▶ Running  tutum/couchdb:latest  /run.sh        XS                   31 minutes ago  couchdb-2-admin.atlas-dev.tutum.io:49229->5984/tcp
     couchdb-3  adc068ae  ▶ Running  tutum/couchdb:latest  /run.sh        XS                   31 minutes ago  couchdb-3-admin.atlas-dev.tutum.io:49227->5984/tcp
     redis-1    20afdd70  ◼ Stopped  tutum/redis:latest    /run.sh        XS                0  3 minutes ago   redis-1-admin.atlas-dev.tutum.io:49231->6379/tcp
     redis-2    f8f75117  ◼ Stopped  tutum/redis:latest    /run.sh        XS                0  3 minutes ago   redis-2-admin.atlas-dev.tutum.io:49230->6379/tcp
     redis-3    7423cf8e  ◼ Stopped  tutum/redis:latest    /run.sh        XS                0  3 minutes ago   redis-3-admin.atlas-dev.tutum.io:49232->6379/tcp
-    $ tutum containers logs redis-1
+    $ tutum container logs redis-1
     => Securing redis with a random password
     => Done!
     ========================================================================
@@ -201,13 +194,14 @@ Containers
     [1 | signal handler] (1399078062) Received SIGTERM, scheduling shutdown...
     [1] 03 May 00:47:42.789 # User requested shutdown...
     [1] 03 May 00:47:42.789 # Redis is now ready to exit, bye bye...
-    
+
+
 Images
 ^^^^^^
 
 .. sourcecode:: none
 
-    $ tutum images
+    $ tutum image
     usage: tutum images [-h] {list,register,push,rm,search,update} ...
     
     Image related operations
@@ -223,15 +217,11 @@ Images
         rm                  Remove a private image
         search              Search for images in the Docker Index
         update              Update a private image
-    $ tutum images list
+    $ tutum image list
     NAME                                       DESCRIPTION
     quay.io/tifayuki/redis
-    quay.io/tifayuki/couchdb                   haha
-    r-test.tutum.co/admin/ubuntu
-    r-test.tutum.co/admin/test
-    r-test.tutum.co/admin/wordpress-stackable
-    r-test.tutum.co/admin/busybox
-    $ tutum images search tutum
+    quay.io/tifayuki/couchdb
+    $ tutum image search tutum
     NAME                       DESCRIPTION                                                                               STARS  OFFICIAL    TRUSTED
     tutum/mysql                MySQL Server image - listens in port 3306. For the admin account password, eithe [...]       14              ✓
     tutum/wordpress            Wordpress Docker image - listens in port 80.                                                  8              ✓

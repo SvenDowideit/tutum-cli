@@ -87,7 +87,7 @@ def login():
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def build(tag, working_directory, quiet, nocache):
+def build(tag, working_directory, quiet, no_cache):
     try:
         directory = abspath(working_directory)
         dockerfile_path = join(directory, "Dockerfile")
@@ -124,7 +124,7 @@ def build(tag, working_directory, quiet, nocache):
             utils.build_dockerfile(dockerfile_path, ports, cmd)
 
         docker_client = utils.get_docker_client()
-        output = docker_client.build(path=directory, tag=tag, quiet=quiet, nocache=nocache, rm=True, stream=True)
+        output = docker_client.build(path=directory, tag=tag, quiet=quiet, no_cache=no_cache, rm=True, stream=True)
         for line in output:
             if not quiet:
                 utils.print_stream_line(line)
@@ -236,7 +236,7 @@ def apps_redeploy(identifiers, tag):
 
 
 def apps_run(image, name, container_size, target_num_containers, run_command, entrypoint, container_ports,
-             container_envvars, linked_to_applications, autorestart, autoreplace, autodestroy, roles, parallel):
+             container_envvars, linked_to_applications, autorestart, autoreplace, autodestroy, roles, sequential):
     try:
         ports = utils.parse_ports(container_ports)
         envvars = utils.parse_envvars(container_envvars)
@@ -245,7 +245,7 @@ def apps_run(image, name, container_size, target_num_containers, run_command, en
                                        entrypoint=entrypoint, container_ports=ports,
                                        container_envvars=envvars, linked_to_application=linked_to_applications,
                                        autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
-                                       roles=roles, parallel_deployment=parallel)
+                                       roles=roles, sequential_deployment=sequential)
         result = app.save()
         if result:
             print(app.uuid)

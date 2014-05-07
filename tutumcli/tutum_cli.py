@@ -29,15 +29,15 @@ parsers.add_login_parser(subparsers)
 def main():
     if len(sys.argv) == 1:
         sys.argv.append('-h')
-    elif len(sys.argv) == 2 and sys.argv[1] in ['apps', 'build', 'containers', 'images', ]:
+    elif len(sys.argv) == 2 and sys.argv[1] in ['app', 'build', 'container', 'image', ]:
         sys.argv.append('-h')
     elif len(sys.argv) == 3:
-        if sys.argv[1] == 'apps' and sys.argv[2] in ['alias', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
+        if sys.argv[1] == 'app' and sys.argv[2] in ['alias', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
                                                      'start', 'stop', 'terminate']:
             sys.argv.append('-h')
-        elif sys.argv[1] == 'containers' and sys.argv[2] in ['inspect', 'logs', 'start', 'stop', 'terminate']:
+        elif sys.argv[1] == 'container' and sys.argv[2] in ['inspect', 'logs', 'start', 'stop', 'terminate']:
             sys.argv.append('-h')
-        elif sys.argv[1] == 'images' and sys.argv[2] in ['register', 'push', 'rm', 'search', 'update']:
+        elif sys.argv[1] == 'image' and sys.argv[2] in ['register', 'push', 'rm', 'search', 'update']:
             sys.argv.append('-h')
 
     # dispatch commands
@@ -45,8 +45,8 @@ def main():
     if args.cmd == 'login':
         commands.login()
     if args.cmd == 'build':
-        commands.build(args.tag, args.directory, args.quiet, args.nocache)
-    elif args.cmd == 'apps':
+        commands.build(args.tag, args.directory, args.quiet, args.no_cache)
+    elif args.cmd == 'app':
         if args.subcmd == 'alias':
             commands.apps_alias(args.identifier, args.dns)
         elif args.subcmd == 'inspect':
@@ -65,7 +65,7 @@ def main():
                               entrypoint=args.entrypoint, container_ports=args.port, container_envvars=args.env,
                               linked_to_applications=args.link, autorestart=args.autorestart,
                               autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role,
-                              parallel=args.parallel)
+                              sequential=args.sequential)
         elif args.subcmd == 'scale':
             commands.apps_scale(args.identifier, args.target_num_containers)
         elif args.subcmd == 'set':
@@ -76,7 +76,7 @@ def main():
             commands.apps_stop(args.identifier)
         elif args.subcmd == 'terminate':
             commands.apps_terminate(args.identifier)
-    elif args.cmd == 'containers':
+    elif args.cmd == 'container':
         if args.subcmd == 'inspect':
             commands.containers_inspect(args.identifier)
         elif args.subcmd == 'logs':
@@ -89,19 +89,19 @@ def main():
             commands.containers_stop(args.identifier)
         elif args.subcmd == 'terminate':
             commands.containers_terminate(args.identifier)
-    elif args.cmd == 'images':
+    elif args.cmd == 'image':
         if args.subcmd == 'list':
             commands.images_list(args.quiet, args.jumpstarts, args.linux)
         elif args.subcmd == 'register':
-            commands.images_register(args.repository, args.description)
+            commands.images_register(args.image_name, args.description)
         elif args.subcmd == 'push':
             commands.images_push(args.name, args.public)
         elif args.subcmd == 'rm':
-            commands.images_rm(args.repository)
+            commands.images_rm(args.image_name)
         elif args.subcmd == 'search':
-            commands.images_search(args.text)
+            commands.images_search(args.query)
         elif args.subcmd == 'update':
-            commands.images_update(args.repository, args.username, args.password, args.description)
+            commands.images_update(args.image_name, args.username, args.password, args.description)
 
 
 if __name__ == '__main__':
