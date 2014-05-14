@@ -1,17 +1,18 @@
 from __future__ import print_function
-import datetime
 import re
+import datetime
 import json
-import sys
+import os
 from os import getenv
 
 from tabulate import tabulate
 import tutum
 from dateutil import tz
 import ago
-from packages import docker
 
+from packages import docker
 from tutumcli.exceptions import NonUniqueIdentifier, ObjectNotFound, BadParameter, DockerNotFound
+from exceptions import StreamOutputError
 
 
 def tabulate_result(data_list, headers):
@@ -161,45 +162,76 @@ def build_dockerfile(filepath, ports, command):
                 dockerfile.write(line)
 
 
-def print_stream_line(output):
-    if "}{" in output:
-        lines = output.replace('}{', '}}{{').split('}{')
-    else:
-        lines = [output]
-    print_stream_line.last_id = None
-    for line in lines:
-        formatted_output = ''
-        try:
-            obj = json.loads(line)
-            status = obj.get('status', None)
-            identifier = obj.get('id', None)
-            progress = obj.get('progress', None)
-            error = obj.get('error', None)
+def stream_output(output, stream):
+    is_terminal = hasattr(stream, 'fileno') and os.isatty(stream.fileno())
+    all_events = []
+    lines = {}
+    diff = 0
 
-            if error:
-                print('', file=sys.stderr)
-                print(error, file=sys.stderr)
-                break
+    for chunk in output:
+        event = json.loads(chunk)
+        all_events.append(event)
 
-            if status and identifier and progress:
-                if identifier != print_stream_line.last_id:
-                    formatted_output = '\n%s: %s %s' % (identifier, status, progress)
-                else:
-                    formatted_output = '\r%s: %s %s\033[K' % (identifier, status, progress)
-                print_stream_line.last_id = identifier
-            elif status and identifier:
-                if identifier != print_stream_line.last_id:
-                    formatted_output = '\n%s: %s' % (identifier, status)
-                else:
-                    formatted_output = '\r%s: %s\033[K' % (identifier, status)
-                print_stream_line.last_id = identifier
-            elif status:
-                formatted_output = '\n%s' % status
+        if 'progress' in event or 'progressDetail' in event:
+            image_id = event['id']
+
+            if image_id in lines:
+                diff = len(lines) - lines[image_id]
             else:
-                for key in obj.keys():
-                    formatted_output = '%s' % obj.get(key, '')
-        except ValueError:
-            sys.stdout.write(line)
+                lines[image_id] = len(lines)
+                stream.write("\n")
+                diff = 0
 
-        sys.stdout.write(formatted_output)
-        sys.stdout.flush()
+            if is_terminal:
+                # move cursor up `diff` rows
+                stream.write("%c[%dA" % (27, diff))
+
+        print_output_event(event, stream, is_terminal)
+
+        if 'id' in event and is_terminal:
+            # move cursor back down
+            stream.write("%c[%dB" % (27, diff))
+
+        stream.flush()
+
+    return all_events
+
+
+def print_output_event(event, stream, is_terminal):
+    if 'errorDetail' in event:
+        raise StreamOutputError(event['errorDetail']['message'])
+
+    terminator = ''
+
+    if is_terminal and 'stream' not in event:
+        # erase current line
+        stream.write("%c[2K\r" % 27)
+        terminator = "\r"
+        pass
+    elif 'progressDetail' in event:
+        return
+
+    if 'time' in event:
+        stream.write("[%s] " % event['time'])
+
+    if 'id' in event:
+        stream.write("%s: " % event['id'])
+
+    if 'from' in event:
+        stream.write("(from %s) " % event['from'])
+
+    status = event.get('status', '')
+
+    if 'progress' in event:
+        stream.write("%s %s%s" % (status, event['progress'], terminator))
+    elif 'progressDetail' in event:
+        detail = event['progressDetail']
+        if 'current' in detail:
+            percentage = float(detail['current']) / float(detail['total']) * 100
+            stream.write('%s (%.1f%%)%s' % (status, percentage, terminator))
+        else:
+            stream.write('%s%s' % (status, terminator))
+    elif 'stream' in event:
+        stream.write("%s%s" % (event['stream'], terminator))
+    else:
+        stream.write("%s%s\n" % (status, terminator))

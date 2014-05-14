@@ -8,13 +8,13 @@ import webbrowser
 import re
 import os
 from os.path import join, expanduser, abspath, isfile
-
 import requests
 import yaml
+from exceptions import StreamOutputError
 import tutum
 from tutum.api import auth
 from tutum.api import exceptions
-
+from packages import docker
 from tutumcli import utils
 from . import __version__
 
@@ -124,10 +124,11 @@ def build(tag, working_directory, quiet, no_cache):
             utils.build_dockerfile(dockerfile_path, ports, cmd)
 
         docker_client = utils.get_docker_client()
-        output = docker_client.build(path=directory, tag=tag, quiet=quiet, nocache=no_cache, rm=True, stream=True)
-        for line in output:
-            if not quiet:
-                utils.print_stream_line(line)
+        stream = docker_client.build(path=directory, tag=tag, quiet=quiet, nocache=no_cache, rm=True, stream=True)
+        try:
+            utils.stream_output(stream, sys.stdout)
+        except Exception as e:
+            print(e.message, file=sys.stderr)
         print(tag)
     except Exception as e:
         print(e, file=sys.stderr)
@@ -496,13 +497,25 @@ def images_push(name, public):
     def push_to_public(repository):
         print('Pushing %s to public registry ...' % repository)
 
-        output_stream = docker_client.push(repository, stream=True)
         output_status = NO_ERROR
-        for line in output_stream:
-            if 'status 401' in line.lower():
+        #tag a image to its name to check if the images exists
+        try:
+            docker_client.tag(name, name)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            sys.exit(EXCEPTION_EXIT_CODE)
+        try:
+            stream = docker_client.push(repository, stream=True)
+            utils.stream_output(stream, sys.stdout)
+        except StreamOutputError as e:
+            if 'status 401' in e.message.lower():
                 output_status = AUTH_ERROR
-                continue
-            utils.print_stream_line(line)
+            else:
+                print(e, file=sys.stderr)
+                sys.exit(EXCEPTION_EXIT_CODE)
+        except Exception as e:
+            print(e.message, file=sys.stderr)
+            sys.exit(EXCEPTION_EXIT_CODE)
 
         if output_status == NO_ERROR:
             print('')
@@ -549,9 +562,15 @@ def images_push(name, public):
             print(e, file=sys.stderr)
             sys.exit(EXCEPTION_EXIT_CODE)
 
-        output_stream = docker_client.push(repository, stream=True)
-        for line in output_stream:
-            utils.print_stream_line(line)
+        stream = docker_client.push(repository, stream=True)
+        try:
+            utils.stream_output(stream, sys.stdout)
+        except docker.client.APIError as e:
+            print(e.explanation, file=sys.stderr)
+            sys.exit(EXCEPTION_EXIT_CODE)
+        except Exception as e:
+            print(e.message, file=sys.stderr)
+            sys.exit(EXCEPTION_EXIT_CODE)
         print('')
 
     docker_client = utils.get_docker_client()

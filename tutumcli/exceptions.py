@@ -16,3 +16,7 @@ class DockerNotFound(RuntimeError):
 
 class PublicImageNotFound(RuntimeError):
     pass
+
+
+class StreamOutputError(Exception):
+    pass

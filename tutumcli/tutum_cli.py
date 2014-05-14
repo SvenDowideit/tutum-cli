@@ -33,7 +33,7 @@ def main():
         sys.argv.append('-h')
     elif len(sys.argv) == 3:
         if sys.argv[1] == 'app' and sys.argv[2] in ['alias', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
-                                                     'start', 'stop', 'terminate']:
+                                                    'start', 'stop', 'terminate']:
             sys.argv.append('-h')
         elif sys.argv[1] == 'container' and sys.argv[2] in ['inspect', 'logs', 'start', 'stop', 'terminate']:
             sys.argv.append('-h')
