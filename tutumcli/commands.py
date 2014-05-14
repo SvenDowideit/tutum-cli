@@ -124,7 +124,7 @@ def build(tag, working_directory, quiet, no_cache):
             utils.build_dockerfile(dockerfile_path, ports, cmd)
 
         docker_client = utils.get_docker_client()
-        output = docker_client.build(path=directory, tag=tag, quiet=quiet, no_cache=no_cache, rm=True, stream=True)
+        output = docker_client.build(path=directory, tag=tag, quiet=quiet, nocache=no_cache, rm=True, stream=True)
         for line in output:
             if not quiet:
                 utils.print_stream_line(line)

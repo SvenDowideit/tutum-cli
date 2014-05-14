@@ -9,7 +9,7 @@ from tabulate import tabulate
 import tutum
 from dateutil import tz
 import ago
-import docker
+from packages import docker
 
 from tutumcli.exceptions import NonUniqueIdentifier, ObjectNotFound, BadParameter, DockerNotFound
 
