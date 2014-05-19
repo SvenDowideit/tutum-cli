@@ -60,11 +60,11 @@ def login():
     username = raw_input("Username: ")
     password = getpass.getpass()
     try:
-        api_key = auth.get_apikey(username, password)
+        user, api_key = auth.get_auth(username, password)
         if api_key is not None:
             config = ConfigParser.ConfigParser()
             config.add_section(AUTH_SECTION)
-            config.set(AUTH_SECTION, USER_OPTION, username)
+            config.set(AUTH_SECTION, USER_OPTION, user)
             config.set(AUTH_SECTION, APIKEY_OPTION, api_key)
             with open(join(expanduser('~'), TUTUM_FILE), 'w') as cfgfile:
                 config.write(cfgfile)
