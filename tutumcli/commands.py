@@ -237,10 +237,11 @@ def apps_redeploy(identifiers, tag):
 
 
 def apps_run(image, name, container_size, target_num_containers, run_command, entrypoint, container_ports,
-             container_envvars, linked_to_applications, autorestart, autoreplace, autodestroy, roles, sequential):
+             container_envvars, links, autorestart, autoreplace, autodestroy, roles, sequential):
     try:
         ports = utils.parse_ports(container_ports)
         envvars = utils.parse_envvars(container_envvars)
+        linked_to_applications = utils.parse_links(links)
         app = tutum.Application.create(image=image, name=name, container_size=container_size,
                                        target_num_containers=target_num_containers, run_command=run_command,
                                        entrypoint=entrypoint, container_ports=ports,

@@ -81,8 +81,7 @@ def add_apps_parser(subparsers):
                                  '(default: as defined in the image, plus any link- or role-generated variables)',
                             action='append')
     run_parser.add_argument('-l', '--link',
-                            help="an application's UUID (either long or short) or name to link this application "
-                                 "to (default: none)", action='append')
+                            help="Add link to another container (name:alias) or (uuid:alias)", action='append')
     run_parser.add_argument('--autorestart', help='whether the containers should be restarted if they stop '
                                                   '(default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     run_parser.add_argument('--autoreplace', help='whether the containers should be replaced with a new one if '
