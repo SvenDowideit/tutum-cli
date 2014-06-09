@@ -16,7 +16,7 @@ def add_build_parser(subparsers):
     build_parser.add_argument('directory', help='working directory')
 
 
-def add_apps_parser(subparsers):
+def add_app_parser(subparsers):
     # tutum app
     apps_parser = subparsers.add_parser('app', help='Application-related operations',
                                         description='Application-related operations')
@@ -129,7 +129,7 @@ def add_apps_parser(subparsers):
     terminate_parser.add_argument('identifier', help="application's UUID (either long or short) or name", nargs='+')
 
 
-def add_containers_parser(subparsers):
+def add_container_parser(subparsers):
     # tutum container
     containers_parser = subparsers.add_parser('container', help='Container-related operations',
                                               description='Container-related operations')
@@ -166,7 +166,7 @@ def add_containers_parser(subparsers):
     terminate_parser.add_argument('identifier', help="container's UUID (either long or short) or name", nargs='+')
 
 
-def add_images_parser(subparsers):
+def add_image_parser(subparsers):
     # tutum image
     images_parser = subparsers.add_parser('image', help='Image-related operations',
                                           description='Image-related operations')

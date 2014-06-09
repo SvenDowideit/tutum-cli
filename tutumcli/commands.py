@@ -135,7 +135,7 @@ def build(tag, working_directory, quiet, no_cache):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def apps_alias(identifiers, dns):
+def app_alias(identifiers, dns):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -152,7 +152,7 @@ def apps_alias(identifiers, dns):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def apps_inspect(identifiers):
+def app_inspect(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -165,7 +165,7 @@ def apps_inspect(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def apps_logs(identifiers):
+def app_logs(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -178,7 +178,7 @@ def apps_logs(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def apps_open():
+def app_open():
     try:
         app_list = tutum.Application.list()
         deployed_datetimes = {}
@@ -195,7 +195,7 @@ def apps_open():
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def apps_ps(quiet=False, status=None):
+def app_ps(quiet=False, status=None):
     try:
         headers = ["NAME", "UUID", "STATUS", "IMAGE", "SIZE (#)", "DEPLOYED", "WEB HOSTNAME"]
         app_list = tutum.Application.list(state=status)
@@ -221,7 +221,7 @@ def apps_ps(quiet=False, status=None):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def apps_redeploy(identifiers, tag):
+def app_redeploy(identifiers, tag):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -236,7 +236,7 @@ def apps_redeploy(identifiers, tag):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def apps_run(image, name, container_size, target_num_containers, run_command, entrypoint, container_ports,
+def app_run(image, name, container_size, target_num_containers, run_command, entrypoint, container_ports,
              container_envvars, links, autorestart, autoreplace, autodestroy, roles, sequential):
     try:
         ports = utils.parse_ports(container_ports)
@@ -256,7 +256,7 @@ def apps_run(image, name, container_size, target_num_containers, run_command, en
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def apps_scale(identifiers, target_num_containers):
+def app_scale(identifiers, target_num_containers):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -272,7 +272,7 @@ def apps_scale(identifiers, target_num_containers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def apps_set(autorestart, autoreplace, autodestroy, identifiers):
+def app_set(autorestart, autoreplace, autodestroy, identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -291,7 +291,7 @@ def apps_set(autorestart, autoreplace, autodestroy, identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def apps_start(identifiers):
+def app_start(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -306,7 +306,7 @@ def apps_start(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def apps_stop(identifiers):
+def app_stop(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -321,7 +321,7 @@ def apps_stop(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def apps_terminate(identifiers):
+def app_terminate(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -336,7 +336,7 @@ def apps_terminate(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def containers_inspect(identifiers):
+def container_inspect(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -349,7 +349,7 @@ def containers_inspect(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def containers_logs(identifiers):
+def container_logs(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -362,7 +362,7 @@ def containers_logs(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def containers_ps(app_identifier, quiet=False, status=None):
+def container_ps(app_identifier, quiet=False, status=None):
     try:
         headers = ["NAME", "UUID", "STATUS", "IMAGE", "RUN COMMAND", "SIZE", "EXIT CODE", "DEPLOYED", "PORTS"]
 
@@ -405,7 +405,7 @@ def containers_ps(app_identifier, quiet=False, status=None):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def containers_start(identifiers):
+def container_start(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -420,7 +420,7 @@ def containers_start(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def containers_stop(identifiers):
+def container_stop(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -435,7 +435,7 @@ def containers_stop(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def containers_terminate(identifiers):
+def container_terminate(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -450,7 +450,7 @@ def containers_terminate(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def images_list(quiet=False, jumpstarts=False, linux=False):
+def image_list(quiet=False, jumpstarts=False, linux=False):
     try:
 
         headers = ["NAME", "DESCRIPTION"]
@@ -480,7 +480,7 @@ def images_list(quiet=False, jumpstarts=False, linux=False):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def images_register(repository, description):
+def image_register(repository, description):
     print('Please input username and password of the repository:')
     username = raw_input('Username: ')
     password = getpass.getpass()
@@ -494,7 +494,7 @@ def images_register(repository, description):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def images_push(name, public):
+def image_push(name, public):
     def push_to_public(repository):
         print('Pushing %s to public registry ...' % repository)
 
@@ -581,7 +581,7 @@ def images_push(name, public):
         push_to_tutum(name)
 
 
-def images_rm(repositories):
+def image_rm(repositories):
     has_exception = False
     for repository in repositories:
         try:
@@ -596,7 +596,7 @@ def images_rm(repositories):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def images_search(text):
+def image_search(text):
     try:
         docker_client = utils.get_docker_client()
         results = docker_client.search(text)
@@ -617,7 +617,7 @@ def images_search(text):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def images_update(repositories, username, password, description):
+def image_update(repositories, username, password, description):
     for repository in repositories:
         try:
             image = tutum.Image.fetch(repository)
