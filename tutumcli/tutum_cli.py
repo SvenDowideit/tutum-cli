@@ -15,6 +15,7 @@ logging.basicConfig()
 # Top parser
 parser = argparse.ArgumentParser(description="Tutum's CLI", prog='tutum')
 parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
+parser.add_argument('--debug', action='store_true', help=argparse.SUPPRESS)
 subparsers = parser.add_subparsers(title="Tutum's CLI commands", dest='cmd')
 
 
@@ -42,6 +43,9 @@ def main():
 
     # dispatch commands
     args = parser.parse_args()
+    if args.debug:
+        requests_log = logging.getLogger("python-tutum")
+        requests_log.setLevel(logging.INFO)
     if args.cmd == 'login':
         commands.login()
     if args.cmd == 'build':
