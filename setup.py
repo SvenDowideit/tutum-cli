@@ -19,9 +19,10 @@ def find_version(*file_paths):
         return version_match.group(1)
     raise RuntimeError('Unable to find version string.')
 
+
 with open('requirements.txt') as f:
     install_requires = f.read().splitlines()
-    
+
 setup(
     name='tutum',
     version=find_version('tutumcli', '__init__.py'),
@@ -29,7 +30,7 @@ setup(
     install_requires=install_requires,
     entry_points={
         'console_scripts':
-        ['tutum = tutumcli.tutum_cli:main']
+            ['tutum = tutumcli.tutum_cli:main']
     },
     include_package_data=True,
     author='Tutum, Inc.',

@@ -8,13 +8,15 @@ import webbrowser
 import re
 import os
 from os.path import join, expanduser, abspath, isfile
+
 import requests
 import yaml
-from exceptions import StreamOutputError
 import tutum
+import docker
+
+from exceptions import StreamOutputError
 from tutum.api import auth
 from tutum.api import exceptions
-from packages import docker
 from tutumcli import utils
 from . import __version__
 
@@ -237,7 +239,7 @@ def app_redeploy(identifiers, tag):
 
 
 def app_run(image, name, container_size, target_num_containers, run_command, entrypoint, container_ports,
-             container_envvars, links, autorestart, autoreplace, autodestroy, roles, sequential):
+            container_envvars, links, autorestart, autoreplace, autodestroy, roles, sequential):
     try:
         ports = utils.parse_ports(container_ports)
         envvars = utils.parse_envvars(container_envvars)

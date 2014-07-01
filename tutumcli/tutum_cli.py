@@ -65,11 +65,11 @@ def main():
             commands.app_redeploy(args.identifier, args.tag)
         elif args.subcmd == 'run':
             commands.app_run(image=args.image, name=args.name, container_size=args.container_size,
-                              target_num_containers=args.target_num_containers, run_command=args.run_command,
-                              entrypoint=args.entrypoint, container_ports=args.port, container_envvars=args.env,
-                              links=args.link, autorestart=args.autorestart,
-                              autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role,
-                              sequential=args.sequential)
+                             target_num_containers=args.target_num_containers, run_command=args.run_command,
+                             entrypoint=args.entrypoint, container_ports=args.port, container_envvars=args.env,
+                             links=args.link, autorestart=args.autorestart,
+                             autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role,
+                             sequential=args.sequential)
         elif args.subcmd == 'scale':
             commands.app_scale(args.identifier, args.target_num_containers)
         elif args.subcmd == 'set':

@@ -170,23 +170,23 @@ Containers
     [1] 03 May 00:47:02.069 # You requested maxclients of 10000 requiring at least 10032 max file descriptors.
     [1] 03 May 00:47:02.069 # Redis can't set maximum open files to 10032 because of OS error: Operation not permitted.
     [1] 03 May 00:47:02.069 # Current maximum open files is 1024. maxclients has been reduced to 4064 to compensate for low ulimit. If you need higher maxclients increase 'ulimit -n'.
-                    _._                                                  
-               _.-``__ ''-._                                             
+                    _._
+               _.-``__ ''-._
           _.-``    `.  `_.  ''-._           Redis 2.8.8 (00000000/0) 64 bit
-      .-`` .-```.  ```\/    _.,_ ''-._                                   
+      .-`` .-```.  ```\/    _.,_ ''-._
      (    '      ,       .-`  | `,    )     Running in stand alone mode
      |`-._`-...-` __...-.``-._|'` _.-'|     Port: 6379
      |    `-._   `._    /     _.-'    |     PID: 1
-      `-._    `-._  `-./  _.-'    _.-'                                   
-     |`-._`-._    `-.__.-'    _.-'_.-'|                                  
-     |    `-._`-._        _.-'_.-'    |           http://redis.io        
-      `-._    `-._`-.__.-'_.-'    _.-'                                   
-     |`-._`-._    `-.__.-'    _.-'_.-'|                                  
-     |    `-._`-._        _.-'_.-'    |                                  
-      `-._    `-._`-.__.-'_.-'    _.-'                                   
-          `-._    `-.__.-'    _.-'                                       
-              `-._        _.-'                                           
-                  `-.__.-'                                               
+      `-._    `-._  `-./  _.-'    _.-'
+     |`-._`-._    `-.__.-'    _.-'_.-'|
+     |    `-._`-._        _.-'_.-'    |           http://redis.io
+      `-._    `-._`-.__.-'_.-'    _.-'
+     |`-._`-._    `-.__.-'    _.-'_.-'|
+     |    `-._`-._        _.-'_.-'    |
+      `-._    `-._`-.__.-'_.-'    _.-'
+          `-._    `-.__.-'    _.-'
+              `-._        _.-'
+                  `-.__.-'
     
     [1] 03 May 00:47:02.070 # Server started, Redis version 2.8.8
     [1] 03 May 00:47:02.070 # WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
