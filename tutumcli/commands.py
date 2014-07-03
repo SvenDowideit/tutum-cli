@@ -250,7 +250,8 @@ def cluster_run(image, name, container_size, target_num_containers, run_command,
                                        container_envvars=envvars, linked_to_application=linked_to_applications,
                                        autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
                                        roles=roles, sequential_deployment=sequential)
-        result = app.save()
+        app.save()
+        result = app.start()
         if result:
             print(app.uuid)
     except Exception as e:
