@@ -67,21 +67,21 @@ def fetch_remote_container(identifier, raise_exceptions=True):
         raise e
 
 
-def fetch_remote_app(identifier, raise_exceptions=True):
+def fetch_remote_cluster(identifier, raise_exceptions=True):
     try:
         if is_uuid4(identifier):
             try:
-                return tutum.Application.fetch(identifier)
+                return tutum.Cluster.fetch(identifier)
             except Exception:
-                raise ObjectNotFound("Cannot find an application with the identifier '%s'" % identifier)
+                raise ObjectNotFound("Cannot find a cluster with the identifier '%s'" % identifier)
         else:
-            objects_same_identifier = tutum.Application.list(unique_name=identifier) or \
-                                      tutum.Application.list(uuid__startswith=identifier)
+            objects_same_identifier = tutum.Cluster.list(unique_name=identifier) or \
+                                      tutum.Cluster.list(uuid__startswith=identifier)
             if len(objects_same_identifier) == 1:
                 return objects_same_identifier[0]
             elif len(objects_same_identifier) == 0:
-                raise ObjectNotFound("Cannot find an application with the identifier '%s'" % identifier)
-            raise NonUniqueIdentifier("More than one application has the same identifier, please use the long uuid")
+                raise ObjectNotFound("Cannot find a cluster with the identifier '%s'" % identifier)
+            raise NonUniqueIdentifier("More than one cluster has the same identifier, please use the long uuid")
     except (NonUniqueIdentifier, ObjectNotFound) as e:
         if not raise_exceptions:
             return e
