@@ -80,7 +80,9 @@ def add_cluster_parser(subparsers):
                             help='set environment variables i.e. "ENVVAR=foo" '
                                  '(default: as defined in the image, plus any link- or role-generated variables)',
                             action='append')
-    run_parser.add_argument('-l', '--link',
+    run_parser.add_argument('--link-cluster',
+                            help="Add link to another cluster (name:alias) or (uuid:alias)", action='append')
+    run_parser.add_argument('--link-container',
                             help="Add link to another container (name:alias) or (uuid:alias)", action='append')
     run_parser.add_argument('--autorestart', help='whether the containers should be restarted if they stop '
                                                   '(default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
@@ -92,6 +94,7 @@ def add_cluster_parser(subparsers):
                                            'i.e. "global" (default: none, possible values: "global")', action='append')
     run_parser.add_argument('--sequential', help='whether the containers should be launched and scaled sequentially',
                             action='store_true')
+    run_parser.add_argument('--web-public-dns', help="Set your own web public dns")
 
     # tutum cluster scale
     scale_parser = cluster_subparser.add_parser('scale', help='Scale a running cluster',

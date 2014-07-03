@@ -239,17 +239,19 @@ def cluster_redeploy(identifiers, tag):
 
 
 def cluster_run(image, name, container_size, target_num_containers, run_command, entrypoint, container_ports,
-            container_envvars, links, autorestart, autoreplace, autodestroy, roles, sequential):
+            container_envvars, linked_to_cluster, linked_to_container, autorestart, autoreplace, autodestroy,
+            roles, sequential, web_public_dns):
     try:
         ports = utils.parse_ports(container_ports)
         envvars = utils.parse_envvars(container_envvars)
-        linked_to_applications = utils.parse_links(links)
+        links_cluster = utils.parse_links(linked_to_cluster, 'to_application')
+        links_container = utils.parse_links(linked_to_container, 'to_container')
         app = tutum.Cluster.create(image=image, name=name, container_size=container_size,
                                        target_num_containers=target_num_containers, run_command=run_command,
-                                       entrypoint=entrypoint, container_ports=ports,
-                                       container_envvars=envvars, linked_to_application=linked_to_applications,
+                                       entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
+                                       linked_to_application=links_cluster, linked_to_container=links_container,
                                        autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
-                                       roles=roles, sequential_deployment=sequential)
+                                       roles=roles, sequential_deployment=sequential, web_public_dns=web_public_dns)
         app.save()
         result = app.start()
         if result:

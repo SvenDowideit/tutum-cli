@@ -236,13 +236,13 @@ def print_output_event(event, stream, is_terminal):
         stream.write("%s%s\n" % (status, terminator))
 
 
-def parse_links(links):
+def parse_links(links, target):
     def _format_link(_link):
         link_regexp = re.compile('^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+$')
         match = link_regexp.match(_link)
         if match:
             temp = _link.split(":", 1)
-            return {'to_application': temp[0], 'name': temp[1]}
+            return {target: temp[0], 'name': temp[1]}
         raise BadParameter("Link variable argument %s does not match with (name:alias)."
                            " Example: mysql:db" % _link)
 
