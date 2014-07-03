@@ -146,14 +146,54 @@ def add_container_parser(subparsers):
     # tutum container logs
     logs_parser = container_subparser.add_parser('logs', help='Get logs from a container',
                                                   description='Get logs from a container')
-    logs_parser.add_argument('identifier', help="cluster's UUID (either long or short) or name", nargs='+')
+    logs_parser.add_argument('identifier', help="container's UUID (either long or short) or name", nargs='+')
 
     # tutum container ps
     ps_parser = container_subparser.add_parser('ps', help='List containers', description='List containers')
-    ps_parser.add_argument('-i', '--identifier', help="cluster's UUID (either long or short) or name")
+    ps_parser.add_argument('-i', '--identifier', help="container's UUID (either long or short) or name")
     ps_parser.add_argument('-q', '--quiet', help='print only long UUIDs', action='store_true')
     ps_parser.add_argument('-s', '--status', help='filter containers by status',
                            choices=['Running', 'Stopped', 'Start failed', 'Stopped with errors'])
+
+    # tutum container run
+    run_parser = container_subparser.add_parser('run', help='Create and run a new container',
+                                           description='Create and run a new container', )
+    run_parser.add_argument('image', help='the name of the image used to deploy this container')
+    run_parser.add_argument('-n', '--name', help='a human-readable name for the container'
+                                                 '(default: image_tag without namespace)')
+    run_parser.add_argument('-s', '--container-size', help='the size of the container containers '
+                                                           '(default: XS, possible values: XS, S, M, L, XL)',
+                            default='XS')
+    run_parser.add_argument('-t', '--target-num-containers',
+                            help='the number of containers to run for this container (default: 1)', type=int,
+                            default=1)
+    run_parser.add_argument('-r', '--run-command',
+                            help='the command used to start the container containers '
+                                 '(default: as defined in the image)')
+    run_parser.add_argument('--entrypoint',
+                            help='the command prefix used to start the container containers '
+                                 '(default: as defined in the image)')
+    run_parser.add_argument('-p', '--port',
+                            help='set ports i.e. "80/tcp" (default: as defined in the image)', action='append')
+    run_parser.add_argument('-e', '--env',
+                            help='set environment variables i.e. "ENVVAR=foo" '
+                                 '(default: as defined in the image, plus any link- or role-generated variables)',
+                            action='append')
+    run_parser.add_argument('--link-cluster',
+                            help="Add link to another cluster (name:alias) or (uuid:alias)", action='append')
+    run_parser.add_argument('--link-container',
+                            help="Add link to another container (name:alias) or (uuid:alias)", action='append')
+    run_parser.add_argument('--autorestart', help='whether the containers should be restarted if they stop '
+                                                  '(default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
+    run_parser.add_argument('--autoreplace', help='whether the containers should be replaced with a new one if '
+                                                  'they stop (default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
+    run_parser.add_argument('--autodestroy', help='whether the containers should be terminated if '
+                                                  'they stop (default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
+    run_parser.add_argument('--role', help='Tutum API roles to grant the container, '
+                                           'i.e. "global" (default: none, possible values: "global")', action='append')
+    run_parser.add_argument('--sequential', help='whether the containers should be launched and scaled sequentially',
+                            action='store_true')
+    run_parser.add_argument('--web-public-dns', help="Set your own web public dns")
 
     # tutum container start
     start_parser = container_subparser.add_parser('start', help='Start a container', description='Start a container')

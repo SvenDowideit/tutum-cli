@@ -410,6 +410,29 @@ def container_ps(cluster_identifier, quiet=False, status=None):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
+def container_run(image, name, container_size, run_command, entrypoint, container_ports,
+            container_envvars, linked_to_cluster, linked_to_container, autorestart, autoreplace, autodestroy,
+            roles, web_public_dns):
+    try:
+        ports = utils.parse_ports(container_ports)
+        envvars = utils.parse_envvars(container_envvars)
+        links_cluster = utils.parse_links(linked_to_cluster, 'to_application')
+        links_container = utils.parse_links(linked_to_container, 'to_container')
+        container = tutum.Container.create(image=image, name=name, container_size=container_size,
+                                       run_command=run_command,
+                                       entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
+                                       linked_to_application=links_cluster, linked_to_container=links_container,
+                                       autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
+                                       roles=roles, web_public_dns=web_public_dns)
+        container.save()
+        result = container.start()
+        if result:
+            print(container.uuid)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
 def container_start(identifiers):
     has_exception = False
     for identifier in identifiers:
