@@ -155,6 +155,13 @@ def add_container_parser(subparsers):
     ps_parser.add_argument('-s', '--status', help='filter containers by status',
                            choices=['Running', 'Stopped', 'Start failed', 'Stopped with errors'])
 
+    # tutum container redeploy
+    redeploy_parser = container_subparser.add_parser('redeploy', help='Redeploy a running container with a '
+                                                                 'new version/tag',
+                                                description='Redeploy a running container with a new version/tag')
+    redeploy_parser.add_argument('identifier', help="container's UUID (either long or short) or name", nargs='+')
+    redeploy_parser.add_argument('-t', '--tag', help='tag of the image to redeploy')
+
     # tutum container run
     run_parser = container_subparser.add_parser('run', help='Create and run a new container',
                                            description='Create and run a new container', )

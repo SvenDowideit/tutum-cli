@@ -36,7 +36,8 @@ def main():
         if sys.argv[1] == 'cluster' and sys.argv[2] in ['alias', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
                                                     'start', 'stop', 'terminate']:
             sys.argv.append('-h')
-        elif sys.argv[1] == 'container' and sys.argv[2] in ['inspect', 'logs', 'run', 'start', 'stop', 'terminate']:
+        elif sys.argv[1] == 'container' and sys.argv[2] in ['inspect', 'logs', 'redeploy', 'run', 'start', 'stop',
+                                                            'terminate']:
             sys.argv.append('-h')
         elif sys.argv[1] == 'image' and sys.argv[2] in ['register', 'push', 'rm', 'search', 'update']:
             sys.argv.append('-h')
@@ -88,6 +89,8 @@ def main():
             commands.container_logs(args.identifier)
         elif args.subcmd == 'ps':
             commands.container_ps(args.identifier, args.quiet, args.status)
+        elif args.subcmd == 'redeploy':
+            commands.container_redeploy(args.identifier, args.tag)
         elif args.subcmd == 'run':
             commands.container_run(image=args.image, name=args.name, container_size=args.container_size,
                              run_command=args.run_command, entrypoint=args.entrypoint, container_ports=args.port,
