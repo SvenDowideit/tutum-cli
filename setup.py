@@ -37,5 +37,6 @@ setup(
     description='CLI for Tutum',
     license='Apache v2',
     keywords='tutum docker cli',
-    url='http://www.tutum.co/'
+    url='http://www.tutum.co/',
+    test_suite='tests',
 )
