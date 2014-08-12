@@ -22,18 +22,20 @@ Now you can start using it:
     usage: tutum [-h] [-v] {apps,build,containers,images,login} ...
     
     Tutum's CLI
-    
+
     optional arguments:
       -h, --help            show this help message and exit
       -v, --version         show program's version number and exit
-    
+
     Tutum's CLI commands:
-      {apps,build,containers,images,login}
-        apps                Applications related operations
-        build               Build an image
-        containers          Containers related operations
-        images              Image related operations
+      {cluster,build,container,image,login}
+        cluster             Cluster-related operations
+        build               Build an image using an existing Dockerfile, or create
+                            one using buildstep
+        container           Container-related operations
+        image               Image-related operations
         login               Login into Tutum
+
 
 
 Docker image
@@ -94,36 +96,45 @@ Your login credentials will be stored in ``~/.tutum``:
 Quick examples
 --------------
 
-Applications
-^^^^^^^^^^^^
+Clusters
+^^^^^^^^
 
 .. sourcecode:: none
 
     $ tutum apps
-    usage: tutum [-h] [-v] {app,build,container,image,login} ...
+    usage: tutum cluster [-h]
+                         {alias,inspect,logs,open,ps,redeploy,run,scale,set,start,stop,terminate}
+                         ...
 
-    Tutum's CLI
+    Cluster-related operations
 
     optional arguments:
       -h, --help            show this help message and exit
-      -v, --version         show program's version number and exit
 
-    Tutum's CLI commands:
-      {app,build,container,image,login}
-        app                 Application-related operations
-        build               Build an image using an existing Dockerfile, or create
-                            one using buildstep
-        container           Container-related operations
-        image               Image-related operations
-        login               Login into Tutum
+    tutum cluster commands:
+      {alias,inspect,logs,open,ps,redeploy,run,scale,set,start,stop,terminate}
+        alias               Set a custom FQDN (CNAME) to a running web cluster
+        inspect             Get all details from an cluster
+        logs                Get logs from an cluster
+        open                Open last web cluster launched
+        ps                  List clusters
+        redeploy            Redeploy a running cluster with a new version/tag
+        run                 Create and run a new cluster
+        scale               Scale a running cluster
+        set                 Enable or disable Crash Recovery and Autodestroy
+                            features to an existing cluster
+        start               Start a stopped cluster
+        stop                Stop a running cluster
+        terminate           Terminate an cluster
 
-    $ tutum app run tutum/redis -t 3
+
+    $ tutum cluster run tutum/redis -t 3
     5f07bce6-d285-43bc-b917-9f0fa8e1110d
-    $ tutum app ps
+    $ tutum cluster ps
     NAME     UUID      STATUS      IMAGE                 SIZE (#)    DEPLOYED          WEB HOSTNAME
     couchdb  da0dcfcc  ▶ Running   tutum/couchdb:latest  XS (2)      27 minutes ago
     redis    5f07bce6  ⚙ Starting  tutum/redis:latest    XS (3)
-    $ tutum app ps
+    $ tutum cluster ps
     NAME     UUID      STATUS     IMAGE                 SIZE (#)    DEPLOYED          WEB HOSTNAME
     couchdb  da0dcfcc  ▶ Running  tutum/couchdb:latest  XS (2)      28 minutes ago
 

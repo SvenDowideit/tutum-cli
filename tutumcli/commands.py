@@ -244,12 +244,12 @@ def cluster_run(image, name, container_size, target_num_containers, run_command,
     try:
         ports = utils.parse_ports(container_ports)
         envvars = utils.parse_envvars(container_envvars)
-        links_cluster = utils.parse_links(linked_to_cluster, 'to_application')
+        links_cluster = utils.parse_links(linked_to_cluster, 'to_cluster')
         links_container = utils.parse_links(linked_to_container, 'to_container')
         app = tutum.Cluster.create(image=image, name=name, container_size=container_size,
                                        target_num_containers=target_num_containers, run_command=run_command,
                                        entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
-                                       linked_to_application=links_cluster, linked_to_container=links_container,
+                                       linked_to_cluster=links_cluster, linked_to_container=links_container,
                                        autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
                                        roles=roles, sequential_deployment=sequential, web_public_dns=web_public_dns)
         app.save()
@@ -374,10 +374,10 @@ def container_ps(cluster_identifier, quiet=False, status=None):
         if cluster_identifier is None:
             containers = tutum.Container.list(state=status)
         elif utils.is_uuid4(cluster_identifier):
-            containers = tutum.Container.list(application__uuid=cluster_identifier, state=status)
+            containers = tutum.Container.list(cluster__uuid=cluster_identifier, state=status)
         else:
-            containers = tutum.Container.list(application__unique_name=cluster_identifier, state=status) + \
-                         tutum.Container.list(application__uuid__startswith=cluster_identifier, state=status)
+            containers = tutum.Container.list(cluster__unique_name=cluster_identifier, state=status) + \
+                         tutum.Container.list(cluster__uuid__startswith=cluster_identifier, state=status)
 
         data_list = []
         long_uuid_list = []
@@ -431,12 +431,12 @@ def container_run(image, name, container_size, run_command, entrypoint, containe
     try:
         ports = utils.parse_ports(container_ports)
         envvars = utils.parse_envvars(container_envvars)
-        links_cluster = utils.parse_links(linked_to_cluster, 'to_application')
+        links_cluster = utils.parse_links(linked_to_cluster, 'to_cluster')
         links_container = utils.parse_links(linked_to_container, 'to_container')
         container = tutum.Container.create(image=image, name=name, container_size=container_size,
                                        run_command=run_command,
                                        entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
-                                       linked_to_application=links_cluster, linked_to_container=links_container,
+                                       linked_to_cluster=links_cluster, linked_to_container=links_container,
                                        autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
                                        roles=roles, web_public_dns=web_public_dns)
         container.save()
