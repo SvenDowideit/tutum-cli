@@ -691,10 +691,16 @@ def node_list(quiet):
         data_list = []
         long_uuid_list = []
         for node in node_list:
+            cluster_name = node.node_cluster
+            try:
+                cluster_name = tutum.NodeCluster.fetch(node.node_cluster.strip("/").split("/")[-1]).name
+            except:
+                pass
+
             data_list.append([node.uuid[:8],
                               node.external_fqdn,
                               utils.get_humanize_local_datetime_from_utc_datetime_string(node.last_seen),
-                              node.state, node.node_cluster])
+                              node.state, cluster_name])
             long_uuid_list.append(node.uuid)
         if len(data_list) == 0:
             data_list.append(["", "", "", "", ""])
