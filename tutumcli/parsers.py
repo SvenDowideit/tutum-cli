@@ -62,9 +62,9 @@ def add_cluster_parser(subparsers):
     run_parser.add_argument('image', help='the name of the image used to deploy this cluster')
     run_parser.add_argument('-n', '--name', help='a human-readable name for the cluster '
                                                  '(default: image_tag without namespace)')
-    run_parser.add_argument('-s', '--container-size', help='the size of the cluster containers '
-                                                           '(default: XS, possible values: XS, S, M, L, XL)',
-                            default='XS')
+    run_parser.add_argument('--cpushares', help='Relative weight for CPU Shares', type=int)
+    run_parser.add_argument('--memory', help='RAM memory hard limit in MB', type=int)
+    run_parser.add_argument('--memoryswap', help='Memory swap hard limit in MB', type=int)
     run_parser.add_argument('-t', '--target-num-containers',
                             help='the number of containers to run for this cluster (default: 1)', type=int,
                             default=1)
@@ -169,9 +169,9 @@ def add_container_parser(subparsers):
     run_parser.add_argument('image', help='the name of the image used to deploy this container')
     run_parser.add_argument('-n', '--name', help='a human-readable name for the container'
                                                  '(default: image_tag without namespace)')
-    run_parser.add_argument('-s', '--container-size', help='the size of the container containers '
-                                                           '(default: XS, possible values: XS, S, M, L, XL)',
-                            default='XS')
+    run_parser.add_argument('--cpushares', help='Relative weight for CPU Shares', type=int)
+    run_parser.add_argument('--memory', help='RAM memory hard limit in MB', type=int)
+    run_parser.add_argument('--memoryswap', help='Memory swap hard limit in MB', type=int)
     run_parser.add_argument('-t', '--target-num-containers',
                             help='the number of containers to run for this container (default: 1)', type=int,
                             default=1)

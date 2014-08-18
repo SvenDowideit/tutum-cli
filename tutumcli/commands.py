@@ -186,7 +186,8 @@ def cluster_open():
         deployed_datetimes = {}
         for cluster in cluster_list:
             if cluster.web_public_dns and cluster.state in ["Running", "Partly running"]:
-                deployed_datetimes[utils.from_utc_string_to_utc_datetime(cluster.deployed_datetime)] = cluster.web_public_dns
+                deployed_datetimes[
+                    utils.from_utc_string_to_utc_datetime(cluster.deployed_datetime)] = cluster.web_public_dns
         if deployed_datetimes:
             max_datetime = max(deployed_datetimes.keys())
             webbrowser.open("http://" + deployed_datetimes[max_datetime])
@@ -199,18 +200,19 @@ def cluster_open():
 
 def cluster_ps(quiet=False, status=None):
     try:
-        headers = ["NAME", "UUID", "STATUS", "IMAGE", "SIZE (#)", "DEPLOYED", "WEB HOSTNAME"]
+        headers = ["NAME", "UUID", "STATUS", "IMAGE", "DEPLOYED", "WEB HOSTNAME"]
         cluster_list = tutum.Cluster.list(state=status)
         data_list = []
         long_uuid_list = []
         for cluster in cluster_list:
-            data_list.append([cluster.unique_name, cluster.uuid[:8], utils.add_unicode_symbol_to_state(cluster.state),
-                              cluster.image_name, "%s (%d)" % (cluster.container_size, cluster.current_num_containers),
+            data_list.append([cluster.unique_name, cluster.uuid[:8],
+                              utils.add_unicode_symbol_to_state(cluster.state),
+                              cluster.image_name,
                               utils.get_humanize_local_datetime_from_utc_datetime_string(cluster.deployed_datetime),
                               cluster.web_public_dns])
             long_uuid_list.append(cluster.uuid)
         if len(data_list) == 0:
-            data_list.append(["", "", "", "", "", "", ""])
+            data_list.append(["", "", "", "", "", ""])
 
         if quiet:
             for uuid in long_uuid_list:
@@ -238,20 +240,21 @@ def cluster_redeploy(identifiers, tag):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def cluster_run(image, name, container_size, target_num_containers, run_command, entrypoint, container_ports,
-                container_envvars, linked_to_cluster, linked_to_container, autorestart, autoreplace, autodestroy,
-                roles, sequential, web_public_dns):
+def cluster_run(image, name, cpu_shares, memory, memory_swap, target_num_containers, run_command, entrypoint,
+                container_ports, container_envvars, linked_to_cluster, linked_to_container, autorestart, autoreplace,
+                autodestroy, roles, sequential, web_public_dns):
     try:
         ports = utils.parse_ports(container_ports)
         envvars = utils.parse_envvars(container_envvars)
         links_cluster = utils.parse_links(linked_to_cluster, 'to_cluster')
         links_container = utils.parse_links(linked_to_container, 'to_container')
-        cluster = tutum.Cluster.create(image=image, name=name, container_size=container_size,
-                                   target_num_containers=target_num_containers, run_command=run_command,
-                                   entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
-                                   linked_to_cluster=links_cluster, linked_to_container=links_container,
-                                   autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
-                                   roles=roles, sequential_deployment=sequential, web_public_dns=web_public_dns)
+        cluster = tutum.Cluster.create(image=image, name=name, cpu_shares=cpu_shares,
+                                       memory=memory, memory_swap=memory_swap,
+                                       target_num_containers=target_num_containers, run_command=run_command,
+                                       entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
+                                       linked_to_cluster=links_cluster, linked_to_container=links_container,
+                                       autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
+                                       roles=roles, sequential_deployment=sequential, web_public_dns=web_public_dns)
         cluster.save()
         result = cluster.start()
         if result:
@@ -369,7 +372,7 @@ def container_logs(identifiers):
 
 def container_ps(cluster_identifier, quiet=False, status=None):
     try:
-        headers = ["NAME", "UUID", "STATUS", "IMAGE", "RUN COMMAND", "SIZE", "EXIT CODE", "DEPLOYED", "PORTS"]
+        headers = ["NAME", "UUID", "STATUS", "IMAGE", "RUN COMMAND", "EXIT CODE", "DEPLOYED", "PORTS"]
 
         if cluster_identifier is None:
             containers = tutum.Container.list(state=status)
@@ -392,14 +395,17 @@ def container_ps(cluster_identifier, quiet=False, status=None):
                 ports.append(ports_string)
 
             ports_string = ", ".join(ports)
-            data_list.append([container.unique_name, container.uuid[:8],
-                              utils.add_unicode_symbol_to_state(container.state), container.image_name,
-                              container.run_command, container.container_size, container.exit_code,
+            data_list.append([container.unique_name,
+                              container.uuid[:8],
+                              utils.add_unicode_symbol_to_state(container.state),
+                              container.image_name,
+                              container.run_command,
+                              container.exit_code,
                               utils.get_humanize_local_datetime_from_utc_datetime_string(container.deployed_datetime),
                               ports_string])
             long_uuid_list.append(container.uuid)
         if len(data_list) == 0:
-            data_list.append(["", "", "", "", "", "", "", "", ""])
+            data_list.append(["", "", "", "", "", "", "", ""])
         if quiet:
             for uuid in long_uuid_list:
                 print(uuid)
@@ -425,7 +431,7 @@ def container_redeploy(identifiers, tag):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def container_run(image, name, container_size, run_command, entrypoint, container_ports,
+def container_run(image, name, cpu_shares, memory, memory_swap, run_command, entrypoint, container_ports,
                   container_envvars, linked_to_cluster, linked_to_container, autorestart, autoreplace, autodestroy,
                   roles, web_public_dns):
     try:
@@ -433,7 +439,8 @@ def container_run(image, name, container_size, run_command, entrypoint, containe
         envvars = utils.parse_envvars(container_envvars)
         links_cluster = utils.parse_links(linked_to_cluster, 'to_cluster')
         links_container = utils.parse_links(linked_to_container, 'to_container')
-        container = tutum.Container.create(image=image, name=name, container_size=container_size,
+        container = tutum.Container.create(image=image, name=name, cpu_shares=cpu_shares,
+                                           memory=memory, memory_swap=memory_swap,
                                            run_command=run_command,
                                            entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
                                            linked_to_cluster=links_cluster, linked_to_container=links_container,

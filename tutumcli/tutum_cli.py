@@ -68,7 +68,8 @@ def main():
         elif args.subcmd == 'redeploy':
             commands.cluster_redeploy(args.identifier, args.tag)
         elif args.subcmd == 'run':
-            commands.cluster_run(image=args.image, name=args.name, container_size=args.container_size,
+            commands.cluster_run(image=args.image, name=args.name, cpu_shares=args.cpushares,
+                                 memory=args.memory, memory_swap=args.memoryswap,
                                  target_num_containers=args.target_num_containers, run_command=args.run_command,
                                  entrypoint=args.entrypoint, container_ports=args.port, container_envvars=args.env,
                                  linked_to_cluster=args.link_cluster, linked_to_container=args.link_container,
@@ -95,7 +96,8 @@ def main():
         elif args.subcmd == 'redeploy':
             commands.container_redeploy(args.identifier, args.tag)
         elif args.subcmd == 'run':
-            commands.container_run(image=args.image, name=args.name, container_size=args.container_size,
+            commands.container_run(image=args.image, name=args.name, cpu_shares=args.cpushares,
+                                   memory=args.memory, memory_swap=args.memoryswap,
                                    run_command=args.run_command, entrypoint=args.entrypoint, container_ports=args.port,
                                    container_envvars=args.env,
                                    linked_to_cluster=args.link_cluster, linked_to_container=args.link_container,
@@ -128,6 +130,7 @@ def main():
             commands.node_inspect(args.identifier)
         elif args.subcmd == "rm":
             commands.node_rm(args.identifier)
+
 
 if __name__ == '__main__':
     main()
