@@ -158,8 +158,8 @@ def cluster_inspect(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
-            app = utils.fetch_remote_cluster(identifier)
-            print(json.dumps(tutum.Cluster.fetch(app.uuid).get_all_attributes(), indent=2))
+            cluster = utils.fetch_remote_cluster(identifier)
+            print(json.dumps(tutum.Cluster.fetch(cluster.uuid).get_all_attributes(), indent=2))
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -171,8 +171,8 @@ def cluster_logs(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
-            app = utils.fetch_remote_cluster(identifier)
-            print(app.logs)
+            cluster = utils.fetch_remote_cluster(identifier)
+            print(cluster.logs)
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -184,9 +184,9 @@ def cluster_open():
     try:
         cluster_list = tutum.Cluster.list()
         deployed_datetimes = {}
-        for app in cluster_list:
-            if app.web_public_dns and app.state in ["Running", "Partly running"]:
-                deployed_datetimes[utils.from_utc_string_to_utc_datetime(app.deployed_datetime)] = app.web_public_dns
+        for cluster in cluster_list:
+            if cluster.web_public_dns and cluster.state in ["Running", "Partly running"]:
+                deployed_datetimes[utils.from_utc_string_to_utc_datetime(cluster.deployed_datetime)] = cluster.web_public_dns
         if deployed_datetimes:
             max_datetime = max(deployed_datetimes.keys())
             webbrowser.open("http://" + deployed_datetimes[max_datetime])
@@ -203,12 +203,12 @@ def cluster_ps(quiet=False, status=None):
         cluster_list = tutum.Cluster.list(state=status)
         data_list = []
         long_uuid_list = []
-        for app in cluster_list:
-            data_list.append([app.unique_name, app.uuid[:8], utils.add_unicode_symbol_to_state(app.state),
-                              app.image_name, "%s (%d)" % (app.container_size, app.current_num_containers),
-                              utils.get_humanize_local_datetime_from_utc_datetime_string(app.deployed_datetime),
-                              app.web_public_dns])
-            long_uuid_list.append(app.uuid)
+        for cluster in cluster_list:
+            data_list.append([cluster.unique_name, cluster.uuid[:8], utils.add_unicode_symbol_to_state(cluster.state),
+                              cluster.image_name, "%s (%d)" % (cluster.container_size, cluster.current_num_containers),
+                              utils.get_humanize_local_datetime_from_utc_datetime_string(cluster.deployed_datetime),
+                              cluster.web_public_dns])
+            long_uuid_list.append(cluster.uuid)
         if len(data_list) == 0:
             data_list.append(["", "", "", "", "", "", ""])
 
@@ -227,10 +227,10 @@ def cluster_redeploy(identifiers, tag):
     has_exception = False
     for identifier in identifiers:
         try:
-            app = utils.fetch_remote_cluster(identifier)
-            result = app.redeploy(tag)
+            cluster = utils.fetch_remote_cluster(identifier)
+            result = cluster.redeploy(tag)
             if result:
-                print(app.uuid)
+                print(cluster.uuid)
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -246,16 +246,16 @@ def cluster_run(image, name, container_size, target_num_containers, run_command,
         envvars = utils.parse_envvars(container_envvars)
         links_cluster = utils.parse_links(linked_to_cluster, 'to_cluster')
         links_container = utils.parse_links(linked_to_container, 'to_container')
-        app = tutum.Cluster.create(image=image, name=name, container_size=container_size,
+        cluster = tutum.Cluster.create(image=image, name=name, container_size=container_size,
                                    target_num_containers=target_num_containers, run_command=run_command,
                                    entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
                                    linked_to_cluster=links_cluster, linked_to_container=links_container,
                                    autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
                                    roles=roles, sequential_deployment=sequential, web_public_dns=web_public_dns)
-        app.save()
-        result = app.start()
+        cluster.save()
+        result = cluster.start()
         if result:
-            print(app.uuid)
+            print(cluster.uuid)
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
@@ -265,11 +265,11 @@ def cluster_scale(identifiers, target_num_containers):
     has_exception = False
     for identifier in identifiers:
         try:
-            app = utils.fetch_remote_cluster(identifier)
-            app.target_num_containers = target_num_containers
-            result = app.save()
+            cluster = utils.fetch_remote_cluster(identifier)
+            cluster.target_num_containers = target_num_containers
+            result = cluster.save()
             if result:
-                print(app.uuid)
+                print(cluster.uuid)
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -300,10 +300,10 @@ def cluster_start(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
-            app = utils.fetch_remote_cluster(identifier)
-            result = app.start()
+            cluster = utils.fetch_remote_cluster(identifier)
+            result = cluster.start()
             if result:
-                print(app.uuid)
+                print(cluster.uuid)
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -315,10 +315,10 @@ def cluster_stop(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
-            app = utils.fetch_remote_cluster(identifier)
-            result = app.stop()
+            cluster = utils.fetch_remote_cluster(identifier)
+            result = cluster.stop()
             if result:
-                print(app.uuid)
+                print(cluster.uuid)
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -330,10 +330,10 @@ def cluster_terminate(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
-            app = utils.fetch_remote_cluster(identifier)
-            result = app.delete()
+            cluster = utils.fetch_remote_cluster(identifier)
+            result = cluster.delete()
             if result:
-                print(app.uuid)
+                print(cluster.uuid)
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -345,8 +345,8 @@ def container_inspect(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
-            app = utils.fetch_remote_container(identifier)
-            print(json.dumps(tutum.Container.fetch(app.uuid).get_all_attributes(), indent=2))
+            container = utils.fetch_remote_container(identifier)
+            print(json.dumps(tutum.Container.fetch(container.uuid).get_all_attributes(), indent=2))
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
