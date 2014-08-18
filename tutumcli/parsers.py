@@ -106,8 +106,8 @@ def add_cluster_parser(subparsers):
     set_parser = cluster_subparser.add_parser('set',
                                               help='Enable or disable Crash Recovery and Autodestroy features to '
                                                    'an existing cluster',
-                                              description='Enable or disable Crash Recovery and Autodestroy features to '
-                                                          'an existing cluster')
+                                              description='Enable or disable Crash Recovery and Autodestroy features to'
+                                                          ' an existing cluster')
     set_parser.add_argument('identifier', help="cluster's UUID (either long or short) or name", nargs='+')
     set_parser.add_argument('--autorestart', help="whether the containers should be restarted if they stop "
                                                   "(default: OFF)", choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
@@ -281,3 +281,19 @@ def add_node_parser(subparsers):
     # tutum node rm
     rm_parser = node_subparser.add_parser('rm', help='Remove a node', description='Remove a container')
     rm_parser.add_argument('identifier', help="node's UUID (either long or short)", nargs='+')
+
+
+def add_nodecluster_parser(subparsers):
+    # tutum nodecluster
+    nodecluster_parser = subparsers.add_parser('nodecluster', help='NodeCluster-related operations',
+                                        description='NodeCluster-related operations')
+    nodecluster_subparser = nodecluster_parser.add_subparsers(title='tutum node commands', dest='subcmd')
+
+    # tutum nodecluster list
+    list_parser = nodecluster_subparser.add_parser('list', help='List node clusters', description='List node clusters')
+    list_parser.add_argument('-q', '--quiet', help='print only node uuid', action='store_true')
+
+    # tutum node inspect
+    inspect_parser = nodecluster_subparser.add_parser('inspect', help='Inspect a nodecluster',
+                                                      description='Inspect a nodecluster')
+    inspect_parser.add_argument('identifier', help="node's UUID (either long or short)", nargs='+')

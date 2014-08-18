@@ -700,7 +700,8 @@ def node_list(quiet):
             data_list.append([node.uuid[:8],
                               node.external_fqdn,
                               utils.get_humanize_local_datetime_from_utc_datetime_string(node.last_seen),
-                              node.state, cluster_name])
+                              node.state,
+                              cluster_name])
             long_uuid_list.append(node.uuid)
         if len(data_list) == 0:
             data_list.append(["", "", "", "", ""])
@@ -735,6 +736,55 @@ def node_rm(identifiers):
             result = node.delete()
             if result:
                 print(node.uuid)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def nodecluster_list(quiet):
+    try:
+        headers = ["NAME", "UUID", "REGION", "TYPE", "DEPLOYED", "STATUS", "CURRENT#NODES", "TARGET#NODES"]
+        nodecluster_list = tutum.NodeCluster.list()
+        data_list = []
+        long_uuid_list = []
+        for nodecluster in nodecluster_list:
+            node_type = nodecluster.node_type
+            region = nodecluster.region
+            try:
+                node_type = tutum.NodeType.fetch(nodecluster.node_type.strip("/").split("/")[-1]).label
+                region = tutum.Region.fetch(nodecluster.region.strip("/").split("/")[-1]).label
+            except:
+                pass
+
+            data_list.append([nodecluster.name,
+                              nodecluster.uuid[:8],
+                              region,
+                              node_type,
+                              utils.get_humanize_local_datetime_from_utc_datetime_string(nodecluster.deployed_datetime),
+                              nodecluster.state,
+                              nodecluster.current_num_nodes,
+                              nodecluster.target_num_nodes])
+            long_uuid_list.append(nodecluster.uuid)
+        if len(data_list) == 0:
+            data_list.append(["", "", "", "", "", "", "", ""])
+        if quiet:
+            for uuid in long_uuid_list:
+                print(uuid)
+        else:
+            utils.tabulate_result(data_list, headers)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def nodecluster_inspect(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            nodecluster = utils.fetch_remote_nodecluster(identifier)
+            print(json.dumps(tutum.NodeCluster.fetch(nodecluster.uuid).get_all_attributes(), indent=2))
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True

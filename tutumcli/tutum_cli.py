@@ -26,12 +26,13 @@ parsers.add_cluster_parser(subparsers)
 parsers.add_image_parser(subparsers)
 parsers.add_login_parser(subparsers)
 parsers.add_node_parser(subparsers)
+parsers.add_nodecluster_parser(subparsers)
 
 
 def main():
     if len(sys.argv) == 1:
         sys.argv.append('-h')
-    elif len(sys.argv) == 2 and sys.argv[1] in ['cluster', 'build', 'container', 'image', 'node']:
+    elif len(sys.argv) == 2 and sys.argv[1] in ['cluster', 'build', 'container', 'image', 'node', 'nodecluster']:
         sys.argv.append('-h')
     elif len(sys.argv) == 3:
         if sys.argv[1] == 'cluster' and sys.argv[2] in ['alias', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
@@ -42,7 +43,9 @@ def main():
             sys.argv.append('-h')
         elif sys.argv[1] == 'image' and sys.argv[2] in ['register', 'push', 'rm', 'search', 'update']:
             sys.argv.append('-h')
-        elif sys.argv[1] == 'node' and sys.argv[2] in ['inspect', 'delete']:
+        elif sys.argv[1] == 'node' and sys.argv[2] in ['inspect', 'rm']:
+            sys.argv.append('-h')
+        elif sys.argv[1] == 'nodecluster' and sys.argv[2] in ['inspect']:
             sys.argv.append('-h')
 
     # dispatch commands
@@ -126,11 +129,15 @@ def main():
     elif args.cmd == 'node':
         if args.subcmd == 'list':
             commands.node_list(args.quiet)
-        elif args.subcmd == "inspect":
+        elif args.subcmd == 'inspect':
             commands.node_inspect(args.identifier)
-        elif args.subcmd == "rm":
+        elif args.subcmd == 'rm':
             commands.node_rm(args.identifier)
-
+    elif args.cmd == 'nodecluster':
+        if args.subcmd == 'list':
+            commands.nodecluster_list(args.quiet)
+        elif args.subcmd == 'inspect':
+            commands.nodecluster_inspect(args.identifier)
 
 if __name__ == '__main__':
     main()
