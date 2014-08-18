@@ -88,6 +88,27 @@ def fetch_remote_cluster(identifier, raise_exceptions=True):
         raise e
 
 
+def fetch_remote_node(identifier, raise_exceptions=True):
+    try:
+        if is_uuid4(identifier):
+            try:
+                return tutum.Node.fetch(identifier)
+            except Exception:
+                raise ObjectNotFound("Cannot find a node with the identifier '%s'" % identifier)
+        else:
+            objects_same_identifier = tutum.Node.list(uuid__startswith=identifier)
+            if len(objects_same_identifier) == 1:
+                return objects_same_identifier[0]
+            elif len(objects_same_identifier) == 0:
+                raise ObjectNotFound("Cannot find a Node with the identifier '%s'" % identifier)
+            raise NonUniqueIdentifier("More than one Node has the same identifier, please use the long uuid")
+
+    except (NonUniqueIdentifier, ObjectNotFound) as e:
+        if not raise_exceptions:
+            return e
+        raise e
+
+
 def parse_ports(port_list):
     def _get_port_dict(_port):
         port_regexp = re.compile('^[0-9]{1,5}/(tcp|udp)$')

@@ -239,19 +239,19 @@ def cluster_redeploy(identifiers, tag):
 
 
 def cluster_run(image, name, container_size, target_num_containers, run_command, entrypoint, container_ports,
-            container_envvars, linked_to_cluster, linked_to_container, autorestart, autoreplace, autodestroy,
-            roles, sequential, web_public_dns):
+                container_envvars, linked_to_cluster, linked_to_container, autorestart, autoreplace, autodestroy,
+                roles, sequential, web_public_dns):
     try:
         ports = utils.parse_ports(container_ports)
         envvars = utils.parse_envvars(container_envvars)
         links_cluster = utils.parse_links(linked_to_cluster, 'to_cluster')
         links_container = utils.parse_links(linked_to_container, 'to_container')
         app = tutum.Cluster.create(image=image, name=name, container_size=container_size,
-                                       target_num_containers=target_num_containers, run_command=run_command,
-                                       entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
-                                       linked_to_cluster=links_cluster, linked_to_container=links_container,
-                                       autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
-                                       roles=roles, sequential_deployment=sequential, web_public_dns=web_public_dns)
+                                   target_num_containers=target_num_containers, run_command=run_command,
+                                   entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
+                                   linked_to_cluster=links_cluster, linked_to_container=links_container,
+                                   autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
+                                   roles=roles, sequential_deployment=sequential, web_public_dns=web_public_dns)
         app.save()
         result = app.start()
         if result:
@@ -426,19 +426,19 @@ def container_redeploy(identifiers, tag):
 
 
 def container_run(image, name, container_size, run_command, entrypoint, container_ports,
-            container_envvars, linked_to_cluster, linked_to_container, autorestart, autoreplace, autodestroy,
-            roles, web_public_dns):
+                  container_envvars, linked_to_cluster, linked_to_container, autorestart, autoreplace, autodestroy,
+                  roles, web_public_dns):
     try:
         ports = utils.parse_ports(container_ports)
         envvars = utils.parse_envvars(container_envvars)
         links_cluster = utils.parse_links(linked_to_cluster, 'to_cluster')
         links_container = utils.parse_links(linked_to_container, 'to_container')
         container = tutum.Container.create(image=image, name=name, container_size=container_size,
-                                       run_command=run_command,
-                                       entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
-                                       linked_to_cluster=links_cluster, linked_to_container=links_container,
-                                       autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
-                                       roles=roles, web_public_dns=web_public_dns)
+                                           run_command=run_command,
+                                           entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
+                                           linked_to_cluster=links_cluster, linked_to_container=links_container,
+                                           autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
+                                           roles=roles, web_public_dns=web_public_dns)
         container.save()
         result = container.start()
         if result:
@@ -542,7 +542,7 @@ def image_push(name, public):
         print('Pushing %s to public registry ...' % repository)
 
         output_status = NO_ERROR
-        #tag a image to its name to check if the images exists
+        # tag a image to its name to check if the images exists
         try:
             docker_client.tag(name, name)
         except Exception as e:
@@ -675,3 +675,55 @@ def image_update(repositories, username, password, description):
                 print(image.name)
         except Exception as e:
             print(e, file=sys.stderr)
+
+
+def node_list(quiet):
+    try:
+        headers = ["UUID", "FQDN", "LASTSEEN", "STATUS", "CLUSTER"]
+        node_list = tutum.Node.list()
+        data_list = []
+        long_uuid_list = []
+        for node in node_list:
+            data_list.append([node.uuid[:8],
+                              node.external_fqdn,
+                              utils.get_humanize_local_datetime_from_utc_datetime_string(node.last_seen),
+                              node.state, node.node_cluster])
+            long_uuid_list.append(node.uuid)
+        if len(data_list) == 0:
+            data_list.append(["", "", "", "", ""])
+        if quiet:
+            for uuid in long_uuid_list:
+                print(uuid)
+        else:
+            utils.tabulate_result(data_list, headers)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def node_inspect(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            node = utils.fetch_remote_node(identifier)
+            print(json.dumps(tutum.Node.fetch(node.uuid).get_all_attributes(), indent=2))
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def node_rm(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            node = utils.fetch_remote_node(identifier)
+            result = node.delete()
+            if result:
+                print(node.uuid)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)

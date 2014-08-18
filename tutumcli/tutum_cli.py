@@ -20,26 +20,29 @@ subparsers = parser.add_subparsers(title="Tutum's CLI commands", dest='cmd')
 
 
 # Command Parsers
-parsers.add_cluster_parser(subparsers)
 parsers.add_build_parser(subparsers)
 parsers.add_container_parser(subparsers)
+parsers.add_cluster_parser(subparsers)
 parsers.add_image_parser(subparsers)
 parsers.add_login_parser(subparsers)
+parsers.add_node_parser(subparsers)
 
 
 def main():
     if len(sys.argv) == 1:
         sys.argv.append('-h')
-    elif len(sys.argv) == 2 and sys.argv[1] in ['cluster', 'build', 'container', 'image', ]:
+    elif len(sys.argv) == 2 and sys.argv[1] in ['cluster', 'build', 'container', 'image', 'node']:
         sys.argv.append('-h')
     elif len(sys.argv) == 3:
         if sys.argv[1] == 'cluster' and sys.argv[2] in ['alias', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
-                                                    'start', 'stop', 'terminate']:
+                                                        'start', 'stop', 'terminate']:
             sys.argv.append('-h')
         elif sys.argv[1] == 'container' and sys.argv[2] in ['inspect', 'logs', 'redeploy', 'run', 'start', 'stop',
                                                             'terminate']:
             sys.argv.append('-h')
         elif sys.argv[1] == 'image' and sys.argv[2] in ['register', 'push', 'rm', 'search', 'update']:
+            sys.argv.append('-h')
+        elif sys.argv[1] == 'node' and sys.argv[2] in ['inspect', 'delete']:
             sys.argv.append('-h')
 
     # dispatch commands
@@ -66,12 +69,12 @@ def main():
             commands.cluster_redeploy(args.identifier, args.tag)
         elif args.subcmd == 'run':
             commands.cluster_run(image=args.image, name=args.name, container_size=args.container_size,
-                             target_num_containers=args.target_num_containers, run_command=args.run_command,
-                             entrypoint=args.entrypoint, container_ports=args.port, container_envvars=args.env,
-                             linked_to_cluster=args.link_cluster, linked_to_container=args.link_container,
-                             autorestart=args.autorestart,
-                             autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role,
-                             sequential=args.sequential, web_public_dns=args.web_public_dns)
+                                 target_num_containers=args.target_num_containers, run_command=args.run_command,
+                                 entrypoint=args.entrypoint, container_ports=args.port, container_envvars=args.env,
+                                 linked_to_cluster=args.link_cluster, linked_to_container=args.link_container,
+                                 autorestart=args.autorestart,
+                                 autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role,
+                                 sequential=args.sequential, web_public_dns=args.web_public_dns)
         elif args.subcmd == 'scale':
             commands.cluster_scale(args.identifier, args.target_num_containers)
         elif args.subcmd == 'set':
@@ -93,11 +96,12 @@ def main():
             commands.container_redeploy(args.identifier, args.tag)
         elif args.subcmd == 'run':
             commands.container_run(image=args.image, name=args.name, container_size=args.container_size,
-                             run_command=args.run_command, entrypoint=args.entrypoint, container_ports=args.port,
-                             container_envvars=args.env,
-                             linked_to_cluster=args.link_cluster, linked_to_container=args.link_container,
-                             autorestart=args.autorestart,autoreplace=args.autoreplace, autodestroy=args.autodestroy,
-                             roles=args.role, web_public_dns=args.web_public_dns)
+                                   run_command=args.run_command, entrypoint=args.entrypoint, container_ports=args.port,
+                                   container_envvars=args.env,
+                                   linked_to_cluster=args.link_cluster, linked_to_container=args.link_container,
+                                   autorestart=args.autorestart, autoreplace=args.autoreplace,
+                                   autodestroy=args.autodestroy,
+                                   roles=args.role, web_public_dns=args.web_public_dns)
         elif args.subcmd == 'start':
             commands.container_start(args.identifier)
         elif args.subcmd == 'stop':
@@ -117,7 +121,13 @@ def main():
             commands.image_search(args.query)
         elif args.subcmd == 'update':
             commands.image_update(args.image_name, args.username, args.password, args.description)
-
+    elif args.cmd == 'node':
+        if args.subcmd == 'list':
+            commands.node_list(args.quiet)
+        elif args.subcmd == "inspect":
+            commands.node_inspect(args.identifier)
+        elif args.subcmd == "rm":
+            commands.node_rm(args.identifier)
 
 if __name__ == '__main__':
     main()
