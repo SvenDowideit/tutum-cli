@@ -312,6 +312,13 @@ def add_nodecluster_parser(subparsers):
     rm_parser = nodecluster_subparser.add_parser('rm', help='Remove node clusters', description='Remove node clusters')
     rm_parser.add_argument('identifier', help="node's UUID (either long or short)", nargs='+')
 
+    # tutum nodecluster scale
+    scale_parser = nodecluster_subparser.add_parser('scale', help='Scale a running node cluster',
+                                                    description='Scale a running node cluster', )
+    scale_parser.add_argument('identifier', help="node cluster's UUID (either long or short) or name", nargs='+')
+    scale_parser.add_argument("target_num_containers", metavar="target-num-containers",
+                              help="target number of nodes to scale this node cluster to", type=int)
+
     # tutum nodecluster provider
     provider_parser = nodecluster_subparser.add_parser('provider', help='Show all available infrastructure providers',
                                                        description='Show all available infrastructure providers')
@@ -327,3 +334,4 @@ def add_nodecluster_parser(subparsers):
     nodetype_parser = nodecluster_subparser.add_parser('nodetype', help='Show all available types of a given region')
     nodetype_parser.add_argument('region_id', help="id of the region (to find out id use `tutum nodecluster region`)",
                                  type=int)
+

@@ -918,3 +918,20 @@ def nodecluster_rm(identifiers):
             has_exception = True
     if has_exception:
         sys.exit(EXCEPTION_EXIT_CODE)
+
+
+
+def nodecluster_scale(identifiers, target_num_containers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            nodecluster = utils.fetch_remote_nodecluster(identifier)
+            nodecluster.target_num_nodes = target_num_containers
+            result = nodecluster.save()
+            if result:
+                print(nodecluster.uuid)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
