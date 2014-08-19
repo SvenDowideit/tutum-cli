@@ -53,8 +53,9 @@ def fetch_remote_container(identifier, raise_exceptions=True):
             except Exception:
                 raise ObjectNotFound("Cannot find a container with the identifier '%s'" % identifier)
         else:
-            objects_same_identifier = tutum.Container.list(unique_name=identifier) or \
-                                      tutum.Container.list(uuid__startswith=identifier)
+            objects_same_identifier = tutum.Container.list(uuid__startswith=identifier) or \
+                                      tutum.Container.list(unique_name=identifier)
+
             if len(objects_same_identifier) == 1:
                 return objects_same_identifier[0]
             elif len(objects_same_identifier) == 0:
@@ -75,8 +76,9 @@ def fetch_remote_cluster(identifier, raise_exceptions=True):
             except Exception:
                 raise ObjectNotFound("Cannot find a cluster with the identifier '%s'" % identifier)
         else:
-            objects_same_identifier = tutum.Cluster.list(unique_name=identifier) or \
-                                      tutum.Cluster.list(uuid__startswith=identifier)
+            objects_same_identifier = tutum.Cluster.list(uuid__startswith=identifier) or \
+                                      tutum.Cluster.list(unique_name=identifier)
+
             if len(objects_same_identifier) == 1:
                 return objects_same_identifier[0]
             elif len(objects_same_identifier) == 0:
@@ -117,8 +119,8 @@ def fetch_remote_nodecluster(identifier, raise_exceptions=True):
             except Exception:
                 raise ObjectNotFound("Cannot find a node cluster with the identifier '%s'" % identifier)
         else:
-            objects_same_identifier = tutum.NodeCluster.list(unique_name=identifier) or \
-                                      tutum.NodeCluster.list(uuid__startswith=identifier)
+            objects_same_identifier = tutum.NodeCluster.list(uuid__startswith=identifier) or \
+                                      tutum.NodeCluster.list(unique_name=identifier)
             if len(objects_same_identifier) == 1:
                 return objects_same_identifier[0]
             elif len(objects_same_identifier) == 0:
@@ -129,6 +131,7 @@ def fetch_remote_nodecluster(identifier, raise_exceptions=True):
         if not raise_exceptions:
             return e
         raise e
+
 
 def parse_ports(port_list):
     def _get_port_dict(_port):

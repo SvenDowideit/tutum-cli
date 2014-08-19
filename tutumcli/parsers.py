@@ -308,6 +308,10 @@ def add_nodecluster_parser(subparsers):
     list_parser = nodecluster_subparser.add_parser('list', help='List node clusters', description='List node clusters')
     list_parser.add_argument('-q', '--quiet', help='print only node uuid', action='store_true')
 
+    # tutum nodecluster rm
+    rm_parser = nodecluster_subparser.add_parser('rm', help='Remove node clusters', description='Remove node clusters')
+    rm_parser.add_argument('identifier', help="node's UUID (either long or short)", nargs='+')
+
     # tutum nodecluster provider
     provider_parser = nodecluster_subparser.add_parser('provider', help='Show all available infrastructure providers',
                                                        description='Show all available infrastructure providers')

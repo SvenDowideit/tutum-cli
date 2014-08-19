@@ -903,3 +903,18 @@ def nodecluster_create(target_num_nodes, name, provider_id, region_id, nodetype_
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def nodecluster_rm(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            nodecluster = utils.fetch_remote_nodecluster(identifier)
+            result = nodecluster.delete()
+            if result:
+                print(nodecluster.uuid)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
