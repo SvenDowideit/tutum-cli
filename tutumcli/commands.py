@@ -750,6 +750,10 @@ def nodecluster_list(quiet):
         data_list = []
         long_uuid_list = []
         for nodecluster in nodecluster_list:
+            if quiet:
+                long_uuid_list.append(nodecluster.uuid)
+                continue
+
             node_type = nodecluster.node_type
             region = nodecluster.region
             try:
@@ -789,4 +793,96 @@ def nodecluster_inspect(identifiers):
             print(e, file=sys.stderr)
             has_exception = True
     if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def nodecluster_show_providers(quiet):
+    try:
+        headers = ["ID", "NAME", "REGIONS"]
+        data_list = []
+        name_list = []
+        provider_list = tutum.Provider.list()
+        for provider in provider_list:
+            if quiet:
+                name_list.append(provider.name)
+                continue
+
+            region_label = []
+            for region in provider.regions:
+                try:
+                    region_obj = tutum.Region.fetch(region.strip("/").split("/")[-1])
+                    region_label.append(region_obj.label or region_obj.name)
+                except:
+                    pass
+            data_list.append([provider.id, provider.name, ", ".join(region_label)])
+
+        if len(data_list) == 0:
+            data_list.append(["", "", ""])
+        if quiet:
+            for name in name_list:
+                print(name)
+        else:
+            utils.tabulate_result(data_list, headers)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def nodecluster_show_regions(provider_id):
+    try:
+        provider = tutum.Provider.fetch(str(provider_id))
+        provider_name = provider.label or provider.name
+    except Exception as e:
+        if "Status 404" in e.message:
+            print("The id(%d) of provider does not exist!" % provider_id, file=sys.stderr)
+            sys.exit(EXCEPTION_EXIT_CODE)
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+    print('Listing all available regions of provider: %s ...' % provider_name)
+
+    try:
+        headers = ["ID", "NAME", "TYPE"]
+        data_list = []
+        region_list = tutum.Region.list(provider=provider_id)
+        for region in region_list:
+            node_type_list = []
+            for node_type in region.node_types:
+                try:
+                    obj = tutum.NodeType.fetch(node_type.strip("/").split("/")[-1])
+                    node_type_list.append(obj.label or obj.name)
+                except:
+                    pass
+            data_list.append([region.id, region.label or region.name, ", ".join(node_type_list)])
+
+        if len(data_list) == 0:
+            data_list.append(["", "", ""])
+        utils.tabulate_result(data_list, headers)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def nodecluster_show_types(region_id):
+    try:
+        region = tutum.Region.fetch(str(region_id))
+        region_name = region.label or region.name
+    except Exception as e:
+        if "Status 404" in e.message:
+            print("The ID(%d) of region does not exist! " % region_id, file=sys.stderr)
+            sys.exit(EXCEPTION_EXIT_CODE)
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+    print('Listing all available types of region: %s ...' % region_name)
+
+    try:
+        headers = ["ID", "TYPE"]
+        data_list = []
+        type_list = tutum.NodeType.list(region=region_id)
+        for node_type in type_list:
+            data_list.append([node_type.resource_uri.strip("/").split("/")[-1], node_type.label or node_type.name])
+        if len(data_list) == 0:
+            data_list.append(["", "", ""])
+        utils.tabulate_result(data_list, headers)
+    except Exception as e:
+        print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)

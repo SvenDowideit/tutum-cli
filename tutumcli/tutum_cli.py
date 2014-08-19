@@ -45,7 +45,7 @@ def main():
             sys.argv.append('-h')
         elif sys.argv[1] == 'node' and sys.argv[2] in ['inspect', 'rm']:
             sys.argv.append('-h')
-        elif sys.argv[1] == 'nodecluster' and sys.argv[2] in ['inspect']:
+        elif sys.argv[1] == 'nodecluster' and sys.argv[2] in ['inspect', 'region', 'nodetype']:
             sys.argv.append('-h')
 
     # dispatch commands
@@ -138,6 +138,12 @@ def main():
             commands.nodecluster_list(args.quiet)
         elif args.subcmd == 'inspect':
             commands.nodecluster_inspect(args.identifier)
+        elif args.subcmd == 'provider':
+            commands.nodecluster_show_providers(args.quiet)
+        elif args.subcmd == 'region':
+            commands.nodecluster_show_regions(args.provider)
+        elif args.subcmd == 'nodetype':
+            commands.nodecluster_show_types(args.region)
 
 if __name__ == '__main__':
     main()

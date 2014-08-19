@@ -286,14 +286,29 @@ def add_node_parser(subparsers):
 def add_nodecluster_parser(subparsers):
     # tutum nodecluster
     nodecluster_parser = subparsers.add_parser('nodecluster', help='NodeCluster-related operations',
-                                        description='NodeCluster-related operations')
+                                               description='NodeCluster-related operations')
     nodecluster_subparser = nodecluster_parser.add_subparsers(title='tutum node commands', dest='subcmd')
 
     # tutum nodecluster list
     list_parser = nodecluster_subparser.add_parser('list', help='List node clusters', description='List node clusters')
     list_parser.add_argument('-q', '--quiet', help='print only node uuid', action='store_true')
 
-    # tutum node inspect
+    # tutum nodecluster inspect
     inspect_parser = nodecluster_subparser.add_parser('inspect', help='Inspect a nodecluster',
                                                       description='Inspect a nodecluster')
     inspect_parser.add_argument('identifier', help="node's UUID (either long or short)", nargs='+')
+
+    # tutum nodecluster provider
+    provider_parser = nodecluster_subparser.add_parser('provider', help='Show all available infrastructure providers',
+                                                       description='Show all available infrastructure providers')
+    provider_parser.add_argument('-q', '--quiet', help='print only provider name', action='store_true')
+
+    # tutum nodecluster region
+    region_parser = nodecluster_subparser.add_parser('region', help='Show all available regions of a given provider')
+    region_parser.add_argument('provider_id', help="id of the provider (to find out id, use `tutum nodecluster provider`)",
+                               type=int)
+
+    # tutum nodecluster nodetype
+    nodetype_parser = nodecluster_subparser.add_parser('nodetype', help='Show all available types of a given region')
+    nodetype_parser.add_argument('region_id', help="id of the region (to find out id use `tutum nodecluster region`)",
+                                 type=int)
