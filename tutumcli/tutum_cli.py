@@ -45,7 +45,7 @@ def main():
             sys.argv.append('-h')
         elif sys.argv[1] == 'node' and sys.argv[2] in ['inspect', 'rm']:
             sys.argv.append('-h')
-        elif sys.argv[1] == 'nodecluster' and sys.argv[2] in ['inspect', 'region', 'nodetype']:
+        elif sys.argv[1] == 'nodecluster' and sys.argv[2] in ['create', 'inspect', 'region', 'nodetype']:
             sys.argv.append('-h')
 
     # dispatch commands
@@ -127,23 +127,27 @@ def main():
         elif args.subcmd == 'update':
             commands.image_update(args.image_name, args.username, args.password, args.description)
     elif args.cmd == 'node':
-        if args.subcmd == 'list':
-            commands.node_list(args.quiet)
-        elif args.subcmd == 'inspect':
+        if args.subcmd == 'inspect':
             commands.node_inspect(args.identifier)
+        elif args.subcmd == 'list':
+            commands.node_list(args.quiet)
         elif args.subcmd == 'rm':
             commands.node_rm(args.identifier)
     elif args.cmd == 'nodecluster':
-        if args.subcmd == 'list':
-            commands.nodecluster_list(args.quiet)
+        if args.subcmd == 'create':
+            commands.nodecluster_create(args.target_num_nodes, args.name,
+                                        args.provider_id, args.region_id, args.nodetype_id)
         elif args.subcmd == 'inspect':
             commands.nodecluster_inspect(args.identifier)
+        elif args.subcmd == 'list':
+            commands.nodecluster_list(args.quiet)
         elif args.subcmd == 'provider':
             commands.nodecluster_show_providers(args.quiet)
         elif args.subcmd == 'region':
-            commands.nodecluster_show_regions(args.provider)
+            commands.nodecluster_show_regions(args.provider_id)
         elif args.subcmd == 'nodetype':
-            commands.nodecluster_show_types(args.region)
+            commands.nodecluster_show_types(args.region_id)
+
 
 if __name__ == '__main__':
     main()

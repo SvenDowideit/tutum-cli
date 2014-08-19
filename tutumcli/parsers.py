@@ -266,17 +266,16 @@ def add_image_parser(subparsers):
 
 def add_node_parser(subparsers):
     # tutum node
-    node_parser = subparsers.add_parser('node', help='Node-related operations',
-                                        description='Node-related operations')
+    node_parser = subparsers.add_parser('node', help='Node-related operations', description='Node-related operations')
     node_subparser = node_parser.add_subparsers(title='tutum node commands', dest='subcmd')
-
-    # tutum node list
-    list_parser = node_subparser.add_parser('list', help='List nodes', description='List nodes')
-    list_parser.add_argument('-q', '--quiet', help='print only node uuid', action='store_true')
 
     # tutum node inspect
     inspect_parser = node_subparser.add_parser('inspect', help='Inspect a node', description='Inspect a node')
     inspect_parser.add_argument('identifier', help="node's UUID (either long or short)", nargs='+')
+
+    # tutum node list
+    list_parser = node_subparser.add_parser('list', help='List nodes', description='List nodes')
+    list_parser.add_argument('-q', '--quiet', help='print only node uuid', action='store_true')
 
     # tutum node rm
     rm_parser = node_subparser.add_parser('rm', help='Remove a node', description='Remove a container')
@@ -289,14 +288,25 @@ def add_nodecluster_parser(subparsers):
                                                description='NodeCluster-related operations')
     nodecluster_subparser = nodecluster_parser.add_subparsers(title='tutum node commands', dest='subcmd')
 
-    # tutum nodecluster list
-    list_parser = nodecluster_subparser.add_parser('list', help='List node clusters', description='List node clusters')
-    list_parser.add_argument('-q', '--quiet', help='print only node uuid', action='store_true')
+    # tutum nodecluster create
+    create_parser = nodecluster_subparser.add_parser('create', help='Create a nodecluster',
+                                                     description='Create a nodecluster')
+    create_parser.add_argument('-t', '--target-num-nodes',
+                               help='the target number of nodes to run for this cluster (default: 1)', type=int,
+                               default=1)
+    create_parser.add_argument('name', help='name of the cluster to create')
+    create_parser.add_argument('provider_id', help='id of the provider', type=int)
+    create_parser.add_argument('region_id', help='id of the region', type=int)
+    create_parser.add_argument('nodetype_id', help='id of the nodetype', type=int)
 
     # tutum nodecluster inspect
     inspect_parser = nodecluster_subparser.add_parser('inspect', help='Inspect a nodecluster',
                                                       description='Inspect a nodecluster')
     inspect_parser.add_argument('identifier', help="node's UUID (either long or short)", nargs='+')
+
+    # tutum nodecluster list
+    list_parser = nodecluster_subparser.add_parser('list', help='List node clusters', description='List node clusters')
+    list_parser.add_argument('-q', '--quiet', help='print only node uuid', action='store_true')
 
     # tutum nodecluster provider
     provider_parser = nodecluster_subparser.add_parser('provider', help='Show all available infrastructure providers',
@@ -305,7 +315,8 @@ def add_nodecluster_parser(subparsers):
 
     # tutum nodecluster region
     region_parser = nodecluster_subparser.add_parser('region', help='Show all available regions of a given provider')
-    region_parser.add_argument('provider_id', help="id of the provider (to find out id, use `tutum nodecluster provider`)",
+    region_parser.add_argument('provider_id',
+                               help="id of the provider (to find out id, use `tutum nodecluster provider`)",
                                type=int)
 
     # tutum nodecluster nodetype

@@ -831,7 +831,7 @@ def nodecluster_show_providers(quiet):
 def nodecluster_show_regions(provider_id):
     try:
         provider = tutum.Provider.fetch(str(provider_id))
-        provider_name = provider.label or provider.name
+        provider_name = provider.name
     except Exception as e:
         if "Status 404" in e.message:
             print("The id(%d) of provider does not exist!" % provider_id, file=sys.stderr)
@@ -883,6 +883,23 @@ def nodecluster_show_types(region_id):
         if len(data_list) == 0:
             data_list.append(["", "", ""])
         utils.tabulate_result(data_list, headers)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def nodecluster_create(target_num_nodes, name, provider_id, region_id, nodetype_id):
+    provider = "/api/v1/provider/%d/" % provider_id
+    region = "/api/v1/region/%d/" % region_id
+    nodetype = "/api/v1/nodetype/%d/" % nodetype_id
+
+    try:
+        nodecluster = tutum.NodeCluster.create(name=name, target_num_nodes=target_num_nodes,
+                                               provider=provider, region=region, node_type=nodetype)
+        nodecluster.save()
+        result = nodecluster.deploy()
+        if result:
+            print(nodecluster.uuid)
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
