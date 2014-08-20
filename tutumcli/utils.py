@@ -120,7 +120,7 @@ def fetch_remote_nodecluster(identifier, raise_exceptions=True):
                 raise ObjectNotFound("Cannot find a node cluster with the identifier '%s'" % identifier)
         else:
             objects_same_identifier = tutum.NodeCluster.list(uuid__startswith=identifier) or \
-                                      tutum.NodeCluster.list(unique_name=identifier)
+                                      tutum.NodeCluster.list(name=identifier)
             if len(objects_same_identifier) == 1:
                 return objects_same_identifier[0]
             elif len(objects_same_identifier) == 0:
