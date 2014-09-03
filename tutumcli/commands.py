@@ -596,7 +596,7 @@ def image_push(name, public):
             sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
 
         try:
-            registry = os.getenv('TUTUM_REGISTRY_URL') or 'https://r.tutum.co/v1/'
+            registry = os.getenv('TUTUM_REGISTRY_URL') or 'https://tutum.co/v1/'
             docker_client.login(user, apikey, registry=registry)
         except Exception as e:
             print(e, file=sys.stderr)
