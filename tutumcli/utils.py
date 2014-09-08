@@ -135,14 +135,24 @@ def fetch_remote_nodecluster(identifier, raise_exceptions=True):
 
 def parse_ports(port_list):
     def _get_port_dict(_port):
-        port_regexp = re.compile('^[0-9]{1,5}/(tcp|udp)$')
+        port_regexp = re.compile('^([0-9]{1,5}:)?([0-9]{1,5})(/tcp|/udp)?$')
         match = port_regexp.match(_port)
         if bool(match):
-            _port = _port.split("/", 1)
-            inner_port = int(_port[0])
-            protocol = _port[1].lower()
-            return {'protocol': protocol, 'inner_port': inner_port}
-        raise BadParameter("Port argument %s does not match with 'port/protocol'. Example: 80/tcp" % _port)
+            outer_port = match.group(1)
+            inner_port = match.group(2)
+            protocol = match.group(3)
+            if protocol is None:
+                protocol = "tcp"
+            else:
+                protocol = protocol[1:]
+
+            port_spec = {'protocol': protocol, 'inner_port': inner_port}
+
+            if outer_port is not None:
+                port_spec['outer_port'] = outer_port[:-1]
+            return port_spec
+        raise BadParameter("Port argument %s does not match with 'host_port:container_port/protocol'. E.g: 80:80/tcp"
+                           % _port)
 
     parsed_ports = []
     if port_list is not None:
