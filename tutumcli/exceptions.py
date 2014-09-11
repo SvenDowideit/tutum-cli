@@ -20,3 +20,7 @@ class PublicImageNotFound(RuntimeError):
 
 class StreamOutputError(Exception):
     pass
+
+
+class InternalError(RuntimeError):
+    pass

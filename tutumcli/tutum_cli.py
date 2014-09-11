@@ -1,55 +1,61 @@
 import argparse
 import logging
 import sys
+import copy
 import codecs
 
 from . import __version__
 from tutumcli import parsers
 from tutumcli import commands
-
+from tutumcli.exceptions import InternalError
 
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 
 logging.basicConfig()
 
-# Top parser
-parser = argparse.ArgumentParser(description="Tutum's CLI", prog='tutum')
-parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
-parser.add_argument('--debug', action='store_true', help=argparse.SUPPRESS)
-subparsers = parser.add_subparsers(title="Tutum's CLI commands", dest='cmd')
+
+def initialize_parser():
+    # Top parser
+    parser = argparse.ArgumentParser(description="Tutum's CLI", prog='tutum')
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
+    parser.add_argument('--debug', action='store_true', help=argparse.SUPPRESS)
+    subparsers = parser.add_subparsers(title="Tutum's CLI commands", dest='cmd')
+    # Command Parsers
+    parsers.add_build_parser(subparsers)
+    parsers.add_container_parser(subparsers)
+    parsers.add_cluster_parser(subparsers)
+    parsers.add_image_parser(subparsers)
+    parsers.add_login_parser(subparsers)
+    parsers.add_node_parser(subparsers)
+    parsers.add_nodecluster_parser(subparsers)
+    return parser
 
 
-# Command Parsers
-parsers.add_build_parser(subparsers)
-parsers.add_container_parser(subparsers)
-parsers.add_cluster_parser(subparsers)
-parsers.add_image_parser(subparsers)
-parsers.add_login_parser(subparsers)
-parsers.add_node_parser(subparsers)
-parsers.add_nodecluster_parser(subparsers)
+def patch_help_option(argv=sys.argv):
+    if not argv:
+        raise InternalError("Wrong argument is set, cannot be empty")
+    args = copy.copy(argv)
+    if len(args) == 1:
+        args.append('-h')
+    elif len(args) == 2 and args[1] in ['cluster', 'build', 'container', 'image', 'node', 'nodecluster']:
+        args.append('-h')
+    elif len(args) == 3:
+        if args[1] == 'cluster' and args[2] in ['alias', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
+                                                'start', 'stop', 'terminate']:
+            args.append('-h')
+        elif args[1] == 'container' and args[2] in ['inspect', 'logs', 'redeploy', 'run', 'start', 'stop',
+                                                    'terminate']:
+            args.append('-h')
+        elif args[1] == 'image' and args[2] in ['register', 'push', 'rm', 'search', 'update']:
+            args.append('-h')
+        elif args[1] == 'node' and args[2] in ['inspect', 'rm']:
+            args.append('-h')
+        elif args[1] == 'nodecluster' and args[2] in ['create', 'inspect', 'region', 'nodetype', 'rm', 'scale']:
+            args.append('-h')
+    return args[1:]
 
 
-def main():
-    if len(sys.argv) == 1:
-        sys.argv.append('-h')
-    elif len(sys.argv) == 2 and sys.argv[1] in ['cluster', 'build', 'container', 'image', 'node', 'nodecluster']:
-        sys.argv.append('-h')
-    elif len(sys.argv) == 3:
-        if sys.argv[1] == 'cluster' and sys.argv[2] in ['alias', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
-                                                        'start', 'stop', 'terminate']:
-            sys.argv.append('-h')
-        elif sys.argv[1] == 'container' and sys.argv[2] in ['inspect', 'logs', 'redeploy', 'run', 'start', 'stop',
-                                                            'terminate']:
-            sys.argv.append('-h')
-        elif sys.argv[1] == 'image' and sys.argv[2] in ['register', 'push', 'rm', 'search', 'update']:
-            sys.argv.append('-h')
-        elif sys.argv[1] == 'node' and sys.argv[2] in ['inspect', 'rm']:
-            sys.argv.append('-h')
-        elif sys.argv[1] == 'nodecluster' and sys.argv[2] in ['create', 'inspect', 'region', 'nodetype', 'rm', 'scale']:
-            sys.argv.append('-h')
-
-    # dispatch commands
-    args = parser.parse_args()
+def dispatch_cmds(args):
     if args.debug:
         requests_log = logging.getLogger("python-tutum")
         requests_log.setLevel(logging.INFO)
@@ -151,6 +157,13 @@ def main():
             commands.nodecluster_rm(args.identifier)
         elif args.subcmd == 'scale':
             commands.nodecluster_scale(args.identifier, args.target_num_containers)
+
+
+def main():
+    parser = initialize_parser()
+    argv = patch_help_option(sys.argv)
+    args = parser.parse_args(argv)
+    dispatch_cmds(args)
 
 
 if __name__ == '__main__':
