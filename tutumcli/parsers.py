@@ -316,7 +316,7 @@ def add_nodecluster_parser(subparsers):
     scale_parser = nodecluster_subparser.add_parser('scale', help='Scale a running node cluster',
                                                     description='Scale a running node cluster', )
     scale_parser.add_argument('identifier', help="node cluster's UUID (either long or short) or name", nargs='+')
-    scale_parser.add_argument("target_num_containers", metavar="target-num-containers",
+    scale_parser.add_argument("target_num_nodes", metavar="target-num-nodes",
                               help="target number of nodes to scale this node cluster to", type=int)
 
     # tutum nodecluster provider

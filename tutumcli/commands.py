@@ -921,12 +921,12 @@ def nodecluster_rm(identifiers):
 
 
 
-def nodecluster_scale(identifiers, target_num_containers):
+def nodecluster_scale(identifiers, target_num_nodes):
     has_exception = False
     for identifier in identifiers:
         try:
             nodecluster = utils.fetch_remote_nodecluster(identifier)
-            nodecluster.target_num_nodes = target_num_containers
+            nodecluster.target_num_nodes = target_num_nodes
             result = nodecluster.save()
             if result:
                 print(nodecluster.uuid)

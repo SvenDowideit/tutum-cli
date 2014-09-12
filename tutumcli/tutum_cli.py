@@ -164,7 +164,7 @@ def dispatch_cmds(args):
         elif args.subcmd == 'rm':
             commands.nodecluster_rm(args.identifier)
         elif args.subcmd == 'scale':
-            commands.nodecluster_scale(args.identifier, args.target_num_containers)
+            commands.nodecluster_scale(args.identifier, args.target_num_nodes)
 
 
 def main():
