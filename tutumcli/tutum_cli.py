@@ -32,9 +32,15 @@ def initialize_parser():
 
 
 def patch_help_option(argv=sys.argv):
-    if not argv:
-        raise InternalError("Wrong argument is set, cannot be empty")
     args = copy.copy(argv)
+
+    if not args:
+        raise InternalError("Wrong argument is set, cannot be empty")
+    debug = False
+    if len(args) >= 2 and args[1] == '--debug':
+        debug = True
+        args.pop(1)
+
     if len(args) == 1:
         args.append('-h')
     elif len(args) == 2 and args[1] in ['cluster', 'build', 'container', 'image', 'node', 'nodecluster']:
@@ -52,6 +58,8 @@ def patch_help_option(argv=sys.argv):
             args.append('-h')
         elif args[1] == 'nodecluster' and args[2] in ['create', 'inspect', 'region', 'nodetype', 'rm', 'scale']:
             args.append('-h')
+    if debug:
+        args.insert(1, '--debug')
     return args[1:]
 
 
