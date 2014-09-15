@@ -45,140 +45,6 @@ def is_uuid4(identifier):
     return bool(match)
 
 
-def fetch_remote_container(identifier, raise_exceptions=True):
-    try:
-        if is_uuid4(identifier):
-            try:
-                return tutum.Container.fetch(identifier)
-            except Exception:
-                raise ObjectNotFound("Cannot find a container with the identifier '%s'" % identifier)
-        else:
-            objects_same_identifier = tutum.Container.list(uuid__startswith=identifier) or \
-                                      tutum.Container.list(unique_name=identifier)
-
-            if len(objects_same_identifier) == 1:
-                return objects_same_identifier[0]
-            elif len(objects_same_identifier) == 0:
-                raise ObjectNotFound("Cannot find a container with the identifier '%s'" % identifier)
-            raise NonUniqueIdentifier("More than one container has the same identifier, please use the long uuid")
-
-    except (NonUniqueIdentifier, ObjectNotFound) as e:
-        if not raise_exceptions:
-            return e
-        raise e
-
-
-def fetch_remote_cluster(identifier, raise_exceptions=True):
-    try:
-        if is_uuid4(identifier):
-            try:
-                return tutum.Cluster.fetch(identifier)
-            except Exception:
-                raise ObjectNotFound("Cannot find a cluster with the identifier '%s'" % identifier)
-        else:
-            objects_same_identifier = tutum.Cluster.list(uuid__startswith=identifier) or \
-                                      tutum.Cluster.list(unique_name=identifier)
-
-            if len(objects_same_identifier) == 1:
-                return objects_same_identifier[0]
-            elif len(objects_same_identifier) == 0:
-                raise ObjectNotFound("Cannot find a cluster with the identifier '%s'" % identifier)
-            raise NonUniqueIdentifier("More than one cluster has the same identifier, please use the long uuid")
-    except (NonUniqueIdentifier, ObjectNotFound) as e:
-        if not raise_exceptions:
-            return e
-        raise e
-
-
-def fetch_remote_node(identifier, raise_exceptions=True):
-    try:
-        if is_uuid4(identifier):
-            try:
-                return tutum.Node.fetch(identifier)
-            except Exception:
-                raise ObjectNotFound("Cannot find a node with the identifier '%s'" % identifier)
-        else:
-            objects_same_identifier = tutum.Node.list(uuid__startswith=identifier)
-            if len(objects_same_identifier) == 1:
-                return objects_same_identifier[0]
-            elif len(objects_same_identifier) == 0:
-                raise ObjectNotFound("Cannot find a node with the identifier '%s'" % identifier)
-            raise NonUniqueIdentifier("More than one node has the same identifier, please use the long uuid")
-
-    except (NonUniqueIdentifier, ObjectNotFound) as e:
-        if not raise_exceptions:
-            return e
-        raise e
-
-
-def fetch_remote_nodecluster(identifier, raise_exceptions=True):
-    try:
-        if is_uuid4(identifier):
-            try:
-                return tutum.NodeCluster.fetch(identifier)
-            except Exception:
-                raise ObjectNotFound("Cannot find a node cluster with the identifier '%s'" % identifier)
-        else:
-            objects_same_identifier = tutum.NodeCluster.list(uuid__startswith=identifier) or \
-                                      tutum.NodeCluster.list(name=identifier)
-            if len(objects_same_identifier) == 1:
-                return objects_same_identifier[0]
-            elif len(objects_same_identifier) == 0:
-                raise ObjectNotFound("Cannot find a node cluster with the identifier '%s'" % identifier)
-            raise NonUniqueIdentifier("More than one node cluster has the same identifier, please use the long uuid")
-
-    except (NonUniqueIdentifier, ObjectNotFound) as e:
-        if not raise_exceptions:
-            return e
-        raise e
-
-
-def parse_ports(port_list):
-    def _get_port_dict(_port):
-        port_regexp = re.compile('^([0-9]{1,5}:)?([0-9]{1,5})(/tcp|/udp)?$')
-        match = port_regexp.match(_port)
-        if bool(match):
-            outer_port = match.group(1)
-            inner_port = match.group(2)
-            protocol = match.group(3)
-            if protocol is None:
-                protocol = "tcp"
-            else:
-                protocol = protocol[1:]
-
-            port_spec = {'protocol': protocol, 'inner_port': inner_port}
-
-            if outer_port is not None:
-                port_spec['outer_port'] = outer_port[:-1]
-            return port_spec
-        raise BadParameter("Port argument %s does not match with 'host_port:container_port/protocol'. E.g: 80:80/tcp"
-                           % _port)
-
-    parsed_ports = []
-    if port_list is not None:
-        parsed_ports = []
-        for port in port_list:
-            parsed_ports.append(_get_port_dict(port))
-    return parsed_ports
-
-
-def parse_envvars(envvar_list):
-    def _is_envvar(_envvar):
-        envvar_regexp = re.compile('^[a-zA-Z_]+[a-zA-Z0-9_]*=[^?!=]+$')
-        match = envvar_regexp.match(_envvar)
-        if bool(match):
-            _envvar = _envvar.split("=", 1)
-            return {'key': _envvar[0], 'value': _envvar[1]}
-        raise BadParameter("Environment Variable argument %s does not match with 'KEY=VALUE'."
-                           " Example: ENVVAR=foo" % _envvar)
-
-    parsed_envvars = []
-    if envvar_list is not None:
-        for envvar in envvar_list:
-            parsed_envvars.append(_is_envvar(envvar))
-    return parsed_envvars
-
-
 def add_unicode_symbol_to_state(state):
     if state in ["Running", "Partly running"]:
         return u"\u25B6 " + state
@@ -291,6 +157,94 @@ def print_output_event(event, stream, is_terminal):
         stream.write("%s%s\n" % (status, terminator))
 
 
+def fetch_remote_container(identifier, raise_exceptions=True):
+    try:
+        if is_uuid4(identifier):
+            try:
+                return tutum.Container.fetch(identifier)
+            except Exception:
+                raise ObjectNotFound("Cannot find a container with the identifier '%s'" % identifier)
+        else:
+            objects_same_identifier = tutum.Container.list(uuid__startswith=identifier) or \
+                                      tutum.Container.list(unique_name=identifier)
+
+            if len(objects_same_identifier) == 1:
+                return objects_same_identifier[0]
+            elif len(objects_same_identifier) == 0:
+                raise ObjectNotFound("Cannot find a container with the identifier '%s'" % identifier)
+            raise NonUniqueIdentifier("More than one container has the same identifier, please use the long uuid")
+
+    except (NonUniqueIdentifier, ObjectNotFound) as e:
+        if not raise_exceptions:
+            return e
+        raise e
+
+
+def fetch_remote_cluster(identifier, raise_exceptions=True):
+    try:
+        if is_uuid4(identifier):
+            try:
+                return tutum.Cluster.fetch(identifier)
+            except Exception:
+                raise ObjectNotFound("Cannot find a cluster with the identifier '%s'" % identifier)
+        else:
+            objects_same_identifier = tutum.Cluster.list(uuid__startswith=identifier) or \
+                                      tutum.Cluster.list(unique_name=identifier)
+
+            if len(objects_same_identifier) == 1:
+                return objects_same_identifier[0]
+            elif len(objects_same_identifier) == 0:
+                raise ObjectNotFound("Cannot find a cluster with the identifier '%s'" % identifier)
+            raise NonUniqueIdentifier("More than one cluster has the same identifier, please use the long uuid")
+    except (NonUniqueIdentifier, ObjectNotFound) as e:
+        if not raise_exceptions:
+            return e
+        raise e
+
+
+def fetch_remote_node(identifier, raise_exceptions=True):
+    try:
+        if is_uuid4(identifier):
+            try:
+                return tutum.Node.fetch(identifier)
+            except Exception:
+                raise ObjectNotFound("Cannot find a node with the identifier '%s'" % identifier)
+        else:
+            objects_same_identifier = tutum.Node.list(uuid__startswith=identifier)
+            if len(objects_same_identifier) == 1:
+                return objects_same_identifier[0]
+            elif len(objects_same_identifier) == 0:
+                raise ObjectNotFound("Cannot find a node with the identifier '%s'" % identifier)
+            raise NonUniqueIdentifier("More than one node has the same identifier, please use the long uuid")
+
+    except (NonUniqueIdentifier, ObjectNotFound) as e:
+        if not raise_exceptions:
+            return e
+        raise e
+
+
+def fetch_remote_nodecluster(identifier, raise_exceptions=True):
+    try:
+        if is_uuid4(identifier):
+            try:
+                return tutum.NodeCluster.fetch(identifier)
+            except Exception:
+                raise ObjectNotFound("Cannot find a node cluster with the identifier '%s'" % identifier)
+        else:
+            objects_same_identifier = tutum.NodeCluster.list(uuid__startswith=identifier) or \
+                                      tutum.NodeCluster.list(name=identifier)
+            if len(objects_same_identifier) == 1:
+                return objects_same_identifier[0]
+            elif len(objects_same_identifier) == 0:
+                raise ObjectNotFound("Cannot find a node cluster with the identifier '%s'" % identifier)
+            raise NonUniqueIdentifier("More than one node cluster has the same identifier, please use the long uuid")
+
+    except (NonUniqueIdentifier, ObjectNotFound) as e:
+        if not raise_exceptions:
+            return e
+        raise e
+
+
 def parse_links(links, target):
     def _format_link(_link):
         link_regexp = re.compile('^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+$')
@@ -302,3 +256,49 @@ def parse_links(links, target):
                            " Example: mysql:db" % _link)
 
     return [_format_link(link) for link in links] if links else []
+
+
+def parse_ports(port_list):
+    def _get_port_dict(_port):
+        port_regexp = re.compile('^([0-9]{1,5}:)?([0-9]{1,5})(/tcp|/udp)?$')
+        match = port_regexp.match(_port)
+        if bool(match):
+            outer_port = match.group(1)
+            inner_port = match.group(2)
+            protocol = match.group(3)
+            if protocol is None:
+                protocol = "tcp"
+            else:
+                protocol = protocol[1:]
+
+            port_spec = {'protocol': protocol, 'inner_port': inner_port}
+
+            if outer_port is not None:
+                port_spec['outer_port'] = outer_port[:-1]
+            return port_spec
+        raise BadParameter("Port argument %s does not match with 'host_port:container_port/protocol'. E.g: 80:80/tcp"
+                           % _port)
+
+    parsed_ports = []
+    if port_list is not None:
+        parsed_ports = []
+        for port in port_list:
+            parsed_ports.append(_get_port_dict(port))
+    return parsed_ports
+
+
+def parse_envvars(envvar_list):
+    def _is_envvar(_envvar):
+        envvar_regexp = re.compile('^[a-zA-Z_]+[a-zA-Z0-9_]*=[^?!=]+$')
+        match = envvar_regexp.match(_envvar)
+        if bool(match):
+            _envvar = _envvar.split("=", 1)
+            return {'key': _envvar[0], 'value': _envvar[1]}
+        raise BadParameter("Environment Variable argument %s does not match with 'KEY=VALUE'."
+                           " Example: ENVVAR=foo" % _envvar)
+
+    parsed_envvars = []
+    if envvar_list is not None:
+        for envvar in envvar_list:
+            parsed_envvars.append(_is_envvar(envvar))
+    return parsed_envvars

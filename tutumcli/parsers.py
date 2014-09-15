@@ -334,4 +334,3 @@ def add_nodecluster_parser(subparsers):
     nodetype_parser = nodecluster_subparser.add_parser('nodetype', help='Show all available types of a given region')
     nodetype_parser.add_argument('region_id', help="id of the region (to find out id use `tutum nodecluster region`)",
                                  type=int)
-
