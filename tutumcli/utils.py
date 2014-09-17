@@ -27,16 +27,15 @@ def from_utc_string_to_utc_datetime(utc_datetime_string):
 
 
 def get_humanize_local_datetime_from_utc_datetime_string(utc_datetime_string):
+    def get_humanize_local_datetime_from_utc_datetime(utc_target_datetime):
+        local_now = datetime.datetime.now(tz.tzlocal())
+        if utc_target_datetime:
+            local_target_datetime = utc_target_datetime.replace(tzinfo=tz.gettz("UTC")).astimezone(tz=tz.tzlocal())
+            return ago.human(local_now - local_target_datetime, precision=1)
+        return ""
+
     utc_target_datetime = from_utc_string_to_utc_datetime(utc_datetime_string)
     return get_humanize_local_datetime_from_utc_datetime(utc_target_datetime)
-
-
-def get_humanize_local_datetime_from_utc_datetime(utc_target_datetime):
-    local_now = datetime.datetime.now(tz.tzlocal())
-    if utc_target_datetime:
-        local_target_datetime = utc_target_datetime.replace(tzinfo=tz.gettz("UTC")).astimezone(tz=tz.tzlocal())
-        return ago.human(local_now - local_target_datetime, precision=1)
-    return ""
 
 
 def is_uuid4(identifier):
@@ -83,6 +82,45 @@ def build_dockerfile(filepath, ports, command):
 
 
 def stream_output(output, stream):
+    def print_output_event(event, stream, is_terminal):
+        if 'errorDetail' in event:
+            raise StreamOutputError(event['errorDetail']['message'])
+
+        terminator = ''
+
+        if is_terminal and 'stream' not in event:
+            # erase current line
+            stream.write("%c[2K\r" % 27)
+            terminator = "\r"
+            pass
+        elif 'progressDetail' in event:
+            return
+
+        if 'time' in event:
+            stream.write("[%s] " % event['time'])
+
+        if 'id' in event:
+            stream.write("%s: " % event['id'])
+
+        if 'from' in event:
+            stream.write("(from %s) " % event['from'])
+
+        status = event.get('status', '')
+
+        if 'progress' in event:
+            stream.write("%s %s%s" % (status, event['progress'], terminator))
+        elif 'progressDetail' in event:
+            detail = event['progressDetail']
+            if 'current' in detail:
+                percentage = float(detail['current']) / float(detail['total']) * 100
+                stream.write('%s (%.1f%%)%s' % (status, percentage, terminator))
+            else:
+                stream.write('%s%s' % (status, terminator))
+        elif 'stream' in event:
+            stream.write("%s%s" % (event['stream'], terminator))
+        else:
+            stream.write("%s%s\n" % (status, terminator))
+
     is_terminal = hasattr(stream, 'fileno') and os.isatty(stream.fileno())
     all_events = []
     lines = {}
@@ -115,46 +153,6 @@ def stream_output(output, stream):
         stream.flush()
 
     return all_events
-
-
-def print_output_event(event, stream, is_terminal):
-    if 'errorDetail' in event:
-        raise StreamOutputError(event['errorDetail']['message'])
-
-    terminator = ''
-
-    if is_terminal and 'stream' not in event:
-        # erase current line
-        stream.write("%c[2K\r" % 27)
-        terminator = "\r"
-        pass
-    elif 'progressDetail' in event:
-        return
-
-    if 'time' in event:
-        stream.write("[%s] " % event['time'])
-
-    if 'id' in event:
-        stream.write("%s: " % event['id'])
-
-    if 'from' in event:
-        stream.write("(from %s) " % event['from'])
-
-    status = event.get('status', '')
-
-    if 'progress' in event:
-        stream.write("%s %s%s" % (status, event['progress'], terminator))
-    elif 'progressDetail' in event:
-        detail = event['progressDetail']
-        if 'current' in detail:
-            percentage = float(detail['current']) / float(detail['total']) * 100
-            stream.write('%s (%.1f%%)%s' % (status, percentage, terminator))
-        else:
-            stream.write('%s%s' % (status, terminator))
-    elif 'stream' in event:
-        stream.write("%s%s" % (event['stream'], terminator))
-    else:
-        stream.write("%s%s\n" % (status, terminator))
 
 
 def fetch_remote_container(identifier, raise_exceptions=True):
