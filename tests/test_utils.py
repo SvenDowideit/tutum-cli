@@ -2,7 +2,6 @@
 import unittest
 import mock
 import tempfile
-import sys
 
 from tutumcli.utils import *
 from tutumcli.exceptions import *
