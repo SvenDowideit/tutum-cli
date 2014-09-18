@@ -295,25 +295,20 @@ class CommandsDispatchTestCase(unittest.TestCase):
 class ParserTestCase(unittest.TestCase):
     def setUp(self):
         self.stdout = sys.stdout
-        self.stderr = sys.stderr
+        sys.stdout = self.buf = StringIO.StringIO()
 
     def tearDown(self):
         sys.stdout = self.stdout
-        sys.stdout = self.stderr
 
     def compare_output(self, output, args, stdout=True):
         parser = initialize_parser()
         argv = patch_help_option(args)
 
-        if stdout:
-            sys.stdout = buf = StringIO.StringIO()
-        else:
-            sys.stderr = buf = StringIO.StringIO()
         parser.parse_args(argv)
-        sys.stdout = self.stdout
-        sys.stderr = self.stderr
 
-        out = buf.getvalue()
+        out = self.buf.getvalue()
+        self.buf.truncate(0)
+
         self.assertEqual(' '.join(output.split()), ' '.join(out.split()))
 
     @mock.patch('tutumcli.tutum_cli.argparse.ArgumentParser.add_argument')

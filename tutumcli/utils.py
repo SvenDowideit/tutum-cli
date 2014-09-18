@@ -3,6 +3,7 @@ import re
 import datetime
 import json
 import os
+import urlparse
 from os import getenv
 
 from tabulate import tabulate
@@ -10,9 +11,11 @@ import tutum
 from dateutil import tz
 import ago
 import docker
+import requests
 from tutumcli.exceptions import NonUniqueIdentifier, ObjectNotFound, BadParameter, DockerNotFound
 from exceptions import StreamOutputError
 
+from . import __version__
 
 def tabulate_result(data_list, headers):
     print(tabulate(data_list, headers, stralign="left", tablefmt="plain"))
@@ -300,3 +303,29 @@ def parse_envvars(envvar_list):
         for envvar in envvar_list:
             parsed_envvars.append(_is_envvar(envvar))
     return parsed_envvars
+
+
+def try_register(username, password):
+    email = raw_input("Email: ")
+
+    headers = {"Content-Type": "application/json", "User-Agent": "tutum/%s" % __version__}
+    data = {'username': username, "password1": password, "password2": password, "email": email}
+
+    try:
+        r = requests.post(urlparse.urljoin(tutum.base_url, "register/"), data=json.dumps(data), headers=headers)
+        if r.status_code == 201:
+            return True, "Account created. Please check your email for activation instructions."
+        elif r.status_code == 429:
+            return False, "Too many retries. Please login again later."
+        else:
+            messages = r.json()['register']
+            if isinstance(messages, dict):
+                _text = []
+                for key in messages.keys():
+                    _text.append("%s: %s" % (key, '\n'.join(messages[key])))
+                _text = '\n'.join(_text)
+            else:
+                _text = messages
+            return False, _text
+    except Exception:
+        return False, r.text

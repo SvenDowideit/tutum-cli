@@ -2,6 +2,11 @@
 import unittest
 import mock
 import tempfile
+import __builtin__
+import urlparse
+import json
+
+import tutumcli
 
 from tutumcli.utils import *
 from tutumcli.exceptions import *
@@ -359,3 +364,53 @@ class ParseEnvironmentVariablesTestCase(unittest.TestCase):
         self.assertRaises(BadParameter, parse_envvars, ['MYSQL_ADMIN=my?pass'])
         self.assertRaises(BadParameter, parse_envvars, ['MYSQL_ADMIN=mypass=113'])
         self.assertRaises(BadParameter, parse_envvars, ['MYSQL_ADMIN='])
+
+
+class TryRegisterTestCase(unittest.TestCase):
+    def setUp(self):
+        self.raw_input_holder = __builtin__.raw_input
+
+    def tearDown(self):
+        __builtin__.raw_input = self.raw_input_holder
+
+
+    @mock.patch('tutumcli.utils.requests.post')
+    def test_try_register_success(self, mock_post):
+        username = 'test_username'
+        password = 'test_password'
+        __builtin__.raw_input = lambda _: 'test@email.com'  # set email
+        response = mock.MagicMock()
+        response.status_code = 201
+        mock_post.return_value = response
+        url = urlparse.urljoin(tutum.base_url, "register/")
+        headers = {'Content-Type': "application/json", "User-Agent": "tutum/%s" % tutumcli.__version__}
+        data = json.dumps({'username': 'test_username', "password1": 'test_password', "password2": 'test_password',
+                          "email": 'test@email.com'})
+
+        ret, text = try_register(username, password)
+        mock_post.assert_called_with(url, headers=headers, data=data)
+        self.assertEqual((True, ('Account created. Please check your email for activation instructions.')),(ret, text))
+
+    @mock.patch('tutumcli.utils.requests.post')
+    def test_try_register_too_many_retries(self, mock_post):
+        username = 'test_username'
+        password = 'test_password'
+        __builtin__.raw_input = lambda _: 'test@email.com'  # set email
+        response = mock.MagicMock()
+        response.status_code = 429
+        mock_post.return_value = response
+        ret, text = try_register(username, password)
+        self.assertEqual((False, "Too many retries. Please login again later."),(ret, text))
+
+    @mock.patch('tutumcli.utils.requests.post')
+    def test_try_register_failed(self, mock_post):
+        username = 'test_username'
+        password = 'test_password'
+        __builtin__.raw_input = lambda _: 'test@email.com'  # set email
+        response = mock.Mock()
+        response.status_code = 400
+        response.json.return_value = {u'register': {u'username': [u'A user with that username already exists.'], u'email': [u'This email address is already in use. Please supply a different email address.']}}
+        mock_post.return_value = response
+
+        ret, text = try_register(username, password)
+        self.assertEqual((False, u'username: A user with that username already exists.\nemail: This email address is already in use. Please supply a different email address.'),(ret, text))

@@ -3,13 +3,11 @@ import getpass
 import ConfigParser
 import json
 import sys
-import urlparse
 import webbrowser
 import re
 import os
 from os.path import join, expanduser, abspath, isfile
 
-import requests
 import yaml
 import tutum
 import docker
@@ -18,7 +16,6 @@ from exceptions import StreamOutputError
 from tutum.api import auth
 from tutum.api import exceptions
 from tutumcli import utils
-from . import __version__
 
 
 TUTUM_FILE = '.tutum'
@@ -33,32 +30,6 @@ EXCEPTION_EXIT_CODE = 3
 
 
 def login():
-    def try_register(_username, _password):
-        email = raw_input("Email: ")
-
-        headers = {"Content-Type": "application/json", "User-Agent": "tutum/%s" % __version__}
-        data = {'username': _username, "password1": _password, "password2": _password, "email": email}
-
-        r = requests.post(urlparse.urljoin(tutum.base_url, "register/"), data=json.dumps(data), headers=headers)
-
-        try:
-            if r.status_code == 201:
-                return True, "Account created. Please check your email for activation instructions."
-            elif r.status_code == 429:
-                return False, "Too many retries. Please login again later."
-            else:
-                messages = r.json()['register']
-                if isinstance(messages, dict):
-                    _text = []
-                    for key in messages.keys():
-                        _text.append("%s: %s" % (key, '\n'.join(messages[key])))
-                    _text = '\n'.join(_text)
-                else:
-                    _text = messages
-                return False, _text
-        except Exception:
-            return False, r.text
-
     username = raw_input("Username: ")
     password = getpass.getpass()
     try:
@@ -72,18 +43,19 @@ def login():
                 config.write(cfgfile)
             print("Login succeeded!")
     except exceptions.TutumAuthError:
-        registered, text = try_register(username, password)
+        registered, text = utils.try_register(username, password)
         if registered:
             print(text)
         else:
             if 'username: A user with that username already exists.' in text:
                 print("Wrong username and/or password. Please try to login again", file=sys.stderr)
                 sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
-            text = text.replace('password1', 'password')
-            text = text.replace('password2', 'password')
-            text = text.replace('\npassword: This field is required.', '', 1)
-            print(text, file=sys.stderr)
-            sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
+            else:
+                text = text.replace('password1', 'password')
+                text = text.replace('password2', 'password')
+                text = text.replace('\npassword: This field is required.', '', 1)
+                print(text, file=sys.stderr)
+                sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
@@ -342,7 +314,6 @@ def service_terminate(identifiers):
             has_exception = True
     if has_exception:
         sys.exit(EXCEPTION_EXIT_CODE)
-
 
 
 def container_inspect(identifiers):
@@ -919,7 +890,6 @@ def nodecluster_rm(identifiers):
             has_exception = True
     if has_exception:
         sys.exit(EXCEPTION_EXIT_CODE)
-
 
 
 def nodecluster_scale(identifiers, target_num_nodes):
