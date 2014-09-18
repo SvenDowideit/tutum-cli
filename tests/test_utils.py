@@ -184,51 +184,51 @@ class FetchRemoteObjectTestCase(unittest.TestCase):
         self.assertRaises(TutumApiError, fetch_remote_container, 'uuid_or_name', True)
         self.assertRaises(TutumApiError, fetch_remote_container, 'uuid_or_name', False)
 
-    @mock.patch('tutumcli.utils.tutum.Cluster.list')
-    @mock.patch('tutumcli.utils.tutum.Cluster.fetch')
-    def test_fetch_remote_cluster(self, mock_fetch, mock_list):
+    @mock.patch('tutumcli.utils.tutum.Service.list')
+    @mock.patch('tutumcli.utils.tutum.Service.fetch')
+    def test_fetch_remote_service(self, mock_fetch, mock_list):
         # test cluster exist queried with uuid4
         mock_fetch.return_value = 'returned'
-        self.assertEqual(fetch_remote_cluster('7A4CFE51-03BB-42D6-825E-3B533888D8CD', True), 'returned')
-        self.assertEqual(fetch_remote_cluster('7A4CFE51-03BB-42D6-825E-3B533888D8CD', False), 'returned')
+        self.assertEqual(fetch_remote_service('7A4CFE51-03BB-42D6-825E-3B533888D8CD', True), 'returned')
+        self.assertEqual(fetch_remote_service('7A4CFE51-03BB-42D6-825E-3B533888D8CD', False), 'returned')
 
         # test cluster doesn't exist queried with uuid4
         mock_fetch.side_effect = ObjectNotFound
-        self.assertRaises(ObjectNotFound, fetch_remote_cluster, '7A4CFE51-03BB-42D6-825E-3B533888D8CD', True)
-        self.assertIsInstance(fetch_remote_cluster('7A4CFE51-03BB-42D6-825E-3B533888D8CD', False), ObjectNotFound)
+        self.assertRaises(ObjectNotFound, fetch_remote_service, '7A4CFE51-03BB-42D6-825E-3B533888D8CD', True)
+        self.assertIsInstance(fetch_remote_service('7A4CFE51-03BB-42D6-825E-3B533888D8CD', False), ObjectNotFound)
 
         # test unique cluster found queried with short uuid
         mock_list.side_effect = [['cluster'], []]
-        self.assertEquals(fetch_remote_cluster('shortuuid', True), 'cluster')
+        self.assertEquals(fetch_remote_service('shortuuid', True), 'cluster')
         mock_list.side_effect = [['cluster'], []]
-        self.assertEquals(fetch_remote_cluster('shortuuid', False), 'cluster')
+        self.assertEquals(fetch_remote_service('shortuuid', False), 'cluster')
 
         # test unique cluster found queried with name
         mock_list.side_effect = [[], ['cluster']]
-        self.assertEquals(fetch_remote_cluster('name', True), 'cluster')
+        self.assertEquals(fetch_remote_service('name', True), 'cluster')
         mock_list.side_effect = [[], ['cluster']]
-        self.assertEquals(fetch_remote_cluster('name', False), 'cluster')
+        self.assertEquals(fetch_remote_service('name', False), 'cluster')
 
         # test no cluster found
         mock_list.side_effect = [[], []]
-        self.assertRaises(ObjectNotFound, fetch_remote_cluster, 'uuid_or_name', True)
+        self.assertRaises(ObjectNotFound, fetch_remote_service, 'uuid_or_name', True)
         mock_list.side_effect = [[], []]
-        self.assertIsInstance(fetch_remote_cluster('uuid_or_name', False), ObjectNotFound)
+        self.assertIsInstance(fetch_remote_service('uuid_or_name', False), ObjectNotFound)
 
         # test multi-cluster found
         mock_list.side_effect = [['cluster1', 'cluster2'], []]
-        self.assertRaises(NonUniqueIdentifier, fetch_remote_cluster, 'uuid_or_name', True)
+        self.assertRaises(NonUniqueIdentifier, fetch_remote_service, 'uuid_or_name', True)
         mock_list.side_effect = [['cluster1', 'cluster2'], []]
-        self.assertIsInstance(fetch_remote_cluster('uuid_or_name', False), NonUniqueIdentifier)
+        self.assertIsInstance(fetch_remote_service('uuid_or_name', False), NonUniqueIdentifier)
         mock_list.side_effect = [[], ['cluster1', 'cluster2']]
-        self.assertRaises(NonUniqueIdentifier, fetch_remote_cluster, 'uuid_or_name', True)
+        self.assertRaises(NonUniqueIdentifier, fetch_remote_service, 'uuid_or_name', True)
         mock_list.side_effect = [[], ['cluster1', 'cluster2']]
-        self.assertIsInstance(fetch_remote_cluster('uuid_or_name', False), NonUniqueIdentifier)
+        self.assertIsInstance(fetch_remote_service('uuid_or_name', False), NonUniqueIdentifier)
 
         # test api error
         mock_list.side_effect = [TutumApiError, TutumApiError]
-        self.assertRaises(TutumApiError, fetch_remote_cluster, 'uuid_or_name', True)
-        self.assertRaises(TutumApiError, fetch_remote_cluster, 'uuid_or_name', False)
+        self.assertRaises(TutumApiError, fetch_remote_service, 'uuid_or_name', True)
+        self.assertRaises(TutumApiError, fetch_remote_service, 'uuid_or_name', False)
 
     @mock.patch('tutumcli.utils.tutum.Node.list')
     @mock.patch('tutumcli.utils.tutum.Node.fetch')

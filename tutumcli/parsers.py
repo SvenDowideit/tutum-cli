@@ -16,63 +16,63 @@ def add_build_parser(subparsers):
     build_parser.add_argument('directory', help='working directory')
 
 
-def add_cluster_parser(subparsers):
-    # tutum cluster
-    cluster_parser = subparsers.add_parser('cluster', help='Cluster-related operations',
-                                           description='Cluster-related operations')
-    cluster_subparser = cluster_parser.add_subparsers(title='tutum cluster commands', dest='subcmd')
+def add_service_parser(subparsers):
+    # tutum service
+    service_parser = subparsers.add_parser('service', help='Service-related operations',
+                                           description='Service-related operations')
+    service_subparser = service_parser.add_subparsers(title='tutum service commands', dest='subcmd')
 
-    # tutum cluster alias
-    alias_parser = cluster_subparser.add_parser('alias',
-                                                help="Set a custom FQDN (CNAME) to a running web cluster",
-                                                description="Set a custom DNS record (CNAME) to a running web cluster")
-    alias_parser.add_argument('identifier', help="cluster's UUID (either long or short) or name", nargs='+')
-    alias_parser.add_argument('dns', help='custom FQDN to use for this web cluster')
+    # tutum service alias
+    alias_parser = service_subparser.add_parser('alias',
+                                                help="Set a custom FQDN (CNAME) to a running web service",
+                                                description="Set a custom DNS record (CNAME) to a running web service")
+    alias_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
+    alias_parser.add_argument('dns', help='custom FQDN to use for this web service')
 
-    # tutum cluster inspect
-    inspect_parser = cluster_subparser.add_parser('inspect', help="Get all details from an cluster",
-                                                  description="Get all details from an cluster")
-    inspect_parser.add_argument('identifier', help="cluster's UUID (either long or short) or name", nargs='+')
+    # tutum service inspect
+    inspect_parser = service_subparser.add_parser('inspect', help="Get all details from an service",
+                                                  description="Get all details from an service")
+    inspect_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
 
-    # tutum cluster logs
-    logs_parser = cluster_subparser.add_parser('logs', help='Get logs from an cluster',
-                                               description='Get logs from an cluster')
-    logs_parser.add_argument('identifier', help="cluster's UUID (either long or short) or name", nargs='+')
+    # tutum service logs
+    logs_parser = service_subparser.add_parser('logs', help='Get logs from an service',
+                                               description='Get logs from an service')
+    logs_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
 
-    # tutum cluster open
-    cluster_subparser.add_parser('open', help='Open last web cluster launched',
-                                 description='Open last web cluster launched', )
+    # tutum service open
+    service_subparser.add_parser('open', help='Open last web service launched',
+                                 description='Open last web service launched', )
 
-    # tutum cluster ps
-    ps_parser = cluster_subparser.add_parser('ps', help='List clusters', description='List clusters')
+    # tutum service ps
+    ps_parser = service_subparser.add_parser('ps', help='List services', description='List services')
     ps_parser.add_argument('-q', '--quiet', help='print only long UUIDs', action='store_true')
-    ps_parser.add_argument('-s', '--status', help='filter clusters by status',
+    ps_parser.add_argument('-s', '--status', help='filter services by status',
                            choices=['Running', 'Partly running', 'Stopped', 'Start failed', 'Stopped with errors'])
 
-    # tutum cluster redeploy
-    redeploy_parser = cluster_subparser.add_parser('redeploy', help='Redeploy a running cluster with a '
+    # tutum service redeploy
+    redeploy_parser = service_subparser.add_parser('redeploy', help='Redeploy a running service with a '
                                                                     'new version/tag',
-                                                   description='Redeploy a running cluster with a new version/tag')
-    redeploy_parser.add_argument('identifier', help="cluster's UUID (either long or short) or name", nargs='+')
+                                                   description='Redeploy a running service with a new version/tag')
+    redeploy_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
     redeploy_parser.add_argument('-t', '--tag', help='tag of the image to redeploy')
 
-    # tutum cluster run
-    run_parser = cluster_subparser.add_parser('run', help='Create and run a new cluster',
-                                              description='Create and run a new cluster', )
-    run_parser.add_argument('image', help='the name of the image used to deploy this cluster')
-    run_parser.add_argument('-n', '--name', help='a human-readable name for the cluster '
+    # tutum service run
+    run_parser = service_subparser.add_parser('run', help='Create and run a new service',
+                                              description='Create and run a new service', )
+    run_parser.add_argument('image', help='the name of the image used to deploy this service')
+    run_parser.add_argument('-n', '--name', help='a human-readable name for the service '
                                                  '(default: image_tag without namespace)')
     run_parser.add_argument('--cpushares', help='Relative weight for CPU Shares', type=int)
     run_parser.add_argument('--memory', help='RAM memory hard limit in MB', type=int)
     run_parser.add_argument('--memoryswap', help='Memory swap hard limit in MB', type=int)
     run_parser.add_argument('-t', '--target-num-containers',
-                            help='the number of containers to run for this cluster (default: 1)', type=int,
+                            help='the number of containers to run for this service (default: 1)', type=int,
                             default=1)
     run_parser.add_argument('-r', '--run-command',
-                            help='the command used to start the cluster containers '
+                            help='the command used to start the service containers '
                                  '(default: as defined in the image)')
     run_parser.add_argument('--entrypoint',
-                            help='the command prefix used to start the cluster containers '
+                            help='the command prefix used to start the service containers '
                                  '(default: as defined in the image)')
     run_parser.add_argument('-p', '--port',
                             help='set ports i.e. "80/tcp" (default: as defined in the image)', action='append')
@@ -80,8 +80,8 @@ def add_cluster_parser(subparsers):
                             help='set environment variables i.e. "ENVVAR=foo" '
                                  '(default: as defined in the image, plus any link- or role-generated variables)',
                             action='append')
-    run_parser.add_argument('--link-cluster',
-                            help="Add link to another cluster (name:alias) or (uuid:alias)", action='append')
+    run_parser.add_argument('--link-service',
+                            help="Add link to another service (name:alias) or (uuid:alias)", action='append')
     run_parser.add_argument('--link-container',
                             help="Add link to another container (name:alias) or (uuid:alias)", action='append')
     run_parser.add_argument('--autorestart', help='whether the containers should be restarted if they stop '
@@ -90,25 +90,25 @@ def add_cluster_parser(subparsers):
                                                   'they stop (default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     run_parser.add_argument('--autodestroy', help='whether the containers should be terminated if '
                                                   'they stop (default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
-    run_parser.add_argument('--role', help='Tutum API roles to grant the cluster, '
+    run_parser.add_argument('--role', help='Tutum API roles to grant the service, '
                                            'i.e. "global" (default: none, possible values: "global")', action='append')
     run_parser.add_argument('--sequential', help='whether the containers should be launched and scaled sequentially',
                             action='store_true')
     run_parser.add_argument('--web-public-dns', help="Set your own web public dns")
 
-    # tutum cluster scale
-    scale_parser = cluster_subparser.add_parser('scale', help='Scale a running cluster',
-                                                description='Scale a running cluster', )
-    scale_parser.add_argument('identifier', help="cluster's UUID (either long or short) or name", nargs='+')
+    # tutum service scale
+    scale_parser = service_subparser.add_parser('scale', help='Scale a running service',
+                                                description='Scale a running service', )
+    scale_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
     scale_parser.add_argument("target_num_containers", metavar="target-num-containers",
-                              help="target number of containers to scale this cluster to", type=int)
-    # tutum cluster set
-    set_parser = cluster_subparser.add_parser('set',
+                              help="target number of containers to scale this service to", type=int)
+    # tutum service set
+    set_parser = service_subparser.add_parser('set',
                                               help='Enable or disable Crash Recovery and Autodestroy features to '
-                                                   'an existing cluster',
+                                                   'an existing service',
                                               description='Enable or disable Crash Recovery and Autodestroy features to'
-                                                          ' an existing cluster')
-    set_parser.add_argument('identifier', help="cluster's UUID (either long or short) or name", nargs='+')
+                                                          ' an existing service')
+    set_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
     set_parser.add_argument('--autorestart', help="whether the containers should be restarted if they stop "
                                                   "(default: OFF)", choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     set_parser.add_argument('--autoreplace', help="whether the containers should be replaced with a new one if "
@@ -117,20 +117,20 @@ def add_cluster_parser(subparsers):
                             help="whether the containers should be terminated if they stop (default: OFF)",
                             choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
 
-    # tutum cluster start
-    start_parser = cluster_subparser.add_parser('start', help='Start a stopped cluster',
-                                                description='Start a stopped cluster')
-    start_parser.add_argument('identifier', help="cluster's UUID (either long or short) or name", nargs='+')
+    # tutum service start
+    start_parser = service_subparser.add_parser('start', help='Start a stopped service',
+                                                description='Start a stopped service')
+    start_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
 
-    # tutum cluster stop
-    stop_parser = cluster_subparser.add_parser('stop', help='Stop a running cluster',
-                                               description='Stop a running cluster')
-    stop_parser.add_argument('identifier', help="cluster's UUID (either long or short) or name", nargs='+')
+    # tutum service stop
+    stop_parser = service_subparser.add_parser('stop', help='Stop a running service',
+                                               description='Stop a running service')
+    stop_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
 
-    # tutum cluster terminate
-    terminate_parser = cluster_subparser.add_parser('terminate', help='Terminate an cluster',
-                                                    description='Terminate an cluster')
-    terminate_parser.add_argument('identifier', help="cluster's UUID (either long or short) or name", nargs='+')
+    # tutum service terminate
+    terminate_parser = service_subparser.add_parser('terminate', help='Terminate an service',
+                                                    description='Terminate an service')
+    terminate_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
 
 
 def add_container_parser(subparsers):
@@ -187,8 +187,8 @@ def add_container_parser(subparsers):
                             help='set environment variables i.e. "ENVVAR=foo" '
                                  '(default: as defined in the image, plus any link- or role-generated variables)',
                             action='append')
-    run_parser.add_argument('--link-cluster',
-                            help="Add link to another cluster (name:alias) or (uuid:alias)", action='append')
+    run_parser.add_argument('--link-service',
+                            help="Add link to another service (name:alias) or (uuid:alias)", action='append')
     run_parser.add_argument('--link-container',
                             help="Add link to another container (name:alias) or (uuid:alias)", action='append')
     run_parser.add_argument('--autorestart', help='whether the containers should be restarted if they stop '
@@ -294,7 +294,7 @@ def add_nodecluster_parser(subparsers):
     create_parser.add_argument('-t', '--target-num-nodes',
                                help='the target number of nodes to run for this cluster (default: 1)', type=int,
                                default=1)
-    create_parser.add_argument('name', help='name of the cluster to create')
+    create_parser.add_argument('name', help='name of the node cluster to create')
     create_parser.add_argument('provider_id', help='id of the provider', type=int)
     create_parser.add_argument('region_id', help='id of the region', type=int)
     create_parser.add_argument('nodetype_id', help='id of the nodetype', type=int)

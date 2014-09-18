@@ -23,11 +23,11 @@ def initialize_parser():
     # Command Parsers
     parsers.add_build_parser(subparsers)
     parsers.add_container_parser(subparsers)
-    parsers.add_cluster_parser(subparsers)
     parsers.add_image_parser(subparsers)
     parsers.add_login_parser(subparsers)
     parsers.add_node_parser(subparsers)
     parsers.add_nodecluster_parser(subparsers)
+    parsers.add_service_parser(subparsers)
     return parser
 
 
@@ -43,10 +43,10 @@ def patch_help_option(argv=sys.argv):
 
     if len(args) == 1:
         args.append('-h')
-    elif len(args) == 2 and args[1] in ['cluster', 'build', 'container', 'image', 'node', 'nodecluster']:
+    elif len(args) == 2 and args[1] in ['service', 'build', 'container', 'image', 'node', 'nodecluster']:
         args.append('-h')
     elif len(args) == 3:
-        if args[1] == 'cluster' and args[2] in ['alias', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
+        if args[1] == 'service' and args[2] in ['alias', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
                                                 'start', 'stop', 'terminate']:
             args.append('-h')
         elif args[1] == 'container' and args[2] in ['inspect', 'logs', 'redeploy', 'run', 'start', 'stop',
@@ -71,38 +71,38 @@ def dispatch_cmds(args):
         commands.login()
     if args.cmd == 'build':
         commands.build(args.tag, args.directory, args.quiet, args.no_cache)
-    elif args.cmd == 'cluster':
+    elif args.cmd == 'service':
         if args.subcmd == 'alias':
-            commands.cluster_alias(args.identifier, args.dns)
+            commands.service_alias(args.identifier, args.dns)
         elif args.subcmd == 'inspect':
-            commands.cluster_inspect(args.identifier)
+            commands.service_inspect(args.identifier)
         elif args.subcmd == 'logs':
-            commands.cluster_logs(args.identifier)
+            commands.service_logs(args.identifier)
         elif args.subcmd == 'open':
-            commands.cluster_open()
+            commands.service_open()
         elif args.subcmd == 'ps':
-            commands.cluster_ps(args.quiet, args.status)
+            commands.service_ps(args.quiet, args.status)
         elif args.subcmd == 'redeploy':
-            commands.cluster_redeploy(args.identifier, args.tag)
+            commands.service_redeploy(args.identifier, args.tag)
         elif args.subcmd == 'run':
-            commands.cluster_run(image=args.image, name=args.name, cpu_shares=args.cpushares,
+            commands.service_run(image=args.image, name=args.name, cpu_shares=args.cpushares,
                                  memory=args.memory, memory_swap=args.memoryswap,
                                  target_num_containers=args.target_num_containers, run_command=args.run_command,
                                  entrypoint=args.entrypoint, container_ports=args.port, container_envvars=args.env,
-                                 linked_to_cluster=args.link_cluster, linked_to_container=args.link_container,
+                                 linked_to_service=args.link_service, linked_to_container=args.link_container,
                                  autorestart=args.autorestart,
                                  autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role,
                                  sequential=args.sequential, web_public_dns=args.web_public_dns)
         elif args.subcmd == 'scale':
-            commands.cluster_scale(args.identifier, args.target_num_containers)
+            commands.service_scale(args.identifier, args.target_num_containers)
         elif args.subcmd == 'set':
-            commands.cluster_set(args.autorestart, args.autoreplace, args.autodestroy, args.identifier)
+            commands.service_set(args.autorestart, args.autoreplace, args.autodestroy, args.identifier)
         elif args.subcmd == 'start':
-            commands.cluster_start(args.identifier)
+            commands.service_start(args.identifier)
         elif args.subcmd == 'stop':
-            commands.cluster_stop(args.identifier)
+            commands.service_stop(args.identifier)
         elif args.subcmd == 'terminate':
-            commands.cluster_terminate(args.identifier)
+            commands.service_terminate(args.identifier)
     elif args.cmd == 'container':
         if args.subcmd == 'inspect':
             commands.container_inspect(args.identifier)
@@ -117,7 +117,7 @@ def dispatch_cmds(args):
                                    memory=args.memory, memory_swap=args.memoryswap,
                                    run_command=args.run_command, entrypoint=args.entrypoint, container_ports=args.port,
                                    container_envvars=args.env,
-                                   linked_to_cluster=args.link_cluster, linked_to_container=args.link_container,
+                                   linked_to_service=args.link_service, linked_to_container=args.link_container,
                                    autorestart=args.autorestart, autoreplace=args.autoreplace,
                                    autodestroy=args.autodestroy,
                                    roles=args.role, web_public_dns=args.web_public_dns)

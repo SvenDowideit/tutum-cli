@@ -178,22 +178,22 @@ def fetch_remote_container(identifier, raise_exceptions=True):
         raise e
 
 
-def fetch_remote_cluster(identifier, raise_exceptions=True):
+def fetch_remote_service(identifier, raise_exceptions=True):
     try:
         if is_uuid4(identifier):
             try:
-                return tutum.Cluster.fetch(identifier)
+                return tutum.Service.fetch(identifier)
             except Exception:
-                raise ObjectNotFound("Cannot find a cluster with the identifier '%s'" % identifier)
+                raise ObjectNotFound("Cannot find a service with the identifier '%s'" % identifier)
         else:
-            objects_same_identifier = tutum.Cluster.list(uuid__startswith=identifier) or \
-                                      tutum.Cluster.list(unique_name=identifier)
+            objects_same_identifier = tutum.Service.list(uuid__startswith=identifier) or \
+                                      tutum.Service.list(unique_name=identifier)
 
             if len(objects_same_identifier) == 1:
                 return objects_same_identifier[0]
             elif len(objects_same_identifier) == 0:
-                raise ObjectNotFound("Cannot find a cluster with the identifier '%s'" % identifier)
-            raise NonUniqueIdentifier("More than one cluster has the same identifier, please use the long uuid")
+                raise ObjectNotFound("Cannot find a service with the identifier '%s'" % identifier)
+            raise NonUniqueIdentifier("More than one service has the same identifier, please use the long uuid")
     except (NonUniqueIdentifier, ObjectNotFound) as e:
         if not raise_exceptions:
             return e

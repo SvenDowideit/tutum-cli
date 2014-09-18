@@ -15,17 +15,17 @@ class PatchHelpOptionTestCase(unittest.TestCase):
     def setUp(self):
         self.add_help_argv_list = [
             ['tutum'],
-            ['tutum', 'cluster'],
-            ['tutum', 'cluster', 'alias'],
-            ['tutum', 'cluster', 'inspect'],
-            ['tutum', 'cluster', 'logs'],
-            ['tutum', 'cluster', 'redeploy'],
-            ['tutum', 'cluster', 'run'],
-            ['tutum', 'cluster', 'scale'],
-            ['tutum', 'cluster', 'set'],
-            ['tutum', 'cluster', 'start'],
-            ['tutum', 'cluster', 'stop'],
-            ['tutum', 'cluster', 'terminate'],
+            ['tutum', 'service'],
+            ['tutum', 'service', 'alias'],
+            ['tutum', 'service', 'inspect'],
+            ['tutum', 'service', 'logs'],
+            ['tutum', 'service', 'redeploy'],
+            ['tutum', 'service', 'run'],
+            ['tutum', 'service', 'scale'],
+            ['tutum', 'service', 'set'],
+            ['tutum', 'service', 'start'],
+            ['tutum', 'service', 'stop'],
+            ['tutum', 'service', 'terminate'],
             ['tutum', 'build'],
             ['tutum', 'container'],
             ['tutum', 'container', 'inspect'],
@@ -53,8 +53,8 @@ class PatchHelpOptionTestCase(unittest.TestCase):
             ['tutum', 'nodecluster', 'scale'],
         ]
         self.not_add_help_argv_list = [
-            ["tutum", "cluster", "ps"],
-            ["tutum", "cluster", "open"],
+            ["tutum", "service", "ps"],
+            ["tutum", "service", "open"],
             ["tutum", "container", "ps"],
             ["tutum", "image", "list"],
             ["tutum", "node", "list"],
@@ -113,65 +113,65 @@ class CommandsDispatchTestCase(unittest.TestCase):
         mock_cmds.build.assert_called_with(args.tag, args.directory, args.quiet, args.no_cache)
 
     @mock.patch('tutumcli.tutum_cli.commands')
-    def test_cluster_dispatch(self, mock_cmds):
-        args = self.parser.parse_args(['cluster', 'alias', 'id', 'dns'])
+    def test_service_dispatch(self, mock_cmds):
+        args = self.parser.parse_args(['service', 'alias', 'id', 'dns'])
         dispatch_cmds(args)
-        mock_cmds.cluster_alias.assert_called_with(args.identifier, args.dns)
+        mock_cmds.service_alias.assert_called_with(args.identifier, args.dns)
 
-        args = self.parser.parse_args(['cluster', 'inspect', 'id'])
+        args = self.parser.parse_args(['service', 'inspect', 'id'])
         dispatch_cmds(args)
-        mock_cmds.cluster_inspect.assert_called_with(args.identifier)
+        mock_cmds.service_inspect.assert_called_with(args.identifier)
 
-        args = self.parser.parse_args(['cluster', 'logs', 'id'])
+        args = self.parser.parse_args(['service', 'logs', 'id'])
         dispatch_cmds(args)
-        mock_cmds.cluster_logs.assert_called_with(args.identifier)
+        mock_cmds.service_logs.assert_called_with(args.identifier)
 
-        args = self.parser.parse_args(['cluster', 'open'])
+        args = self.parser.parse_args(['service', 'open'])
         dispatch_cmds(args)
-        mock_cmds.cluster_open.assert_called_with()
+        mock_cmds.service_open.assert_called_with()
 
-        args = self.parser.parse_args(['cluster', 'ps'])
+        args = self.parser.parse_args(['service', 'ps'])
         dispatch_cmds(args)
-        mock_cmds.cluster_ps.assert_called_with(args.quiet, args.status)
+        mock_cmds.service_ps.assert_called_with(args.quiet, args.status)
 
-        args = self.parser.parse_args(['cluster', 'redeploy', '-t', 'latest', 'mysql'])
+        args = self.parser.parse_args(['service', 'redeploy', '-t', 'latest', 'mysql'])
         dispatch_cmds(args)
-        mock_cmds.cluster_redeploy.assert_called_with(args.identifier, args.tag)
+        mock_cmds.service_redeploy.assert_called_with(args.identifier, args.tag)
 
-        args = self.parser.parse_args(['cluster', 'run', 'mysql'])
+        args = self.parser.parse_args(['service', 'run', 'mysql'])
         dispatch_cmds(args)
-        mock_cmds.cluster_run.assert_called_with(image=args.image, name=args.name, cpu_shares=args.cpushares,
+        mock_cmds.service_run.assert_called_with(image=args.image, name=args.name, cpu_shares=args.cpushares,
                                                  memory=args.memory, memory_swap=args.memoryswap,
                                                  target_num_containers=args.target_num_containers,
                                                  run_command=args.run_command,
                                                  entrypoint=args.entrypoint, container_ports=args.port,
                                                  container_envvars=args.env,
-                                                 linked_to_cluster=args.link_cluster,
+                                                 linked_to_service=args.link_service,
                                                  linked_to_container=args.link_container,
                                                  autorestart=args.autorestart,
                                                  autoreplace=args.autoreplace, autodestroy=args.autodestroy,
                                                  roles=args.role,
                                                  sequential=args.sequential, web_public_dns=args.web_public_dns)
 
-        args = self.parser.parse_args(['cluster', 'scale', 'id', '3'])
+        args = self.parser.parse_args(['service', 'scale', 'id', '3'])
         dispatch_cmds(args)
-        mock_cmds.cluster_scale.assert_called_with(args.identifier, args.target_num_containers)
+        mock_cmds.service_scale.assert_called_with(args.identifier, args.target_num_containers)
 
-        args = self.parser.parse_args(['cluster', 'set', 'id'])
+        args = self.parser.parse_args(['service', 'set', 'id'])
         dispatch_cmds(args)
-        mock_cmds.cluster_set.assert_called_with(args.autorestart, args.autoreplace, args.autodestroy, args.identifier)
+        mock_cmds.service_set.assert_called_with(args.autorestart, args.autoreplace, args.autodestroy, args.identifier)
 
-        args = self.parser.parse_args(['cluster', 'start', 'id'])
+        args = self.parser.parse_args(['service', 'start', 'id'])
         dispatch_cmds(args)
-        mock_cmds.cluster_start.assert_called_with(args.identifier)
+        mock_cmds.service_start.assert_called_with(args.identifier)
 
-        args = self.parser.parse_args(['cluster', 'stop', 'id'])
+        args = self.parser.parse_args(['service', 'stop', 'id'])
         dispatch_cmds(args)
-        mock_cmds.cluster_stop.assert_called_with(args.identifier)
+        mock_cmds.service_stop.assert_called_with(args.identifier)
 
-        args = self.parser.parse_args(['cluster', 'terminate', 'id'])
+        args = self.parser.parse_args(['service', 'terminate', 'id'])
         dispatch_cmds(args)
-        mock_cmds.cluster_terminate.assert_called_with(args.identifier)
+        mock_cmds.service_terminate.assert_called_with(args.identifier)
 
     @mock.patch('tutumcli.tutum_cli.commands')
     def test_container_dispatch(self, mock_cmds):
@@ -198,7 +198,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                    run_command=args.run_command, entrypoint=args.entrypoint,
                                                    container_ports=args.port,
                                                    container_envvars=args.env,
-                                                   linked_to_cluster=args.link_cluster,
+                                                   linked_to_service=args.link_service,
                                                    linked_to_container=args.link_container,
                                                    autorestart=args.autorestart, autoreplace=args.autoreplace,
                                                    autodestroy=args.autodestroy,
@@ -297,7 +297,6 @@ class ParserTestCase(unittest.TestCase):
         self.stdout = sys.stdout
         self.stderr = sys.stderr
 
-
     def tearDown(self):
         sys.stdout = self.stdout
         sys.stdout = self.stderr
@@ -316,7 +315,6 @@ class ParserTestCase(unittest.TestCase):
 
         out = buf.getvalue()
         self.assertEqual(' '.join(output.split()), ' '.join(out.split()))
-
 
     @mock.patch('tutumcli.tutum_cli.argparse.ArgumentParser.add_argument')
     @mock.patch('tutumcli.tutum_cli.argparse.ArgumentParser.exit')
@@ -337,19 +335,19 @@ class ParserTestCase(unittest.TestCase):
         self.compare_output(TUTUM_CONTAINER_START, args=['tutum', 'container', 'start', '-h'])
         self.compare_output(TUTUM_CONTAINER_STOP, args=['tutum', 'container', 'stop', '-h'])
         self.compare_output(TUTUM_CONTAINER_TERMINATE, args=['tutum', 'container', 'terminate', '-h'])
-        self.compare_output(TUTUM_CLUSTER, args=['tutum', 'cluster', '-h'])
-        self.compare_output(TUTUM_CLUSTER_ALIAS, args=['tutum', 'cluster', 'alias', '-h'])
-        self.compare_output(TUTUM_CLUSTER_INSPECT, args=['tutum', 'cluster', 'inspect', '-h'])
-        self.compare_output(TUTUM_CLUSTER_LOGS, args=['tutum', 'cluster', 'logs', '-h'])
-        self.compare_output(TUTUM_CLUSTER_OPEN, args=['tutum', 'cluster', 'open', '-h'])
-        self.compare_output(TUTUM_CLUSTER_PS, args=['tutum', 'cluster', 'ps', '-h'])
-        self.compare_output(TUTUM_CLUSTER_REDEPLOY, args=['tutum', 'cluster', 'redeploy', '-h'])
-        self.compare_output(TUTUM_CLUSTER_RUN, args=['tutum', 'cluster', 'run', '-h'])
-        self.compare_output(TUTUM_CLUSTER_SCALE, args=['tutum', 'cluster', 'scale', '-h'])
-        self.compare_output(TUTUM_CLUSTER_SET, args=['tutum', 'cluster', 'set', '-h'])
-        self.compare_output(TUTUM_CLUSTER_START, args=['tutum', 'cluster', 'start', '-h'])
-        self.compare_output(TUTUM_CLUSTER_STOP, args=['tutum', 'cluster', 'stop', '-h'])
-        self.compare_output(TUTUM_CLUSTER_TERMINATE, args=['tutum', 'cluster', 'terminate', '-h'])
+        self.compare_output(TUTUM_SERVICE, args=['tutum', 'service', '-h'])
+        self.compare_output(TUTUM_SERVICE_ALIAS, args=['tutum', 'service', 'alias', '-h'])
+        self.compare_output(TUTUM_SERVICE_INSPECT, args=['tutum', 'service', 'inspect', '-h'])
+        self.compare_output(TUTUM_SERVICE_LOGS, args=['tutum', 'service', 'logs', '-h'])
+        self.compare_output(TUTUM_SERVICE_OPEN, args=['tutum', 'service', 'open', '-h'])
+        self.compare_output(TUTUM_SERVICE_PS, args=['tutum', 'service', 'ps', '-h'])
+        self.compare_output(TUTUM_SERVICE_REDEPLOY, args=['tutum', 'service', 'redeploy', '-h'])
+        self.compare_output(TUTUM_SERVICE_RUN, args=['tutum', 'service', 'run', '-h'])
+        self.compare_output(TUTUM_SERVICE_SCALE, args=['tutum', 'service', 'scale', '-h'])
+        self.compare_output(TUTUM_SERVICE_SET, args=['tutum', 'service', 'set', '-h'])
+        self.compare_output(TUTUM_SERVICE_START, args=['tutum', 'service', 'start', '-h'])
+        self.compare_output(TUTUM_SERVICE_STOP, args=['tutum', 'service', 'stop', '-h'])
+        self.compare_output(TUTUM_SERVICE_TERMINATE, args=['tutum', 'service', 'terminate', '-h'])
         self.compare_output(TUTUM_IMAGE, args=['tutum', 'image', '-h'])
         self.compare_output(TUTUM_IMAGE_LIST, args=['tutum', 'image', 'list', '-h'])
         self.compare_output(TUTUM_IMAGE_REGISTER, args=['tutum', 'image', 'register', '-h'])

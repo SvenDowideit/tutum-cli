@@ -1,5 +1,5 @@
 TUTUM = '''usage: tutum [-h] [-v]
-             {build,container,cluster,image,login,node,nodecluster} ...
+             {build,container,image,login,node,nodecluster,service} ...
 
 Tutum's CLI
 
@@ -8,15 +8,15 @@ optional arguments:
   -v, --version         show program's version number and exit
 
 Tutum's CLI commands:
-  {build,container,cluster,image,login,node,nodecluster}
+  {build,container,image,login,node,nodecluster,service}
     build               Build an image using an existing Dockerfile, or create
                         one using buildstep
     container           Container-related operations
-    cluster             Cluster-related operations
     image               Image-related operations
     login               Login into Tutum
     node                Node-related operations
-    nodecluster         NodeCluster-related operations'''
+    nodecluster         NodeCluster-related operations
+    service             Service-related operations'''
 
 # ##################################################
 
@@ -113,7 +113,7 @@ TUTUM_CONTAINER_RUN = '''usage: tutum container run [-h] [-n NAME] [--cpushares 
                            [--memory MEMORY] [--memoryswap MEMORYSWAP]
                            [-t TARGET_NUM_CONTAINERS] [-r RUN_COMMAND]
                            [--entrypoint ENTRYPOINT] [-p PORT] [-e ENV]
-                           [--link-cluster LINK_CLUSTER]
+                           [--link-service LINK_SERVICE]
                            [--link-container LINK_CONTAINER]
                            [--autorestart {OFF,ON_FAILURE,ALWAYS}]
                            [--autoreplace {OFF,ON_FAILURE,ALWAYS}]
@@ -150,8 +150,8 @@ optional arguments:
   -e ENV, --env ENV     set environment variables i.e. "ENVVAR=foo" (default:
                         as defined in the image, plus any link- or role-
                         generated variables)
-  --link-cluster LINK_CLUSTER
-                        Add link to another cluster (name:alias) or
+  --link-service LINK_SERVICE
+                        Add link to another service (name:alias) or
                         (uuid:alias)
   --link-container LINK_CONTAINER
                         Add link to another container (name:alias) or
@@ -210,99 +210,99 @@ optional arguments:
 
 # ##################################################
 
-TUTUM_CLUSTER = '''usage: tutum cluster [-h]
+TUTUM_SERVICE = '''usage: tutum service [-h]
 
                      {alias,inspect,logs,open,ps,redeploy,run,scale,set,start,stop,terminate}
                      ...
 
-Cluster-related operations
+Service-related operations
 
 optional arguments:
   -h, --help            show this help message and exit
 
-tutum cluster commands:
+tutum service commands:
   {alias,inspect,logs,open,ps,redeploy,run,scale,set,start,stop,terminate}
-    alias               Set a custom FQDN (CNAME) to a running web cluster
-    inspect             Get all details from an cluster
-    logs                Get logs from an cluster
-    open                Open last web cluster launched
-    ps                  List clusters
-    redeploy            Redeploy a running cluster with a new version/tag
-    run                 Create and run a new cluster
-    scale               Scale a running cluster
+    alias               Set a custom FQDN (CNAME) to a running web service
+    inspect             Get all details from an service
+    logs                Get logs from an service
+    open                Open last web service launched
+    ps                  List services
+    redeploy            Redeploy a running service with a new version/tag
+    run                 Create and run a new service
+    scale               Scale a running service
     set                 Enable or disable Crash Recovery and Autodestroy
-                        features to an existing cluster
-    start               Start a stopped cluster
-    stop                Stop a running cluster
-    terminate           Terminate an cluster'''
+                        features to an existing service
+    start               Start a stopped service
+    stop                Stop a running service
+    terminate           Terminate an service'''
 
 # ##################################################
 
-TUTUM_CLUSTER_ALIAS = '''usage: tutum cluster alias [-h] identifier [identifier ...] dns
+TUTUM_SERVICE_ALIAS = '''usage: tutum service alias [-h] identifier [identifier ...] dns
 
-Set a custom DNS record (CNAME) to a running web cluster
+Set a custom DNS record (CNAME) to a running web service
 
 positional arguments:
-  identifier  cluster's UUID (either long or short) or name
-  dns         custom FQDN to use for this web cluster
+  identifier  service's UUID (either long or short) or name
+  dns         custom FQDN to use for this web service
 
 optional arguments:
   -h, --help  show this help message and exit'''
 
 # ##################################################
 
-TUTUM_CLUSTER_INSPECT = '''usage: tutum cluster inspect [-h] identifier [identifier ...]
+TUTUM_SERVICE_INSPECT = '''usage: tutum service inspect [-h] identifier [identifier ...]
 
-Get all details from an cluster
+Get all details from an service
 
 positional arguments:
-  identifier  cluster's UUID (either long or short) or name
+  identifier  service's UUID (either long or short) or name
 
 optional arguments:
   -h, --help  show this help message and exit'''
 
 # ##################################################
 
-TUTUM_CLUSTER_LOGS = '''usage: tutum cluster logs [-h] identifier [identifier ...]
+TUTUM_SERVICE_LOGS = '''usage: tutum service logs [-h] identifier [identifier ...]
 
-Get logs from an cluster
+Get logs from an service
 
 positional arguments:
-  identifier  cluster's UUID (either long or short) or name
+  identifier  service's UUID (either long or short) or name
 
 optional arguments:
   -h, --help  show this help message and exit'''
 
 # ##################################################
 
-TUTUM_CLUSTER_OPEN = '''usage: tutum cluster open [-h]
+TUTUM_SERVICE_OPEN = '''usage: tutum service open [-h]
 
-Open last web cluster launched
+Open last web service launched
 
 optional arguments:
   -h, --help  show this help message and exit'''
 
 # ##################################################
 
-TUTUM_CLUSTER_PS = '''usage: tutum cluster ps [-h] [-q]
+TUTUM_SERVICE_PS = '''usage: tutum service ps [-h] [-q]
                         [-s {Running,Partly running,Stopped,Start failed,Stopped with errors}]
 
-List clusters
+List services
 
 optional arguments:
   -h, --help            show this help message and exit
   -q, --quiet           print only long UUIDs
   -s {Running,Partly running,Stopped,Start failed,Stopped with errors}, --status {Running,Partly running,Stopped,Start failed,Stopped with errors}
-                        filter clusters by status'''
+                        filter services by status'''
 
 # ##################################################
 
-TUTUM_CLUSTER_REDEPLOY = '''usage: tutum cluster redeploy [-h] [-t TAG] identifier [identifier ...]
+TUTUM_SERVICE_REDEPLOY = '''usage: tutum service redeploy [-h] [-t TAG] identifier [identifier ...]
 
-Redeploy a running cluster with a new version/tag
+Redeploy a running service with a new version/tag
 
 positional arguments:
-  identifier         cluster's UUID (either long or short) or name
+  identifier         service's UUID (either long or short) or name
 
 optional arguments:
   -h, --help         show this help message and exit
@@ -310,11 +310,11 @@ optional arguments:
 
 # ##################################################
 
-TUTUM_CLUSTER_RUN = '''usage: tutum cluster run [-h] [-n NAME] [--cpushares CPUSHARES]
+TUTUM_SERVICE_RUN = '''usage: tutum service run [-h] [-n NAME] [--cpushares CPUSHARES]
                          [--memory MEMORY] [--memoryswap MEMORYSWAP]
                          [-t TARGET_NUM_CONTAINERS] [-r RUN_COMMAND]
                          [--entrypoint ENTRYPOINT] [-p PORT] [-e ENV]
-                         [--link-cluster LINK_CLUSTER]
+                         [--link-service LINK_SERVICE]
                          [--link-container LINK_CONTAINER]
                          [--autorestart {OFF,ON_FAILURE,ALWAYS}]
                          [--autoreplace {OFF,ON_FAILURE,ALWAYS}]
@@ -322,14 +322,14 @@ TUTUM_CLUSTER_RUN = '''usage: tutum cluster run [-h] [-n NAME] [--cpushares CPUS
                          [--sequential] [--web-public-dns WEB_PUBLIC_DNS]
                          image
 
-Create and run a new cluster
+Create and run a new service
 
 positional arguments:
-  image                 the name of the image used to deploy this cluster
+  image                 the name of the image used to deploy this service
 
 optional arguments:
   -h, --help            show this help message and exit
-  -n NAME, --name NAME  a human-readable name for the cluster (default:
+  -n NAME, --name NAME  a human-readable name for the service (default:
                         image_tag without namespace)
   --cpushares CPUSHARES
                         Relative weight for CPU Shares
@@ -337,21 +337,21 @@ optional arguments:
   --memoryswap MEMORYSWAP
                         Memory swap hard limit in MB
   -t TARGET_NUM_CONTAINERS, --target-num-containers TARGET_NUM_CONTAINERS
-                        the number of containers to run for this cluster
+                        the number of containers to run for this service
                         (default: 1)
   -r RUN_COMMAND, --run-command RUN_COMMAND
-                        the command used to start the cluster containers
+                        the command used to start the service containers
                         (default: as defined in the image)
   --entrypoint ENTRYPOINT
-                        the command prefix used to start the cluster
+                        the command prefix used to start the service
                         containers (default: as defined in the image)
   -p PORT, --port PORT  set ports i.e. "80/tcp" (default: as defined in the
                         image)
   -e ENV, --env ENV     set environment variables i.e. "ENVVAR=foo" (default:
                         as defined in the image, plus any link- or role-
                         generated variables)
-  --link-cluster LINK_CLUSTER
-                        Add link to another cluster (name:alias) or
+  --link-service LINK_SERVICE
+                        Add link to another service (name:alias) or
                         (uuid:alias)
   --link-container LINK_CONTAINER
                         Add link to another container (name:alias) or
@@ -365,7 +365,7 @@ optional arguments:
   --autodestroy {OFF,ON_FAILURE,ALWAYS}
                         whether the containers should be terminated if they
                         stop (default: OFF)
-  --role ROLE           Tutum API roles to grant the cluster, i.e. "global"
+  --role ROLE           Tutum API roles to grant the service, i.e. "global"
                         (default: none, possible values: "global")
   --sequential          whether the containers should be launched and scaled
                         sequentially
@@ -374,31 +374,31 @@ optional arguments:
 
 # ##################################################
 
-TUTUM_CLUSTER_SCALE = '''usage: tutum cluster scale [-h]
+TUTUM_SERVICE_SCALE = '''usage: tutum service scale [-h]
                            identifier [identifier ...] target-num-containers
 
-Scale a running cluster
+Scale a running service
 
 positional arguments:
-  identifier            cluster's UUID (either long or short) or name
+  identifier            service's UUID (either long or short) or name
   target-num-containers
-                        target number of containers to scale this cluster to
+                        target number of containers to scale this service to
 
 optional arguments:
   -h, --help            show this help message and exit'''
 
 # ##################################################
 
-TUTUM_CLUSTER_SET = '''usage: tutum cluster set [-h] [--autorestart {OFF,ON_FAILURE,ALWAYS}]
+TUTUM_SERVICE_SET = '''usage: tutum service set [-h] [--autorestart {OFF,ON_FAILURE,ALWAYS}]
                          [--autoreplace {OFF,ON_FAILURE,ALWAYS}]
                          [--autodestroy {OFF,ON_FAILURE,ALWAYS}]
                          identifier [identifier ...]
 
 Enable or disable Crash Recovery and Autodestroy features to an existing
-cluster
+service
 
 positional arguments:
-  identifier            cluster's UUID (either long or short) or name
+  identifier            service's UUID (either long or short) or name
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -414,36 +414,36 @@ optional arguments:
 
 # ##################################################
 
-TUTUM_CLUSTER_START = '''usage: tutum cluster start [-h] identifier [identifier ...]
+TUTUM_SERVICE_START = '''usage: tutum service start [-h] identifier [identifier ...]
 
-Start a stopped cluster
+Start a stopped service
 
 positional arguments:
-  identifier  cluster's UUID (either long or short) or name
+  identifier  service's UUID (either long or short) or name
 
 optional arguments:
   -h, --help  show this help message and exit'''
 
 # ##################################################
 
-TUTUM_CLUSTER_STOP = '''usage: tutum cluster stop [-h] identifier [identifier ...]
+TUTUM_SERVICE_STOP = '''usage: tutum service stop [-h] identifier [identifier ...]
 
-Stop a running cluster
+Stop a running service
 
 positional arguments:
-  identifier  cluster's UUID (either long or short) or name
+  identifier  service's UUID (either long or short) or name
 
 optional arguments:
   -h, --help  show this help message and exit'''
 
 # ##################################################
 
-TUTUM_CLUSTER_TERMINATE = '''usage: tutum cluster terminate [-h] identifier [identifier ...]
+TUTUM_SERVICE_TERMINATE = '''usage: tutum service terminate [-h] identifier [identifier ...]
 
-Terminate an cluster
+Terminate an service
 
 positional arguments:
-  identifier  cluster's UUID (either long or short) or name
+  identifier  service's UUID (either long or short) or name
 
 optional arguments:
   -h, --help  show this help message and exit'''
@@ -637,7 +637,7 @@ TUTUM_NODECLUSTER_CREATE = '''usage: tutum nodecluster create [-h] [-t TARGET_NU
 Create a nodecluster
 
 positional arguments:
-  name                  name of the cluster to create
+  name                  name of the node cluster to create
   provider_id           id of the provider
   region_id             id of the region
   nodetype_id           id of the nodetype

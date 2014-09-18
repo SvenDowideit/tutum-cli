@@ -137,16 +137,16 @@ def build(tag, working_directory, quiet, no_cache):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def cluster_alias(identifiers, dns):
+def service_alias(identifiers, dns):
     has_exception = False
     for identifier in identifiers:
         try:
-            cluster_details = utils.fetch_remote_cluster(identifier)
+            service_details = utils.fetch_remote_service(identifier)
             if dns is not None:
-                cluster_details.web_public_dns = dns
-                result = cluster_details.save()
+                service_details.web_public_dns = dns
+                result = service_details.save()
                 if result:
-                    print(cluster_details.uuid)
+                    print(service_details.uuid)
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -154,12 +154,12 @@ def cluster_alias(identifiers, dns):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def cluster_inspect(identifiers):
+def service_inspect(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
-            cluster = utils.fetch_remote_cluster(identifier)
-            print(json.dumps(tutum.Cluster.fetch(cluster.uuid).get_all_attributes(), indent=2))
+            service = utils.fetch_remote_service(identifier)
+            print(json.dumps(tutum.service.fetch(service.uuid).get_all_attributes(), indent=2))
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -167,12 +167,12 @@ def cluster_inspect(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def cluster_logs(identifiers):
+def service_logs(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
-            cluster = utils.fetch_remote_cluster(identifier)
-            print(cluster.logs)
+            service = utils.fetch_remote_service(identifier)
+            print(service.logs)
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -180,14 +180,14 @@ def cluster_logs(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def cluster_open():
+def service_open():
     try:
-        cluster_list = tutum.Cluster.list()
+        service_list = tutum.service.list()
         deployed_datetimes = {}
-        for cluster in cluster_list:
-            if cluster.web_public_dns and cluster.state in ["Running", "Partly running"]:
+        for service in service_list:
+            if service.web_public_dns and service.state in ["Running", "Partly running"]:
                 deployed_datetimes[
-                    utils.from_utc_string_to_utc_datetime(cluster.deployed_datetime)] = cluster.web_public_dns
+                    utils.from_utc_string_to_utc_datetime(service.deployed_datetime)] = service.web_public_dns
         if deployed_datetimes:
             max_datetime = max(deployed_datetimes.keys())
             webbrowser.open("http://" + deployed_datetimes[max_datetime])
@@ -198,19 +198,19 @@ def cluster_open():
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def cluster_ps(quiet=False, status=None):
+def service_ps(quiet=False, status=None):
     try:
         headers = ["NAME", "UUID", "STATUS", "IMAGE", "DEPLOYED", "WEB HOSTNAME"]
-        cluster_list = tutum.Cluster.list(state=status)
+        service_list = tutum.service.list(state=status)
         data_list = []
         long_uuid_list = []
-        for cluster in cluster_list:
-            data_list.append([cluster.unique_name, cluster.uuid[:8],
-                              utils.add_unicode_symbol_to_state(cluster.state),
-                              cluster.image_name,
-                              utils.get_humanize_local_datetime_from_utc_datetime_string(cluster.deployed_datetime),
-                              cluster.web_public_dns])
-            long_uuid_list.append(cluster.uuid)
+        for service in service_list:
+            data_list.append([service.unique_name, service.uuid[:8],
+                              utils.add_unicode_symbol_to_state(service.state),
+                              service.image_name,
+                              utils.get_humanize_local_datetime_from_utc_datetime_string(service.deployed_datetime),
+                              service.web_public_dns])
+            long_uuid_list.append(service.uuid)
         if len(data_list) == 0:
             data_list.append(["", "", "", "", "", ""])
 
@@ -225,14 +225,14 @@ def cluster_ps(quiet=False, status=None):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def cluster_redeploy(identifiers, tag):
+def service_redeploy(identifiers, tag):
     has_exception = False
     for identifier in identifiers:
         try:
-            cluster = utils.fetch_remote_cluster(identifier)
-            result = cluster.redeploy(tag)
+            service = utils.fetch_remote_service(identifier)
+            result = service.redeploy(tag)
             if result:
-                print(cluster.uuid)
+                print(service.uuid)
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -240,39 +240,39 @@ def cluster_redeploy(identifiers, tag):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def cluster_run(image, name, cpu_shares, memory, memory_swap, target_num_containers, run_command, entrypoint,
-                container_ports, container_envvars, linked_to_cluster, linked_to_container, autorestart, autoreplace,
+def service_run(image, name, cpu_shares, memory, memory_swap, target_num_containers, run_command, entrypoint,
+                container_ports, container_envvars, linked_to_service, linked_to_container, autorestart, autoreplace,
                 autodestroy, roles, sequential, web_public_dns):
     try:
         ports = utils.parse_ports(container_ports)
         envvars = utils.parse_envvars(container_envvars)
-        links_cluster = utils.parse_links(linked_to_cluster, 'to_cluster')
+        links_service = utils.parse_links(linked_to_service, 'to_service')
         links_container = utils.parse_links(linked_to_container, 'to_container')
-        cluster = tutum.Cluster.create(image=image, name=name, cpu_shares=cpu_shares,
+        service = tutum.service.create(image=image, name=name, cpu_shares=cpu_shares,
                                        memory=memory, memory_swap=memory_swap,
                                        target_num_containers=target_num_containers, run_command=run_command,
                                        entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
-                                       linked_to_cluster=links_cluster, linked_to_container=links_container,
+                                       linked_to_service=links_service, linked_to_container=links_container,
                                        autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
                                        roles=roles, sequential_deployment=sequential, web_public_dns=web_public_dns)
-        cluster.save()
-        result = cluster.start()
+        service.save()
+        result = service.start()
         if result:
-            print(cluster.uuid)
+            print(service.uuid)
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def cluster_scale(identifiers, target_num_containers):
+def service_scale(identifiers, target_num_containers):
     has_exception = False
     for identifier in identifiers:
         try:
-            cluster = utils.fetch_remote_cluster(identifier)
-            cluster.target_num_containers = target_num_containers
-            result = cluster.save()
+            service = utils.fetch_remote_service(identifier)
+            service.target_num_containers = target_num_containers
+            result = service.save()
             if result:
-                print(cluster.uuid)
+                print(service.uuid)
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -280,18 +280,18 @@ def cluster_scale(identifiers, target_num_containers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def cluster_set(autorestart, autoreplace, autodestroy, identifiers):
+def service_set(autorestart, autoreplace, autodestroy, identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
-            cluster_details = utils.fetch_remote_cluster(identifier, raise_exceptions=True)
-            if cluster_details is not None:
-                cluster_details.autorestart = autorestart
-                cluster_details.autoreplace = autoreplace
-                cluster_details.autodestroy = autodestroy
-                result = cluster_details.save()
+            service_details = utils.fetch_remote_service(identifier, raise_exceptions=True)
+            if service_details is not None:
+                service_details.autorestart = autorestart
+                service_details.autoreplace = autoreplace
+                service_details.autodestroy = autodestroy
+                result = service_details.save()
                 if result:
-                    print(cluster_details.uuid)
+                    print(service_details.uuid)
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -299,14 +299,14 @@ def cluster_set(autorestart, autoreplace, autodestroy, identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def cluster_start(identifiers):
+def service_start(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
-            cluster = utils.fetch_remote_cluster(identifier)
-            result = cluster.start()
+            service = utils.fetch_remote_service(identifier)
+            result = service.start()
             if result:
-                print(cluster.uuid)
+                print(service.uuid)
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -314,14 +314,14 @@ def cluster_start(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def cluster_stop(identifiers):
+def service_stop(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
-            cluster = utils.fetch_remote_cluster(identifier)
-            result = cluster.stop()
+            service = utils.fetch_remote_service(identifier)
+            result = service.stop()
             if result:
-                print(cluster.uuid)
+                print(service.uuid)
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -329,19 +329,20 @@ def cluster_stop(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def cluster_terminate(identifiers):
+def service_terminate(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
-            cluster = utils.fetch_remote_cluster(identifier)
-            result = cluster.delete()
+            service = utils.fetch_remote_service(identifier)
+            result = service.delete()
             if result:
-                print(cluster.uuid)
+                print(service.uuid)
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
     if has_exception:
         sys.exit(EXCEPTION_EXIT_CODE)
+
 
 
 def container_inspect(identifiers):
@@ -370,17 +371,17 @@ def container_logs(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def container_ps(cluster_identifier, quiet=False, status=None):
+def container_ps(identifier, quiet=False, status=None):
     try:
         headers = ["NAME", "UUID", "STATUS", "IMAGE", "RUN COMMAND", "EXIT CODE", "DEPLOYED", "PORTS"]
 
-        if cluster_identifier is None:
+        if identifier is None:
             containers = tutum.Container.list(state=status)
-        elif utils.is_uuid4(cluster_identifier):
-            containers = tutum.Container.list(cluster__uuid=cluster_identifier, state=status)
+        elif utils.is_uuid4(identifier):
+            containers = tutum.Container.list(uuid=identifier, state=status)
         else:
-            containers = tutum.Container.list(cluster__unique_name=cluster_identifier, state=status) + \
-                         tutum.Container.list(cluster__uuid__startswith=cluster_identifier, state=status)
+            containers = tutum.Container.list(unique_name=identifier, state=status) + \
+                         tutum.Container.list(uuid__startswith=identifier, state=status)
 
         data_list = []
         long_uuid_list = []
@@ -432,18 +433,18 @@ def container_redeploy(identifiers, tag):
 
 
 def container_run(image, name, cpu_shares, memory, memory_swap, run_command, entrypoint, container_ports,
-                  container_envvars, linked_to_cluster, linked_to_container, autorestart, autoreplace, autodestroy,
+                  container_envvars, linked_to_service, linked_to_container, autorestart, autoreplace, autodestroy,
                   roles, web_public_dns):
     try:
         ports = utils.parse_ports(container_ports)
         envvars = utils.parse_envvars(container_envvars)
-        links_cluster = utils.parse_links(linked_to_cluster, 'to_cluster')
-        links_container = utils.parse_links(linked_to_container, 'to_container')
+        links_service = utils.parse_links(linked_to_service, 'to_service')
+        links_container = utils.parse_links(linked_to_container, 'to_service')
         container = tutum.Container.create(image=image, name=name, cpu_shares=cpu_shares,
                                            memory=memory, memory_swap=memory_swap,
                                            run_command=run_command,
                                            entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
-                                           linked_to_cluster=links_cluster, linked_to_container=links_container,
+                                           linked_to_service=links_service, linked_to_container=links_container,
                                            autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
                                            roles=roles, web_public_dns=web_public_dns)
         container.save()
