@@ -131,7 +131,7 @@ def service_inspect(identifiers):
     for identifier in identifiers:
         try:
             service = utils.fetch_remote_service(identifier)
-            print(json.dumps(tutum.service.fetch(service.uuid).get_all_attributes(), indent=2))
+            print(json.dumps(tutum.Service.fetch(service.uuid).get_all_attributes(), indent=2))
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -154,7 +154,7 @@ def service_logs(identifiers):
 
 def service_open():
     try:
-        service_list = tutum.service.list()
+        service_list = tutum.Service.list()
         deployed_datetimes = {}
         for service in service_list:
             if service.web_public_dns and service.state in ["Running", "Partly running"]:
@@ -164,7 +164,7 @@ def service_open():
             max_datetime = max(deployed_datetimes.keys())
             webbrowser.open("http://" + deployed_datetimes[max_datetime])
         else:
-            print("Error: There are not web applications Running or Partly Running")
+            print("Error: There are not web applications Running or Partly Running", file=sys.stderr)
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
@@ -173,7 +173,7 @@ def service_open():
 def service_ps(quiet=False, status=None):
     try:
         headers = ["NAME", "UUID", "STATUS", "IMAGE", "DEPLOYED", "WEB HOSTNAME"]
-        service_list = tutum.service.list(state=status)
+        service_list = tutum.Service.list(state=status)
         data_list = []
         long_uuid_list = []
         for service in service_list:
@@ -220,7 +220,7 @@ def service_run(image, name, cpu_shares, memory, memory_swap, target_num_contain
         envvars = utils.parse_envvars(container_envvars)
         links_service = utils.parse_links(linked_to_service, 'to_service')
         links_container = utils.parse_links(linked_to_container, 'to_container')
-        service = tutum.service.create(image=image, name=name, cpu_shares=cpu_shares,
+        service = tutum.Service.create(image=image, name=name, cpu_shares=cpu_shares,
                                        memory=memory, memory_swap=memory_swap,
                                        target_num_containers=target_num_containers, run_command=run_command,
                                        entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
