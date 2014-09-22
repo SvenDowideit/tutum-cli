@@ -329,3 +329,4 @@ def try_register(username, password):
             return False, _text
     except Exception:
         return False, r.text
+

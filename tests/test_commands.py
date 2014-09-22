@@ -744,7 +744,6 @@ CONTAINER2  8B4CFE51  ◼ Stopped  test/container2  /bin/sh                  0  
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
 
-
 class ContainerStartTestCase(unittest.TestCase):
     def setUp(self):
         self.stdout = sys.stdout
@@ -825,5 +824,203 @@ class ContainerTerminateTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.utils.fetch_remote_container', side_effect=TutumApiError)
     def test_container_terminate_with_exception(self, mock_fetch_remote_container, mock_exit):
         container_terminate(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+
+class ImageListTestCase(unittest.TestCase):
+    def setUp(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+
+        image1 = tutumcli.commands.tutum.Image()
+        image1.name = 'image_name_1'
+        image1.description = 'image_desc_1'
+        image2 = tutumcli.commands.tutum.Image()
+        image2.name = 'image_name_2'
+        image2.description = 'image_desc_2'
+        self.imagelist = [image1, image2]
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+
+    @mock.patch('tutumcli.commands.tutum.Image.list')
+    def test_image_list(self, mock_list):
+        output = u'''NAME          DESCRIPTION
+image_name_1  image_desc_1
+image_name_2  image_desc_2'''
+        mock_list.return_value = self.imagelist
+        image_list()
+
+        self.assertEqual(output, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.tutum.Image.list')
+    def test_image_list_quiet(self, mock_list):
+        output = 'image_name_1\nimage_name_2'
+        mock_list.return_value = self.imagelist
+        image_list(quiet=True)
+
+        self.assertEqual(output, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.tutum.Image.list', return_value=[])
+    def test_image_list_parameter(self, mock_list):
+        image_list(jumpstarts=True)
+        mock_list.assert_called_with(starred=True)
+
+        image_list(linux=True)
+        mock_list.assert_called_with(base_image=True)
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch('tutumcli.commands.tutum.Image.list', side_effect=TutumApiError)
+    def test_image_list_with_exception(self, mock_fetch_remote_container, mock_exit):
+        image_list()
+
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+
+class ImageRegister(unittest.TestCase):
+    def setUp(self):
+        self.raw_input_holder = __builtin__.raw_input
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+        __builtin__.raw_input = self.raw_input_holder
+
+    @mock.patch('tutumcli.commands.tutum.Image.save', return_value=True)
+    @mock.patch('tutumcli.commands.tutum.Image.create')
+    @mock.patch('tutumcli.commands.getpass.getpass', return_value='password')
+    def test_register(self, mock_get_pass, mock_create, mock_save):
+        output = '''Please input username and password of the repository:
+image_name'''
+        __builtin__.raw_input = lambda _: 'username'  # set username
+        image = tutumcli.commands.tutum.Image()
+        image.name = 'image_name'
+        mock_create.return_value = image
+        image_register('repository', 'descripiton')
+
+        self.assertEqual(output, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch('tutumcli.commands.tutum.Image.create', side_effect=TutumApiError)
+    @mock.patch('tutumcli.commands.getpass.getpass', return_value='password')
+    def test_register_with_exception(self, mock_get_pass, mock_create, mock_exit):
+        __builtin__.raw_input = lambda _: 'username'  # set username
+        image_register('repository', 'descripiton')
+
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+
+class ImageRmTestCase(unittest.TestCase):
+    def setUp(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+
+    @mock.patch('tutumcli.commands.tutum.Image.delete', return_value=True)
+    @mock.patch('tutumcli.commands.tutum.Image.fetch')
+    def test_image_rm(self, mock_fetch, mock_delete):
+        image_rm(['repo1', 'repo2'])
+
+        self.assertEqual('repo1\nrepo2', self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch('tutumcli.commands.tutum.Image.delete', return_value=True)
+    @mock.patch('tutumcli.commands.tutum.Image.fetch')
+    def test_image_rm_with_exception(self, mock_fetch, mock_delete, mock_exit):
+        mock_fetch.side_effect = [tutumcli.commands.tutum.Image(), TutumApiError]
+        image_rm(['repo1', 'repo2'])
+
+        self.assertEqual('repo1', self.buf.getvalue().strip())
+        self.buf.truncate(0)
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+
+class ImageSearchTestCase(unittest.TestCase):
+    def setUp(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+
+    @mock.patch.object(tutumcli.commands.utils.docker.Client, 'search')
+    @mock.patch('tutumcli.utils.get_docker_client')
+    def test_image_search(self, mock_get_docker_client, mock_search):
+        mock_get_docker_client.return_value = docker.Client()
+        mock_search.return_value = [
+            {
+                "description": "1st image",
+                "is_official": True,
+                "is_trusted": False,
+                "name": "wma55/u1210sshd",
+                "star_count": 0
+            },
+            {
+                "description": "2nd image",
+                "is_official": False,
+                "is_trusted": True,
+                "name": "jdswinbank/sshd",
+                "star_count": 0
+            },
+            {
+                "description": "3rd image",
+                "is_official": True,
+                "is_trusted": True,
+                "name": "vgauthier/sshd",
+                "star_count": 0
+            }]
+        output = u'''NAME             DESCRIPTION      STARS  OFFICIAL    TRUSTED
+wma55/u1210sshd  1st image            0  ✓
+jdswinbank/sshd  2nd image            0              ✓
+vgauthier/sshd   3rd image            0  ✓           ✓'''
+        image_search('keyword')
+        self.assertEqual(output, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch.object(tutumcli.commands.utils.docker.Client, 'search', side_effect=TutumApiError)
+    @mock.patch('tutumcli.utils.get_docker_client')
+    def test_image_search_with_exception(self, mock_get_docker_client, mock_search, mock_exit):
+        mock_get_docker_client.return_value = docker.Client()
+        image_search('keyword')
+
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+
+class ImageUpdateTestCase(unittest.TestCase):
+    def setUp(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+
+    @mock.patch('tutumcli.commands.tutum.Image.save', return_value=True)
+    @mock.patch('tutumcli.commands.tutum.Image.fetch')
+    def test_image_update(self, mock_fetch, mock_save):
+        image = tutumcli.commands.tutum.Image()
+        image.name = 'name'
+        mock_fetch.return_value = image
+        mock_save.return_value = True
+        image_update(['repo'], 'username', 'password', 'description')
+        self.assertEqual('username', image.username)
+        self.assertEqual('password', image.password)
+        self.assertEqual('description', image.description)
+        self.assertEqual('name', self.buf.getvalue().strip())
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch('tutumcli.commands.tutum.Image.fetch')
+    def test_image_update_with_exception(self, mock_fetch, mock_exit):
+        mock_fetch.side_effect = TutumApiError
+        image_update(['repo'], 'username', 'password', 'description')
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)

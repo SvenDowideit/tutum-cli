@@ -435,7 +435,6 @@ def container_terminate(identifiers):
 
 def image_list(quiet=False, jumpstarts=False, linux=False):
     try:
-
         headers = ["NAME", "DESCRIPTION"]
         data_list = []
         name_list = []
@@ -601,6 +600,7 @@ def image_search(text):
 
 
 def image_update(repositories, username, password, description):
+    has_exception = False
     for repository in repositories:
         try:
             image = tutum.Image.fetch(repository)
@@ -615,6 +615,9 @@ def image_update(repositories, username, password, description):
                 print(image.name)
         except Exception as e:
             print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def node_list(quiet):
