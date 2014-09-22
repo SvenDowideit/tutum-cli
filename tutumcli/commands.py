@@ -402,31 +402,6 @@ def container_redeploy(identifiers, tag):
     if has_exception:
         sys.exit(EXCEPTION_EXIT_CODE)
 
-
-def container_run(image, name, cpu_shares, memory, memory_swap, run_command, entrypoint, container_ports,
-                  container_envvars, linked_to_service, linked_to_container, autorestart, autoreplace, autodestroy,
-                  roles, web_public_dns):
-    try:
-        ports = utils.parse_ports(container_ports)
-        envvars = utils.parse_envvars(container_envvars)
-        links_service = utils.parse_links(linked_to_service, 'to_service')
-        links_container = utils.parse_links(linked_to_container, 'to_service')
-        container = tutum.Container.create(image=image, name=name, cpu_shares=cpu_shares,
-                                           memory=memory, memory_swap=memory_swap,
-                                           run_command=run_command,
-                                           entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
-                                           linked_to_service=links_service, linked_to_container=links_container,
-                                           autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
-                                           roles=roles, web_public_dns=web_public_dns)
-        container.save()
-        result = container.start()
-        if result:
-            print(container.uuid)
-    except Exception as e:
-        print(e, file=sys.stderr)
-        sys.exit(EXCEPTION_EXIT_CODE)
-
-
 def container_start(identifiers):
     has_exception = False
     for identifier in identifiers:

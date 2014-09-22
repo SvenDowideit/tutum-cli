@@ -37,7 +37,7 @@ optional arguments:
 # ##################################################
 
 TUTUM_CONTAINER = '''usage: tutum container [-h]
-                       {inspect,logs,ps,redeploy,run,start,stop,terminate} ...
+                       {inspect,logs,ps,redeploy,start,stop,terminate} ...
 
 Container-related operations
 
@@ -45,12 +45,11 @@ optional arguments:
   -h, --help            show this help message and exit
 
 tutum container commands:
-  {inspect,logs,ps,redeploy,run,start,stop,terminate}
+  {inspect,logs,ps,redeploy,start,stop,terminate}
     inspect             Inspect a container
     logs                Get logs from a container
     ps                  List containers
     redeploy            Redeploy a running container with a new version/tag
-    run                 Create and run a new container
     start               Start a container
     stop                Stop a container
     terminate           Terminate a container'''
@@ -106,71 +105,6 @@ positional arguments:
 optional arguments:
   -h, --help         show this help message and exit
   -t TAG, --tag TAG  tag of the image to redeploy'''
-
-# ##################################################
-
-TUTUM_CONTAINER_RUN = '''usage: tutum container run [-h] [-n NAME] [--cpushares CPUSHARES]
-                           [--memory MEMORY] [--memoryswap MEMORYSWAP]
-                           [-t TARGET_NUM_CONTAINERS] [-r RUN_COMMAND]
-                           [--entrypoint ENTRYPOINT] [-p PORT] [-e ENV]
-                           [--link-service LINK_SERVICE]
-                           [--link-container LINK_CONTAINER]
-                           [--autorestart {OFF,ON_FAILURE,ALWAYS}]
-                           [--autoreplace {OFF,ON_FAILURE,ALWAYS}]
-                           [--autodestroy {OFF,ON_FAILURE,ALWAYS}]
-                           [--role ROLE] [--sequential]
-                           [--web-public-dns WEB_PUBLIC_DNS]
-                           image
-
-Create and run a new container
-
-positional arguments:
-  image                 the name of the image used to deploy this container
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -n NAME, --name NAME  a human-readable name for the container(default:
-                        image_tag without namespace)
-  --cpushares CPUSHARES
-                        Relative weight for CPU Shares
-  --memory MEMORY       RAM memory hard limit in MB
-  --memoryswap MEMORYSWAP
-                        Memory swap hard limit in MB
-  -t TARGET_NUM_CONTAINERS, --target-num-containers TARGET_NUM_CONTAINERS
-                        the number of containers to run for this container
-                        (default: 1)
-  -r RUN_COMMAND, --run-command RUN_COMMAND
-                        the command used to start the container containers
-                        (default: as defined in the image)
-  --entrypoint ENTRYPOINT
-                        the command prefix used to start the container
-                        containers (default: as defined in the image)
-  -p PORT, --port PORT  set ports i.e. "80/tcp" (default: as defined in the
-                        image)
-  -e ENV, --env ENV     set environment variables i.e. "ENVVAR=foo" (default:
-                        as defined in the image, plus any link- or role-
-                        generated variables)
-  --link-service LINK_SERVICE
-                        Add link to another service (name:alias) or
-                        (uuid:alias)
-  --link-container LINK_CONTAINER
-                        Add link to another container (name:alias) or
-                        (uuid:alias)
-  --autorestart {OFF,ON_FAILURE,ALWAYS}
-                        whether the containers should be restarted if they
-                        stop (default: OFF)
-  --autoreplace {OFF,ON_FAILURE,ALWAYS}
-                        whether the containers should be replaced with a new
-                        one if they stop (default: OFF)
-  --autodestroy {OFF,ON_FAILURE,ALWAYS}
-                        whether the containers should be terminated if they
-                        stop (default: OFF)
-  --role ROLE           Tutum API roles to grant the container, i.e. "global"
-                        (default: none, possible values: "global")
-  --sequential          whether the containers should be launched and scaled
-                        sequentially
-  --web-public-dns WEB_PUBLIC_DNS
-                        Set your own web public dns'''
 
 # ##################################################
 
@@ -315,7 +249,6 @@ TUTUM_SERVICE_RUN = '''usage: tutum service run [-h] [-n NAME] [--cpushares CPUS
                          [-t TARGET_NUM_CONTAINERS] [-r RUN_COMMAND]
                          [--entrypoint ENTRYPOINT] [-p PORT] [-e ENV]
                          [--link-service LINK_SERVICE]
-                         [--link-container LINK_CONTAINER]
                          [--autorestart {OFF,ON_FAILURE,ALWAYS}]
                          [--autoreplace {OFF,ON_FAILURE,ALWAYS}]
                          [--autodestroy {OFF,ON_FAILURE,ALWAYS}] [--role ROLE]
@@ -352,9 +285,6 @@ optional arguments:
                         generated variables)
   --link-service LINK_SERVICE
                         Add link to another service (name:alias) or
-                        (uuid:alias)
-  --link-container LINK_CONTAINER
-                        Add link to another container (name:alias) or
                         (uuid:alias)
   --autorestart {OFF,ON_FAILURE,ALWAYS}
                         whether the containers should be restarted if they

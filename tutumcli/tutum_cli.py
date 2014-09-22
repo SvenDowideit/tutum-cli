@@ -49,7 +49,7 @@ def patch_help_option(argv=sys.argv):
         if args[1] == 'service' and args[2] in ['alias', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
                                                 'start', 'stop', 'terminate']:
             args.append('-h')
-        elif args[1] == 'container' and args[2] in ['inspect', 'logs', 'redeploy', 'run', 'start', 'stop',
+        elif args[1] == 'container' and args[2] in ['inspect', 'logs', 'redeploy', 'start', 'stop',
                                                     'terminate']:
             args.append('-h')
         elif args[1] == 'image' and args[2] in ['register', 'push', 'rm', 'search', 'update']:
@@ -84,15 +84,6 @@ def dispatch_cmds(args):
             commands.service_ps(args.quiet, args.status)
         elif args.subcmd == 'redeploy':
             commands.service_redeploy(args.identifier, args.tag)
-        elif args.subcmd == 'run':
-            commands.service_run(image=args.image, name=args.name, cpu_shares=args.cpushares,
-                                 memory=args.memory, memory_swap=args.memoryswap,
-                                 target_num_containers=args.target_num_containers, run_command=args.run_command,
-                                 entrypoint=args.entrypoint, container_ports=args.port, container_envvars=args.env,
-                                 linked_to_service=args.link_service, linked_to_container=args.link_container,
-                                 autorestart=args.autorestart,
-                                 autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role,
-                                 sequential=args.sequential, web_public_dns=args.web_public_dns)
         elif args.subcmd == 'scale':
             commands.service_scale(args.identifier, args.target_num_containers)
         elif args.subcmd == 'set':

@@ -321,13 +321,13 @@ class FetchRemoteObjectTestCase(unittest.TestCase):
 
 class ParseLinksTestCase(unittest.TestCase):
     def test_parse_links(self):
-        output = [{'to_container': 'mysql', 'name': 'db1'}, {'to_container': 'mariadb', 'name': 'db2'}]
-        self.assertEqual(output, parse_links(['mysql:db1', 'mariadb:db2'], 'to_container'))
+        output = [{'to_service': 'mysql', 'name': 'db1'}, {'to_service': 'mariadb', 'name': 'db2'}]
+        self.assertEqual(output, parse_links(['mysql:db1', 'mariadb:db2'], 'to_service'))
 
     def test_parse_links_bad_format(self):
-        self.assertRaises(BadParameter, parse_links, ['mysql', 'mariadb'], 'to_container')
-        self.assertRaises(BadParameter, parse_links, ['mysql:mysql:mysql', 'mariadb:maria:maria'], 'to_container')
-        self.assertRaises(BadParameter, parse_links, [''], 'to_container')
+        self.assertRaises(BadParameter, parse_links, ['mysql', 'mariadb'], 'to_service')
+        self.assertRaises(BadParameter, parse_links, ['mysql:mysql:mysql', 'mariadb:maria:maria'], 'to_service')
+        self.assertRaises(BadParameter, parse_links, [''], 'to_service')
 
 
 class ParsePortsTestCase(unittest.TestCase):

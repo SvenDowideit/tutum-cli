@@ -31,7 +31,6 @@ class PatchHelpOptionTestCase(unittest.TestCase):
             ['tutum', 'container', 'inspect'],
             ['tutum', 'container', 'logs'],
             ['tutum', 'container', 'redeploy'],
-            ['tutum', 'container', 'run'],
             ['tutum', 'container', 'start'],
             ['tutum', 'container', 'stop'],
             ['tutum', 'container', 'terminate'],
@@ -138,21 +137,6 @@ class CommandsDispatchTestCase(unittest.TestCase):
         dispatch_cmds(args)
         mock_cmds.service_redeploy.assert_called_with(args.identifier, args.tag)
 
-        args = self.parser.parse_args(['service', 'run', 'mysql'])
-        dispatch_cmds(args)
-        mock_cmds.service_run.assert_called_with(image=args.image, name=args.name, cpu_shares=args.cpushares,
-                                                 memory=args.memory, memory_swap=args.memoryswap,
-                                                 target_num_containers=args.target_num_containers,
-                                                 run_command=args.run_command,
-                                                 entrypoint=args.entrypoint, container_ports=args.port,
-                                                 container_envvars=args.env,
-                                                 linked_to_service=args.link_service,
-                                                 linked_to_container=args.link_container,
-                                                 autorestart=args.autorestart,
-                                                 autoreplace=args.autoreplace, autodestroy=args.autodestroy,
-                                                 roles=args.role,
-                                                 sequential=args.sequential, web_public_dns=args.web_public_dns)
-
         args = self.parser.parse_args(['service', 'scale', 'id', '3'])
         dispatch_cmds(args)
         mock_cmds.service_scale.assert_called_with(args.identifier, args.target_num_containers)
@@ -190,19 +174,6 @@ class CommandsDispatchTestCase(unittest.TestCase):
         args = self.parser.parse_args(['container', 'redeploy', '-t', 'latest', 'mysql'])
         dispatch_cmds(args)
         mock_cmds.container_redeploy.assert_called_with(args.identifier, args.tag)
-
-        args = self.parser.parse_args(['container', 'run', 'mysql'])
-        dispatch_cmds(args)
-        mock_cmds.container_run.assert_called_with(image=args.image, name=args.name, cpu_shares=args.cpushares,
-                                                   memory=args.memory, memory_swap=args.memoryswap,
-                                                   run_command=args.run_command, entrypoint=args.entrypoint,
-                                                   container_ports=args.port,
-                                                   container_envvars=args.env,
-                                                   linked_to_service=args.link_service,
-                                                   linked_to_container=args.link_container,
-                                                   autorestart=args.autorestart, autoreplace=args.autoreplace,
-                                                   autodestroy=args.autodestroy,
-                                                   roles=args.role, web_public_dns=args.web_public_dns)
 
         args = self.parser.parse_args(['container', 'start', 'id'])
         dispatch_cmds(args)
@@ -326,7 +297,6 @@ class ParserTestCase(unittest.TestCase):
         self.compare_output(TUTUM_CONTAINER_LOGS, args=['tutum', 'container', 'logs', '-h'])
         self.compare_output(TUTUM_CONTAINER_PS, args=['tutum', 'container', 'ps', '-h'])
         self.compare_output(TUTUM_CONTAINER_REDEPLOY, args=['tutum', 'container', 'redeploy', '-h'])
-        self.compare_output(TUTUM_CONTAINER_RUN, args=['tutum', 'container', 'run', '-h'])
         self.compare_output(TUTUM_CONTAINER_START, args=['tutum', 'container', 'start', '-h'])
         self.compare_output(TUTUM_CONTAINER_STOP, args=['tutum', 'container', 'stop', '-h'])
         self.compare_output(TUTUM_CONTAINER_TERMINATE, args=['tutum', 'container', 'terminate', '-h'])
