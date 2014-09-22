@@ -405,6 +405,7 @@ SERVICE2  8B4CFE51  ◼ Stopped  test/service2              service2.io'''
         service_ps(quiet=True)
 
         self.assertEqual(output, self.buf.getvalue().strip())
+        self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.tutum.Service.list', side_effect=TutumApiError)
@@ -606,5 +607,223 @@ class ServiceTerminateTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.utils.fetch_remote_service', side_effect=TutumApiError)
     def test_service_terminate_with_exception(self, mock_fetch_remote_service, mock_exit):
         service_terminate(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+
+class ContainerInspectTestCase(unittest.TestCase):
+    def setUp(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+
+    @mock.patch('tutumcli.commands.tutum.Container.get_all_attributes')
+    @mock.patch('tutumcli.commands.tutum.Container.fetch')
+    @mock.patch('tutumcli.commands.utils.fetch_remote_container')
+    def test_container_inspect(self, mock_fetch_remote_container, mock_fetch, mock_get_all_attributes):
+        output = '''{
+  "key": [
+    {
+      "name": "test",
+      "id": "1"
+    }
+  ]
+}'''
+        uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
+        container = tutumcli.commands.tutum.Container()
+        container.uuid = uuid
+        mock_fetch.return_value = container
+        mock_fetch_remote_container.return_value = container
+        mock_get_all_attributes.return_value = {'key': [{'name': 'test', 'id': '1'}]}
+        container_inspect(['test_id'])
+
+        mock_fetch.assert_called_with(uuid)
+        self.assertEqual(' '.join(output.split()), ' '.join(self.buf.getvalue().strip().split()))
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch('tutumcli.commands.utils.fetch_remote_container', side_effect=TutumApiError)
+    def test_container_inspect_with_exception(self, mock_fetch_remote_container, mock_exit):
+        container = tutumcli.commands.tutum.Container()
+        mock_fetch_remote_container.return_value = container
+        container_inspect(['test_id', 'test_id2'])
+
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+
+class ContainerLogsTestCase(unittest.TestCase):
+    def setUp(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+
+    @mock.patch('tutumcli.commands.utils.fetch_remote_container')
+    def test_container_logs(self, mock_fetch_remote_container):
+        log = 'Here is the log'
+        container = tutumcli.commands.tutum.Container
+        container.logs = log
+        mock_fetch_remote_container.return_value = container
+        container_logs(['test_id'])
+
+        self.assertEqual(log, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch('tutumcli.commands.utils.fetch_remote_container', side_effect=TutumApiError)
+    def test_container_logs_with_exception(self, mock_fetch_remote_container, mock_exit):
+        container = tutumcli.commands.tutum.Container()
+        mock_fetch_remote_container.return_value = container
+        container_logs(['test_id', 'test_id2'])
+
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+
+class ContainerPsTestCase(unittest.TestCase):
+    def setUp(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+
+        container1 = tutumcli.commands.tutum.Container()
+        container1.unique_name = 'CONTAINER1'
+        container1.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
+        container1.image_name = 'test/container1'
+        container1.public_dns = 'container1.io'
+        container1.state = 'Running'
+        container1.deployed_datetime = ''
+        container1.run_command = '/bin/bash'
+        container1.container_ports = [{'protocol': 'tcp', 'inner_port': 8080, 'outer_port': 8080}]
+        container1.exit_code = 1
+        container2 = tutumcli.commands.tutum.Container()
+        container2.unique_name = 'CONTAINER2'
+        container2.uuid = '8B4CFE51-03BB-42D6-825E-3B533888D8CD'
+        container2.image_name = 'test/container2'
+        container2.public_dns = 'container2.io'
+        container2.state = 'Stopped'
+        container2.deployed_datetime = ''
+        container2.run_command = '/bin/sh'
+        container2.container_ports = [{'protocol': 'tcp', 'inner_port': 3306, 'outer_port': 3307}]
+        container2.exit_code = 0
+        self.containerlist = [container1, container2]
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+
+
+    @mock.patch('tutumcli.commands.tutum.Container.list')
+    def test_container_ps(self, mock_list):
+        output = u'''NAME        UUID      STATUS     IMAGE            RUN COMMAND      EXIT CODE  DEPLOYED    PORTS
+CONTAINER1  7A4CFE51  ▶ Running  test/container1  /bin/bash                1              container1.io:8080->8080/tcp
+CONTAINER2  8B4CFE51  ◼ Stopped  test/container2  /bin/sh                  0              container2.io:3307->3306/tcp'''
+        mock_list.return_value = self.containerlist
+        container_ps(None, status='Running')
+
+        mock_list.assert_called_with(state='Running')
+        self.assertEqual(output, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.tutum.Container.list')
+    def test_container_ps_quiet(self, mock_list):
+        output = '''7A4CFE51-03BB-42D6-825E-3B533888D8CD
+8B4CFE51-03BB-42D6-825E-3B533888D8CD'''
+        mock_list.return_value = self.containerlist
+        container_ps(None, quiet=True)
+
+        self.assertEqual(output, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch('tutumcli.commands.tutum.Container.list', side_effect=TutumApiError)
+    def test_container_ps_with_exception(self, mock_list, mock_exit):
+        container_ps(None)
+
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+
+
+class ContainerStartTestCase(unittest.TestCase):
+    def setUp(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+
+    @mock.patch('tutumcli.commands.tutum.Container.start')
+    @mock.patch('tutumcli.commands.utils.fetch_remote_container')
+    def test_container_start(self, mock_fetch_remote_container, mock_start):
+        container = tutumcli.commands.tutum.Container()
+        container.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
+        mock_fetch_remote_container.return_value = container
+        mock_start.return_value = True
+        container_start(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+
+        self.assertEqual(container.uuid, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch('tutumcli.commands.utils.fetch_remote_container', side_effect=TutumApiError)
+    def test_container_start_with_exception(self, mock_fetch_remote_container, mock_exit):
+        container_start(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+
+class ContainerStopTestCase(unittest.TestCase):
+    def setUp(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+
+    @mock.patch('tutumcli.commands.tutum.Container.stop')
+    @mock.patch('tutumcli.commands.utils.fetch_remote_container')
+    def test_container_stop(self, mock_fetch_remote_container, mock_stop):
+        container = tutumcli.commands.tutum.Container()
+        container.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
+        mock_fetch_remote_container.return_value = container
+        mock_stop.return_value = True
+        container_stop(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+
+        self.assertEqual(container.uuid, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch('tutumcli.commands.utils.fetch_remote_container', side_effect=TutumApiError)
+    def test_container_stop_with_exception(self, mock_fetch_remote_container, mock_exit):
+        container_start(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+
+class ContainerTerminateTestCase(unittest.TestCase):
+    def setUp(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+
+    @mock.patch('tutumcli.commands.tutum.Container.delete')
+    @mock.patch('tutumcli.commands.utils.fetch_remote_container')
+    def test_container_teminate(self, mock_fetch_remote_container, mock_delete):
+        container = tutumcli.commands.tutum.Container()
+        container.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
+        mock_fetch_remote_container.return_value = container
+        mock_delete.return_value = True
+        container_terminate(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+
+        self.assertEqual(container.uuid, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch('tutumcli.commands.utils.fetch_remote_container', side_effect=TutumApiError)
+    def test_container_terminate_with_exception(self, mock_fetch_remote_container, mock_exit):
+        container_terminate(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)

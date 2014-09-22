@@ -37,7 +37,7 @@ optional arguments:
 # ##################################################
 
 TUTUM_CONTAINER = '''usage: tutum container [-h]
-                       {inspect,logs,ps,redeploy,start,stop,terminate} ...
+                       {inspect,logs,ps,start,stop,terminate} ...
 
 Container-related operations
 
@@ -45,11 +45,10 @@ optional arguments:
   -h, --help            show this help message and exit
 
 tutum container commands:
-  {inspect,logs,ps,redeploy,start,stop,terminate}
+  {inspect,logs,ps,start,stop,terminate}
     inspect             Inspect a container
     logs                Get logs from a container
     ps                  List containers
-    redeploy            Redeploy a running container with a new version/tag
     start               Start a container
     stop                Stop a container
     terminate           Terminate a container'''
@@ -92,19 +91,6 @@ optional arguments:
   -q, --quiet           print only long UUIDs
   -s {Running,Stopped,Start failed,Stopped with errors}, --status {Running,Stopped,Start failed,Stopped with errors}
                         filter containers by status'''
-
-# ##################################################
-
-TUTUM_CONTAINER_REDEPLOY = '''usage: tutum container redeploy [-h] [-t TAG] identifier [identifier ...]
-
-Redeploy a running container with a new version/tag
-
-positional arguments:
-  identifier         container's UUID (either long or short) or name
-
-optional arguments:
-  -h, --help         show this help message and exit
-  -t TAG, --tag TAG  tag of the image to redeploy'''
 
 # ##################################################
 

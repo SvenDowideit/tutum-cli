@@ -388,20 +388,6 @@ def container_ps(identifier, quiet=False, status=None):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def container_redeploy(identifiers, tag):
-    has_exception = False
-    for identifier in identifiers:
-        try:
-            container = utils.fetch_remote_container(identifier)
-            result = container.redeploy(tag)
-            if result:
-                print(container.uuid)
-        except Exception as e:
-            print(e, file=sys.stderr)
-            has_exception = True
-    if has_exception:
-        sys.exit(EXCEPTION_EXIT_CODE)
-
 def container_start(identifiers):
     has_exception = False
     for identifier in identifiers:
