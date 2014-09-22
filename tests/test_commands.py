@@ -13,6 +13,19 @@ import tutumcli
 
 class LoginTestCase(unittest.TestCase):
     def setUp(self):
+        # backup configfile
+        self.data = None
+        file = None
+        try:
+            configFile = os.path.join(os.path.expanduser('~'), TUTUM_FILE)
+            file = open(configFile, 'r')
+            self.data = file.read()
+        except:
+            pass
+        finally:
+            if file:
+                file.close()
+
         self.raw_input_holder = __builtin__.raw_input
         self.stdout = sys.stdout
         self.stderr = sys.stderr
@@ -23,6 +36,18 @@ class LoginTestCase(unittest.TestCase):
         __builtin__.raw_input = self.raw_input_holder
         sys.stdout = self.stdout
         sys.stdout = self.stderr
+
+        if self.data:
+            file = None
+            try:
+                configFile = os.path.join(os.path.expanduser('~'), TUTUM_FILE)
+                file = open(configFile, 'w')
+                file.write(self.data)
+            except:
+                pass
+            finally:
+                if file:
+                    file.close()
 
     def set_username(self, username):
         __builtin__.raw_input = lambda _: username
@@ -1022,5 +1047,132 @@ class ImageUpdateTestCase(unittest.TestCase):
     def test_image_update_with_exception(self, mock_fetch, mock_exit):
         mock_fetch.side_effect = TutumApiError
         image_update(['repo'], 'username', 'password', 'description')
+
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+
+class NodeListTestCase(unittest.TestCase):
+    def setUp(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+        node1 = tutumcli.commands.tutum.Node()
+        node1.uuid = '19303d01-3564-437b-ac54-e7f8d17003f6'
+        node1.external_fqdn = '19303d01-tifayuki.node.tutum.io'
+        node1.state = 'Deployed'
+        node1.last_seen = None
+        node1.node_cluster = '/api/v1/nodecluster/b0374cc2-4003-4270-b131-25fc494ea2be/'
+        node2 = tutumcli.commands.tutum.Node()
+        node2.uuid = 'bd276db4-cd35-4311-8110-1c82885c33d2'
+        node2.external_fqdn = 'bd276db4-tifayuki.node.tutum.io"'
+        node2.state = 'Deploying'
+        node2.last_seen = None
+        node2.node_cluster = '/api/v1/nodecluster/b0374cc2-4003-4270-b131-25fc494ea2be/'
+        self.nodeklist = [node1, node2]
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+
+    @mock.patch('tutumcli.commands.tutum.NodeCluster.fetch')
+    @mock.patch('tutumcli.commands.tutum.Node.list')
+    def test_node_list(self, mock_list, mock_fetch):
+        output = u'''UUID      FQDN                              LASTSEEN    STATUS       CLUSTER
+19303d01  19303d01-tifayuki.node.tutum.io               ▶ Deployed   test_nodecluster
+bd276db4  bd276db4-tifayuki.node.tutum.io"              ⚙ Deploying  test_nodecluster'''
+        mock_list.return_value = self.nodeklist
+        nodecluster = tutumcli.commands.tutum.NodeCluster()
+        nodecluster.name = 'test_nodecluster'
+        mock_fetch.return_value = nodecluster
+        node_list(quiet=False)
+
+        self.assertEqual(output, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.tutum.NodeCluster.fetch')
+    @mock.patch('tutumcli.commands.tutum.Node.list')
+    def test_node_list(self, mock_list, mock_fetch):
+        output = '''19303d01-3564-437b-ac54-e7f8d17003f6
+bd276db4-cd35-4311-8110-1c82885c33d2'''
+        mock_list.return_value = self.nodeklist
+        nodecluster = tutumcli.commands.tutum.NodeCluster()
+        nodecluster.name = 'test_nodecluster'
+        mock_fetch.return_value = nodecluster
+        node_list(quiet=True)
+
+        self.assertEqual(output, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch('tutumcli.commands.tutum.Node.list', side_effect = TutumApiError)
+    def test_node_list(self, mock_list, mock_exit):
+        node_list()
+
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+class NodeInspectTestCase(unittest.TestCase):
+    def setUp(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+
+    @mock.patch('tutumcli.commands.tutum.Node.get_all_attributes')
+    @mock.patch('tutumcli.commands.tutum.Node.fetch')
+    @mock.patch('tutumcli.commands.utils.fetch_remote_node')
+    def test_node_inspect(self, mock_fetch_remote_node, mock_fetch, mock_get_all_attributes):
+        output = '''{
+  "key": [
+    {
+      "name": "test",
+      "id": "1"
+    }
+  ]
+}'''
+        uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
+        node = tutumcli.commands.tutum.Node()
+        node.uuid = uuid
+        mock_fetch.return_value = node
+        mock_fetch_remote_node.return_value = node
+        mock_get_all_attributes.return_value = {'key': [{'name': 'test', 'id': '1'}]}
+        node_inspect(['test_id'])
+
+        mock_fetch.assert_called_with(uuid)
+        self.assertEqual(' '.join(output.split()), ' '.join(self.buf.getvalue().strip().split()))
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch('tutumcli.commands.utils.fetch_remote_node', side_effect=TutumApiError)
+    def test_node_inspect_with_exception(self, mock_fetch_remote_node, mock_exit):
+        node = tutumcli.commands.tutum.Node()
+        mock_fetch_remote_node.return_value = node
+        node_inspect(['test_id', 'test_id2'])
+
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+
+class NodeRmTestCase(unittest.TestCase):
+    def setUp(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+
+    @mock.patch('tutumcli.commands.tutum.Node.delete')
+    @mock.patch('tutumcli.commands.utils.fetch_remote_node')
+    def test_node_teminate(self, mock_fetch_remote_node, mock_delete):
+        node = tutumcli.commands.tutum.Node()
+        node.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
+        mock_fetch_remote_node.return_value = node
+        mock_delete.return_value = True
+        node_rm(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+
+        self.assertEqual(node.uuid, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch('tutumcli.commands.utils.fetch_remote_node', side_effect=TutumApiError)
+    def test_node_terminate_with_exception(self, mock_fetch_remote_node, mock_exit):
+        node_rm(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)

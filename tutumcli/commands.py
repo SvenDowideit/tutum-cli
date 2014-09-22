@@ -620,7 +620,7 @@ def image_update(repositories, username, password, description):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def node_list(quiet):
+def node_list(quiet=False):
     try:
         headers = ["UUID", "FQDN", "LASTSEEN", "STATUS", "CLUSTER"]
         node_list = tutum.Node.list()
@@ -636,7 +636,7 @@ def node_list(quiet):
             data_list.append([node.uuid[:8],
                               node.external_fqdn,
                               utils.get_humanize_local_datetime_from_utc_datetime_string(node.last_seen),
-                              node.state,
+                              utils.add_unicode_symbol_to_state(node.state),
                               cluster_name])
             long_uuid_list.append(node.uuid)
         if len(data_list) == 0:

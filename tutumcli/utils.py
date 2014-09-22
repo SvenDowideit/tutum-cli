@@ -48,11 +48,11 @@ def is_uuid4(identifier):
 
 
 def add_unicode_symbol_to_state(state):
-    if state in ["Running", "Partly running"]:
+    if state in ["Running", "Partly running", "Deployed"]:
         return u"\u25B6 " + state
     elif state in ["Init", "Stopped"]:
         return u"\u25FC " + state
-    elif state in ["Starting", "Stopping", "Scaling", "Terminating"]:
+    elif state in ["Starting", "Stopping", "Scaling", "Terminating", "Deploying"]:
         return u"\u2699 " + state
     elif state in ["Start failed", "Stopped with errors"]:
         return u"\u0021 " + state
