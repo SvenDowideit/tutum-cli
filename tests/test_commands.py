@@ -1254,3 +1254,101 @@ newyork3  a4c1e712  San Francisco 1  512MB               Provisioning           
         nodecluster_list(quiet=True)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+
+class NodeClusterInspectTestCase(unittest.TestCase):
+    def setUp(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+
+    @mock.patch('tutumcli.commands.tutum.NodeCluster.get_all_attributes')
+    @mock.patch('tutumcli.commands.tutum.NodeCluster.fetch')
+    @mock.patch('tutumcli.commands.utils.fetch_remote_nodecluster')
+    def test_nodecluster_inspect(self, mock_fetch_remote_node_cluster, mock_fetch, mock_get_all_attributes):
+        output = '''{
+  "key": [
+    {
+      "name": "test",
+      "id": "1"
+    }
+  ]
+}'''
+        uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
+        nodecluster = tutumcli.commands.tutum.NodeCluster()
+        nodecluster.uuid = uuid
+        mock_fetch.return_value = nodecluster
+        mock_fetch_remote_node_cluster.return_value = nodecluster
+        mock_get_all_attributes.return_value = {'key': [{'name': 'test', 'id': '1'}]}
+        nodecluster_inspect(['test_id'])
+
+        mock_fetch.assert_called_with(uuid)
+        self.assertEqual(' '.join(output.split()), ' '.join(self.buf.getvalue().strip().split()))
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch('tutumcli.commands.utils.fetch_remote_nodecluster', side_effect=TutumApiError)
+    def test_nodecluster_inspect_with_exception(self, mock_fetch_remote_nodecluster, mock_exit):
+        nodecluster = tutumcli.commands.tutum.NodeCluster()
+        mock_fetch_remote_nodecluster.return_value = nodecluster
+        nodecluster_inspect(['test_id', 'test_id2'])
+
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+class NodeClusterRmTestCase(unittest.TestCase):
+    def setUp(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+
+    @mock.patch('tutumcli.commands.tutum.NodeCluster.delete')
+    @mock.patch('tutumcli.commands.utils.fetch_remote_nodecluster')
+    def test_nodecluster_rm(self, mock_fetch_remote_nodecluster, mock_delete):
+        nodecluster = tutumcli.commands.tutum.NodeCluster()
+        nodecluster.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
+        mock_fetch_remote_nodecluster.return_value = nodecluster
+        mock_delete.return_value = True
+        nodecluster_rm(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+
+        self.assertEqual(nodecluster.uuid, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch('tutumcli.commands.utils.fetch_remote_nodecluster', side_effect=TutumApiError)
+    def test_nodecluster_rm_with_exception(self, mock_fetch_remote_nodecluster, mock_exit):
+        nodecluster_rm(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+
+class NodeClusterScaleTestCase(unittest.TestCase):
+    def setUp(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+
+    @mock.patch('tutumcli.commands.tutum.NodeCluster.save')
+    @mock.patch('tutumcli.commands.utils.fetch_remote_nodecluster')
+    def test_nodecluster_scale(self, mock_fetch_remote_nodecluster, mock_save):
+        nodecluster = tutumcli.commands.tutum.NodeCluster()
+        nodecluster.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
+        mock_fetch_remote_nodecluster.return_value = nodecluster
+        nodecluster_scale(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], 3)
+
+        mock_save.assert_called()
+        self.assertEqual(3, nodecluster.target_num_nodes)
+        self.assertEqual(nodecluster.uuid, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch('tutumcli.commands.utils.fetch_remote_nodecluster', side_effect=TutumApiError)
+    def test_nodecluster_scale_with_exception(self, mock_fetch_remote_nodecluster, mock_exit):
+        nodecluster_scale(['test_id'], 3)
+
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
