@@ -276,10 +276,8 @@ def add_nodecluster_parser(subparsers):
     provider_parser.add_argument('-q', '--quiet', help='print only provider name', action='store_true')
 
     # tutum nodecluster region
-    region_parser = nodecluster_subparser.add_parser('region', help='Show all available regions of a given provider')
-    region_parser.add_argument('provider_id',
-                               help="id of the provider (to find out id, use `tutum nodecluster provider`)",
-                               type=int)
+    region_parser = nodecluster_subparser.add_parser('region', help='Show all available regions')
+    region_parser.add_argument('-p', '--provider', help="filtered by provider name (e.g. digitalocean)")
 
     # tutum nodecluster nodetype
     nodetype_parser = nodecluster_subparser.add_parser('nodetype', help='Show all available types of a given region')

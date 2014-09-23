@@ -542,7 +542,7 @@ tutum node commands:
     rm                  Remove node clusters
     scale               Scale a running node cluster
     provider            Show all available infrastructure providers
-    region              Show all available regions of a given provider
+    region              Show all available regions
     nodetype            Show all available types of a given region'''
 
 # ##################################################
@@ -624,14 +624,12 @@ optional arguments:
 
 # ##################################################
 
-TUTUM_NODECLUSTER_REGION = '''usage: tutum nodecluster region [-h] provider_id
-
-positional arguments:
-  provider_id  id of the provider (to find out id, use `tutum nodecluster
-               provider`)
+TUTUM_NODECLUSTER_REGION = '''usage: tutum nodecluster region [-h] [-p PROVIDER]
 
 optional arguments:
-  -h, --help   show this help message and exit'''
+  -h, --help            show this help message and exit
+  -p PROVIDER, --provider PROVIDER
+                        filtered by provider name (e.g. digitalocean)'''
 
 # ##################################################
 

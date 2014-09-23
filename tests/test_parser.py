@@ -45,7 +45,6 @@ class PatchHelpOptionTestCase(unittest.TestCase):
             ['tutum', 'nodecluster'],
             ['tutum', 'nodecluster', 'create'],
             ['tutum', 'nodecluster', 'inspect'],
-            ['tutum', 'nodecluster', 'region'],
             ['tutum', 'nodecluster', 'nodetype'],
             ['tutum', 'nodecluster', 'rm'],
             ['tutum', 'nodecluster', 'scale'],
@@ -58,6 +57,7 @@ class PatchHelpOptionTestCase(unittest.TestCase):
             ["tutum", "node", "list"],
             ["tutum", "nodecluster", "list"],
             ["tutum", "nodecluster", "provider"],
+            ["tutum", "nodecluster", "region"],
             ["tutum", "container", "run", "-p", "80:80", "tutum/wordpress"],
         ]
 
@@ -135,6 +135,20 @@ class CommandsDispatchTestCase(unittest.TestCase):
         args = self.parser.parse_args(['service', 'redeploy', '-t', 'latest', 'mysql'])
         dispatch_cmds(args)
         mock_cmds.service_redeploy.assert_called_with(args.identifier, args.tag)
+
+        args = self.parser.parse_args(['service', 'run', 'mysql'])
+        dispatch_cmds(args)
+        mock_cmds.service_run.assert_called_with(image=args.image, name=args.name, cpu_shares=args.cpushares,
+                                                 memory=args.memory, memory_swap=args.memoryswap,
+                                                 target_num_containers=args.target_num_containers,
+                                                 run_command=args.run_command,
+                                                 entrypoint=args.entrypoint, container_ports=args.port,
+                                                 container_envvars=args.env,
+                                                 linked_to_service=args.link_service,
+                                                 autorestart=args.autorestart,
+                                                 autoreplace=args.autoreplace, autodestroy=args.autodestroy,
+                                                 roles=args.role,
+                                                 sequential=args.sequential, web_public_dns=args.web_public_dns)
 
         args = self.parser.parse_args(['service', 'scale', 'id', '3'])
         dispatch_cmds(args)
@@ -241,9 +255,9 @@ class CommandsDispatchTestCase(unittest.TestCase):
         dispatch_cmds(args)
         mock_cmds.nodecluster_show_providers(args.quiet)
 
-        args = self.parser.parse_args(['nodecluster', 'region', '3'])
+        args = self.parser.parse_args(['nodecluster', 'region', '-p','digitalocean'])
         dispatch_cmds(args)
-        mock_cmds.nodecluster_show_regions(args.provider_id)
+        mock_cmds.nodecluster_show_regions(args.provider)
 
         args = self.parser.parse_args(['nodecluster', 'nodetype', '3'])
         dispatch_cmds(args)

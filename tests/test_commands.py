@@ -1102,11 +1102,12 @@ bd276db4-cd35-4311-8110-1c82885c33d2'''
         self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.sys.exit')
-    @mock.patch('tutumcli.commands.tutum.Node.list', side_effect = TutumApiError)
+    @mock.patch('tutumcli.commands.tutum.Node.list', side_effect=TutumApiError)
     def test_node_list(self, mock_list, mock_exit):
         node_list()
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
 
 class NodeInspectTestCase(unittest.TestCase):
     def setUp(self):
@@ -1177,6 +1178,7 @@ class NodeRmTestCase(unittest.TestCase):
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
+
 class NodeClusterListTestCase(unittest.TestCase):
     def setUp(self):
         self.stdout = sys.stdout
@@ -1199,7 +1201,7 @@ class NodeClusterListTestCase(unittest.TestCase):
         nodecluster2.state = 'Provisioning'
         nodecluster2.current_num_nodes = 1
         nodecluster2.target_num_nodes = 1
-        self.nodeclusterlist=[nodecluster1, nodecluster2]
+        self.nodeclusterlist = [nodecluster1, nodecluster2]
 
         region1 = tutumcli.commands.tutum.Region()
         region1.label = 'New York 3'
@@ -1207,13 +1209,11 @@ class NodeClusterListTestCase(unittest.TestCase):
         region2.label = 'San Francisco 1'
         self.regionlist = [region1, region2]
 
-
         nodetype1 = tutumcli.commands.tutum.NodeType()
         nodetype1.label = '512MB'
         nodetype2 = tutumcli.commands.tutum.NodeType()
         nodetype2.label = '512MB'
         self.nodetypelist = [nodetype1, nodetype2]
-
 
 
     def tearDown(self):
@@ -1226,7 +1226,7 @@ class NodeClusterListTestCase(unittest.TestCase):
         mock_list.return_value = self.nodeclusterlist
         mock_nodetype_fetch.side_effect = self.nodetypelist
         mock_region_fetch.side_effect = self.regionlist
-        output='''NAME      UUID      REGION           TYPE    DEPLOYED    STATUS          CURRENT#NODES    TARGET#NODES
+        output = '''NAME      UUID      REGION           TYPE    DEPLOYED    STATUS          CURRENT#NODES    TARGET#NODES
 test_sfo  b0374cc2  New York 3       512MB               Deployed                    2               2
 newyork3  a4c1e712  San Francisco 1  512MB               Provisioning                1               1'''
         nodecluster_list(quiet=False)
@@ -1242,7 +1242,7 @@ newyork3  a4c1e712  San Francisco 1  512MB               Provisioning           
         mock_list.return_value = self.nodeclusterlist
         mock_nodetype_fetch.side_effect = self.nodetypelist
         mock_region_fetch.side_effect = self.regionlist
-        output='b0374cc2-4003-4270-b131-25fc494ea2be\na4c1e712-ca26-4547-adb7-8da1057b964b'
+        output = 'b0374cc2-4003-4270-b131-25fc494ea2be\na4c1e712-ca26-4547-adb7-8da1057b964b'
         nodecluster_list(quiet=True)
 
         self.assertEqual(output, self.buf.getvalue().strip())
@@ -1296,6 +1296,7 @@ class NodeClusterInspectTestCase(unittest.TestCase):
         nodecluster_inspect(['test_id', 'test_id2'])
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
 
 class NodeClusterRmTestCase(unittest.TestCase):
     def setUp(self):
@@ -1353,6 +1354,7 @@ class NodeClusterScaleTestCase(unittest.TestCase):
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
+
 class NodeClusterShowProviderTestCase(unittest.TestCase):
     def setUp(self):
         self.stdout = sys.stdout
@@ -1362,16 +1364,16 @@ class NodeClusterShowProviderTestCase(unittest.TestCase):
         provider.name = 'digitalocean'
         provider.label = 'Digital Ocean'
         provider.regions = [
-                "/api/v1/region/digitalocean/ams1/",
-                "/api/v1/region/digitalocean/ams2/",
-                "/api/v1/region/digitalocean/ams3/",
-                "/api/v1/region/digitalocean/lon1/",
-                "/api/v1/region/digitalocean/nyc1/",
-                "/api/v1/region/digitalocean/nyc2/",
-                "/api/v1/region/digitalocean/nyc3/",
-                "/api/v1/region/digitalocean/sfo1/",
-                "/api/v1/region/digitalocean/sgp1/"
-            ]
+            "/api/v1/region/digitalocean/ams1/",
+            "/api/v1/region/digitalocean/ams2/",
+            "/api/v1/region/digitalocean/ams3/",
+            "/api/v1/region/digitalocean/lon1/",
+            "/api/v1/region/digitalocean/nyc1/",
+            "/api/v1/region/digitalocean/nyc2/",
+            "/api/v1/region/digitalocean/nyc3/",
+            "/api/v1/region/digitalocean/sfo1/",
+            "/api/v1/region/digitalocean/sgp1/"
+        ]
         self.providerlist = [provider]
 
     def tearDown(self):
@@ -1379,7 +1381,7 @@ class NodeClusterShowProviderTestCase(unittest.TestCase):
 
     @mock.patch('tutumcli.commands.tutum.Provider.list')
     def test_nodecluster_show_providers(self, mock_list):
-        output='''NAME          LABEL          REGIONS
+        output = '''NAME          LABEL          REGIONS
 digitalocean  Digital Ocean  ams1, ams2, ams3, lon1, nyc1, nyc2, nyc3, sfo1, sgp1'''
         mock_list.return_value = self.providerlist
         nodecluster_show_providers(quiet=False)
@@ -1389,7 +1391,7 @@ digitalocean  Digital Ocean  ams1, ams2, ams3, lon1, nyc1, nyc2, nyc3, sfo1, sgp
 
     @mock.patch('tutumcli.commands.tutum.Provider.list')
     def test_nodecluster_show_providers_quiet(self, mock_list):
-        output='digitalocean'
+        output = 'digitalocean'
         mock_list.return_value = self.providerlist
         nodecluster_show_providers(quiet=True)
 
@@ -1398,33 +1400,79 @@ digitalocean  Digital Ocean  ams1, ams2, ams3, lon1, nyc1, nyc2, nyc3, sfo1, sgp
 
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.tutum.Provider.list', side_effect=TutumApiError)
-    def test_nodecluster_scale_with_exception(self, mock_list, mock_exit):
+    def test_nodecluster_show_providers_with_exception(self, mock_list, mock_exit):
         nodecluster_show_providers(quiet=True)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
 
-# def nodecluster_show_providers(quiet):
-#     try:
-#         headers = ["NAME", "LABEL", "REGIONS"]
-#         data_list = []
-#         name_list = []
-#         provider_list = tutum.Provider.list()
-#         for provider in provider_list:
-#             if quiet:
-#                 name_list.append(provider.name)
-#                 continue
-#
-#             data_list.append([provider.name, provider.label,
-#                               ", ".join([region.strip("/").split("/")[-1] for region in provider.regions])])
-#
-#         if len(data_list) == 0:
-#             data_list.append(["", "", ""])
-#         if quiet:
-#             for name in name_list:
-#                 print(name)
-#         else:
-#             utils.tabulate_result(data_list, headers)
-#     except Exception as e:
-#         print(e, file=sys.stderr)
-#         sys.exit(EXCEPTION_EXIT_CODE)
+class NodeClusterShowRegionsTestCase(unittest.TestCase):
+    def setUp(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+        region1 = tutumcli.commands.tutum.Region()
+        region1.name = 'ams1'
+        region1.label = 'Amsterdam 1'
+        region1.resource_uri = '/api/v1/region/digitalocean/ams1/'
+        region1.node_types = ["/api/v1/nodetype/digitalocean/512mb/",
+                             "/api/v1/nodetype/digitalocean/1gb/",
+                             "/api/v1/nodetype/digitalocean/2gb/",
+                             "/api/v1/nodetype/digitalocean/4gb/",
+                             "/api/v1/nodetype/digitalocean/8gb/",
+                             "/api/v1/nodetype/digitalocean/16gb/"]
+        region2 = tutumcli.commands.tutum.Region()
+        region2.name = 'sfo1'
+        region2.label = 'San Francisco 1'
+        region2.resource_uri = '/api/v1/region/digitalocean/sfo1/'
+        region2.node_types = ["/api/v1/nodetype/digitalocean/512mb/",
+                             "/api/v1/nodetype/digitalocean/1gb/",
+                             "/api/v1/nodetype/digitalocean/2gb/",
+                             "/api/v1/nodetype/digitalocean/4gb/",
+                             "/api/v1/nodetype/digitalocean/8gb/",
+                             "/api/v1/nodetype/digitalocean/16gb/",
+                             "/api/v1/nodetype/digitalocean/32gb/",
+                             "/api/v1/nodetype/digitalocean/48gb/",
+                             "/api/v1/nodetype/digitalocean/64gb/"]
+        region3 = tutumcli.commands.tutum.Region()
+        region3.name = 'jap1'
+        region3.label = 'Japan 1'
+        region3.resource_uri = '/api/v1/region/aws/jap1/'
+        region3.node_types = ["/api/v1/nodetype/aws/512mb/",
+                             "/api/v1/nodetype/aws/1gb/",
+                             "/api/v1/nodetype/aws/2gb/",
+                             "/api/v1/nodetype/aws/4gb/",
+                             "/api/v1/nodetype/aws/8gb/"]
+        self.regionlist = [region1, region2, region3]
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+
+    @mock.patch('tutumcli.commands.tutum.Region.list')
+    def test_nodecluster_show_regions(self, mock_list):
+        output = '''NAME    LABEL            PROVIDER      TYPE
+ams1    Amsterdam 1      digitalocean  512mb, 1gb, 2gb, 4gb, 8gb, 16gb
+sfo1    San Francisco 1  digitalocean  512mb, 1gb, 2gb, 4gb, 8gb, 16gb, 32gb, 48gb, 64gb
+jap1    Japan 1          aws           512mb, 1gb, 2gb, 4gb, 8gb'''
+        mock_list.return_value = self.regionlist
+        nodecluster_show_regions('')
+
+        self.assertEqual(output, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.tutum.Region.list')
+    def test_nodecluster_show_regions_with_filter(self, mock_list):
+        output = '''NAME    LABEL            PROVIDER      TYPE
+ams1    Amsterdam 1      digitalocean  512mb, 1gb, 2gb, 4gb, 8gb, 16gb
+sfo1    San Francisco 1  digitalocean  512mb, 1gb, 2gb, 4gb, 8gb, 16gb, 32gb, 48gb, 64gb'''
+        mock_list.return_value = self.regionlist
+        nodecluster_show_regions('digitalocean')
+
+        self.assertEqual(output, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch('tutumcli.commands.tutum.Region.list', side_effect=TutumApiError)
+    def test_nodecluster_show_region_with_exception(self, mock_list, mock_exit):
+        nodecluster_show_regions('')
+
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)

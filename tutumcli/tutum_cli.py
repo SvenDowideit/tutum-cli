@@ -56,7 +56,7 @@ def patch_help_option(argv=sys.argv):
             args.append('-h')
         elif args[1] == 'node' and args[2] in ['inspect', 'rm']:
             args.append('-h')
-        elif args[1] == 'nodecluster' and args[2] in ['create', 'inspect', 'region', 'nodetype', 'rm', 'scale']:
+        elif args[1] == 'nodecluster' and args[2] in ['create', 'inspect', 'nodetype', 'rm', 'scale']:
             args.append('-h')
     if debug:
         args.insert(1, '--debug')
@@ -84,6 +84,15 @@ def dispatch_cmds(args):
             commands.service_ps(args.quiet, args.status)
         elif args.subcmd == 'redeploy':
             commands.service_redeploy(args.identifier, args.tag)
+        elif args.subcmd == 'run':
+            commands.service_run(image=args.image, name=args.name, cpu_shares=args.cpushares,
+                                 memory=args.memory, memory_swap=args.memoryswap,
+                                 target_num_containers=args.target_num_containers, run_command=args.run_command,
+                                 entrypoint=args.entrypoint, container_ports=args.port, container_envvars=args.env,
+                                 linked_to_service=args.link_service,
+                                 autorestart=args.autorestart,
+                                 autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role,
+                                 sequential=args.sequential, web_public_dns=args.web_public_dns)
         elif args.subcmd == 'scale':
             commands.service_scale(args.identifier, args.target_num_containers)
         elif args.subcmd == 'set':
@@ -103,15 +112,6 @@ def dispatch_cmds(args):
             commands.container_ps(args.identifier, args.quiet, args.status)
         elif args.subcmd == 'redeploy':
             commands.container_redeploy(args.identifier, args.tag)
-        elif args.subcmd == 'run':
-            commands.container_run(image=args.image, name=args.name, cpu_shares=args.cpushares,
-                                   memory=args.memory, memory_swap=args.memoryswap,
-                                   run_command=args.run_command, entrypoint=args.entrypoint, container_ports=args.port,
-                                   container_envvars=args.env,
-                                   linked_to_service=args.link_service, linked_to_container=args.link_container,
-                                   autorestart=args.autorestart, autoreplace=args.autoreplace,
-                                   autodestroy=args.autodestroy,
-                                   roles=args.role, web_public_dns=args.web_public_dns)
         elif args.subcmd == 'start':
             commands.container_start(args.identifier)
         elif args.subcmd == 'stop':
@@ -149,7 +149,7 @@ def dispatch_cmds(args):
         elif args.subcmd == 'provider':
             commands.nodecluster_show_providers(args.quiet)
         elif args.subcmd == 'region':
-            commands.nodecluster_show_regions(args.provider_id)
+            commands.nodecluster_show_regions(args.provider)
         elif args.subcmd == 'nodetype':
             commands.nodecluster_show_types(args.region_id)
         elif args.subcmd == 'rm':
