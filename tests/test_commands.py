@@ -1352,3 +1352,79 @@ class NodeClusterScaleTestCase(unittest.TestCase):
         nodecluster_scale(['test_id'], 3)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+class NodeClusterShowProviderTestCase(unittest.TestCase):
+    def setUp(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+
+        provider = tutumcli.commands.tutum.Provider()
+        provider.name = 'digitalocean'
+        provider.label = 'Digital Ocean'
+        provider.regions = [
+                "/api/v1/region/digitalocean/ams1/",
+                "/api/v1/region/digitalocean/ams2/",
+                "/api/v1/region/digitalocean/ams3/",
+                "/api/v1/region/digitalocean/lon1/",
+                "/api/v1/region/digitalocean/nyc1/",
+                "/api/v1/region/digitalocean/nyc2/",
+                "/api/v1/region/digitalocean/nyc3/",
+                "/api/v1/region/digitalocean/sfo1/",
+                "/api/v1/region/digitalocean/sgp1/"
+            ]
+        self.providerlist = [provider]
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+
+    @mock.patch('tutumcli.commands.tutum.Provider.list')
+    def test_nodecluster_show_providers(self, mock_list):
+        output='''NAME          LABEL          REGIONS
+digitalocean  Digital Ocean  ams1, ams2, ams3, lon1, nyc1, nyc2, nyc3, sfo1, sgp1'''
+        mock_list.return_value = self.providerlist
+        nodecluster_show_providers(quiet=False)
+
+        self.assertEqual(output, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.tutum.Provider.list')
+    def test_nodecluster_show_providers_quiet(self, mock_list):
+        output='digitalocean'
+        mock_list.return_value = self.providerlist
+        nodecluster_show_providers(quiet=True)
+
+        self.assertEqual(output, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch('tutumcli.commands.tutum.Provider.list', side_effect=TutumApiError)
+    def test_nodecluster_scale_with_exception(self, mock_list, mock_exit):
+        nodecluster_show_providers(quiet=True)
+
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+
+# def nodecluster_show_providers(quiet):
+#     try:
+#         headers = ["NAME", "LABEL", "REGIONS"]
+#         data_list = []
+#         name_list = []
+#         provider_list = tutum.Provider.list()
+#         for provider in provider_list:
+#             if quiet:
+#                 name_list.append(provider.name)
+#                 continue
+#
+#             data_list.append([provider.name, provider.label,
+#                               ", ".join([region.strip("/").split("/")[-1] for region in provider.regions])])
+#
+#         if len(data_list) == 0:
+#             data_list.append(["", "", ""])
+#         if quiet:
+#             for name in name_list:
+#                 print(name)
+#         else:
+#             utils.tabulate_result(data_list, headers)
+#     except Exception as e:
+#         print(e, file=sys.stderr)
+#         sys.exit(EXCEPTION_EXIT_CODE)
