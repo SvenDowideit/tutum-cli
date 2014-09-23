@@ -45,7 +45,6 @@ class PatchHelpOptionTestCase(unittest.TestCase):
             ['tutum', 'nodecluster'],
             ['tutum', 'nodecluster', 'create'],
             ['tutum', 'nodecluster', 'inspect'],
-            ['tutum', 'nodecluster', 'nodetype'],
             ['tutum', 'nodecluster', 'rm'],
             ['tutum', 'nodecluster', 'scale'],
         ]
@@ -58,6 +57,7 @@ class PatchHelpOptionTestCase(unittest.TestCase):
             ["tutum", "nodecluster", "list"],
             ["tutum", "nodecluster", "provider"],
             ["tutum", "nodecluster", "region"],
+            ['tutum', 'nodecluster', 'nodetype'],
             ["tutum", "container", "run", "-p", "80:80", "tutum/wordpress"],
         ]
 
@@ -255,13 +255,13 @@ class CommandsDispatchTestCase(unittest.TestCase):
         dispatch_cmds(args)
         mock_cmds.nodecluster_show_providers(args.quiet)
 
-        args = self.parser.parse_args(['nodecluster', 'region', '-p','digitalocean'])
+        args = self.parser.parse_args(['nodecluster', 'region', '-p', 'digitalocean'])
         dispatch_cmds(args)
         mock_cmds.nodecluster_show_regions(args.provider)
 
-        args = self.parser.parse_args(['nodecluster', 'nodetype', '3'])
+        args = self.parser.parse_args(['nodecluster', 'nodetype', '-r', 'ams1', '-p', 'digitalocean'])
         dispatch_cmds(args)
-        mock_cmds.nodecluster_show_types(args.region_id)
+        mock_cmds.nodecluster_show_types(args.provider, args.region)
 
         args = self.parser.parse_args(['nodecluster', 'rm', 'id'])
         dispatch_cmds(args)
@@ -280,7 +280,7 @@ class ParserTestCase(unittest.TestCase):
     def tearDown(self):
         sys.stdout = self.stdout
 
-    def compare_output(self, output, args, stdout=True):
+    def compare_output(self, output, args):
         parser = initialize_parser()
         argv = patch_help_option(args)
 

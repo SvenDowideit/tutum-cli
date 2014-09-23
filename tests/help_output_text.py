@@ -543,7 +543,7 @@ tutum node commands:
     scale               Scale a running node cluster
     provider            Show all available infrastructure providers
     region              Show all available regions
-    nodetype            Show all available types of a given region'''
+    nodetype            Show all available types'''
 
 # ##################################################
 
@@ -633,10 +633,11 @@ optional arguments:
 
 # ##################################################
 
-TUTUM_NODECLUSTER_NODETYPE = '''usage: tutum nodecluster nodetype [-h] region_id
-
-positional arguments:
-  region_id   id of the region (to find out id use `tutum nodecluster region`)
+TUTUM_NODECLUSTER_NODETYPE = '''usage: tutum nodecluster nodetype [-h] [-p PROVIDER] [-r REGION]
 
 optional arguments:
-  -h, --help  show this help message and exit'''
+  -h, --help            show this help message and exit
+  -p PROVIDER, --provider PROVIDER
+                        filtered by provider name (e.g. digitalocean)
+  -r REGION, --region REGION
+                        filtered by region name (e.g. ams1)'''

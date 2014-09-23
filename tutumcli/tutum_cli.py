@@ -56,7 +56,7 @@ def patch_help_option(argv=sys.argv):
             args.append('-h')
         elif args[1] == 'node' and args[2] in ['inspect', 'rm']:
             args.append('-h')
-        elif args[1] == 'nodecluster' and args[2] in ['create', 'inspect', 'nodetype', 'rm', 'scale']:
+        elif args[1] == 'nodecluster' and args[2] in ['create', 'inspect', 'rm', 'scale']:
             args.append('-h')
     if debug:
         args.insert(1, '--debug')
@@ -151,7 +151,7 @@ def dispatch_cmds(args):
         elif args.subcmd == 'region':
             commands.nodecluster_show_regions(args.provider)
         elif args.subcmd == 'nodetype':
-            commands.nodecluster_show_types(args.region_id)
+            commands.nodecluster_show_types(args.provider, args.region)
         elif args.subcmd == 'rm':
             commands.nodecluster_rm(args.identifier)
         elif args.subcmd == 'scale':

@@ -1472,7 +1472,94 @@ sfo1    San Francisco 1  digitalocean  512mb, 1gb, 2gb, 4gb, 8gb, 16gb, 32gb, 48
 
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.tutum.Region.list', side_effect=TutumApiError)
-    def test_nodecluster_show_region_with_exception(self, mock_list, mock_exit):
+    def test_nodecluster_show_regions_with_exception(self, mock_list, mock_exit):
         nodecluster_show_regions('')
+
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+class NodeClusterShowTypesTestCase(unittest.TestCase):
+    def setUp(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+        nodetype1 = tutumcli.commands.tutum.NodeType()
+        nodetype1.name = '512mb'
+        nodetype1.label = '512MB'
+        nodetype1.resource_uri = '/api/v1/nodetype/digitalocean/512mb/'
+        nodetype1.regions = ["/api/v1/region/digitalocean/ams1/",
+                "/api/v1/region/digitalocean/sfo1/",
+                "/api/v1/region/digitalocean/nyc2/",
+                "/api/v1/region/digitalocean/ams2/",
+                "/api/v1/region/digitalocean/sgp1/",
+                "/api/v1/region/digitalocean/lon1/",
+                "/api/v1/region/digitalocean/nyc3/",
+                "/api/v1/region/digitalocean/nyc1/"]
+        nodetype2 = tutumcli.commands.tutum.NodeType()
+        nodetype2.name = '1gb'
+        nodetype2.label = '1GB'
+        nodetype2.resource_uri = '/api/v1/nodetype/digitalocean/1gb/'
+        nodetype2.regions = ["/api/v1/region/digitalocean/ams1/",
+                "/api/v1/region/digitalocean/sfo1/",
+                "/api/v1/region/digitalocean/nyc2/",
+                "/api/v1/region/digitalocean/ams2/",
+                "/api/v1/region/digitalocean/sgp1/",
+                "/api/v1/region/digitalocean/lon1/",
+                "/api/v1/region/digitalocean/nyc3/",
+                "/api/v1/region/digitalocean/nyc1/"]
+        nodetype3 = tutumcli.commands.tutum.NodeType()
+        nodetype3.name = '3gb'
+        nodetype3.label = '3GB'
+        nodetype3.resource_uri = '/api/v1/region/aws/3gb/'
+        nodetype3.regions = ["/api/v1/nodetype/aws/tokyo/",
+                             "/api/v1/nodetype/aws/kyoto/",
+                             "/api/v1/nodetype/aws/shibuya/",
+                             "/api/v1/nodetype/aws/ueno/",
+                             "/api/v1/nodetype/aws/akiba/"]
+        self.nodetypelist = [nodetype1, nodetype2, nodetype3]
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+
+    @mock.patch('tutumcli.commands.tutum.NodeType.list')
+    def test_nodecluster_show_types(self, mock_list):
+        output = '''NAME    LABEL    PROVIDER      REGIONS
+512mb   512MB    digitalocean  ams1, sfo1, nyc2, ams2, sgp1, lon1, nyc3, nyc1
+1gb     1GB      digitalocean  ams1, sfo1, nyc2, ams2, sgp1, lon1, nyc3, nyc1
+3gb     3GB      aws           tokyo, kyoto, shibuya, ueno, akiba'''
+        mock_list.return_value = self.nodetypelist
+        nodecluster_show_types('', '')
+
+        self.assertEqual(output, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.tutum.NodeType.list')
+    def test_nodecluster_show_types_with_provider_filter(self, mock_list):
+        output = '''NAME    LABEL    PROVIDER    REGIONS
+3gb     3GB      aws         tokyo, kyoto, shibuya, ueno, akiba'''
+        mock_list.return_value = self.nodetypelist
+        nodecluster_show_types('aws', '')
+
+        self.assertEqual(output, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.tutum.NodeType.list')
+    def test_nodecluster_show_types_with_region_filter(self, mock_list):
+        output = '''NAME    LABEL    PROVIDER      REGIONS
+512mb   512MB    digitalocean  ams1, sfo1, nyc2, ams2, sgp1, lon1, nyc3, nyc1
+1gb     1GB      digitalocean  ams1, sfo1, nyc2, ams2, sgp1, lon1, nyc3, nyc1'''
+        mock_list.return_value = self.nodetypelist
+        nodecluster_show_types(output, 'nyc3')
+
+    @mock.patch('tutumcli.commands.tutum.NodeType.list')
+    def test_nodecluster_show_types_with_filters(self, mock_list):
+        mock_list.return_value = self.nodetypelist
+        nodecluster_show_types('aws', 'nyc3')
+
+        self.assertEqual('NAME    LABEL    PROVIDER    REGIONS', self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch('tutumcli.commands.tutum.NodeType.list', side_effect=TutumApiError)
+    def test_nodecluster_show_types_with_exception(self, mock_list, mock_exit):
+        nodecluster_show_types('', '')
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)

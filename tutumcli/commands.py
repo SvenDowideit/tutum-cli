@@ -778,26 +778,24 @@ def nodecluster_show_regions(provider):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def nodecluster_show_types(region_id):
+def nodecluster_show_types(provider, region):
     try:
-        region = tutum.Region.fetch(str(region_id))
-        region_name = region.label or region.name
-    except Exception as e:
-        if "Status 404" in e.message:
-            print("The ID(%d) of region does not exist! " % region_id, file=sys.stderr)
-            sys.exit(EXCEPTION_EXIT_CODE)
-        print(e, file=sys.stderr)
-        sys.exit(EXCEPTION_EXIT_CODE)
-    print('Listing all available types of region: %s ...' % region_name)
-
-    try:
-        headers = ["ID", "TYPE"]
+        headers = ["NAME", "LABEL", "PROVIDER", "REGIONS"]
         data_list = []
-        type_list = tutum.NodeType.list(region=region_id)
-        for node_type in type_list:
-            data_list.append([node_type.resource_uri.strip("/").split("/")[-1], node_type.label or node_type.name])
+        nodetype_list = tutum.NodeType.list()
+        for nodetype in nodetype_list:
+            provider_name = nodetype.resource_uri.strip("/").split("/")[-2]
+            regions = [region_uri.strip("/").split("/")[-1] for region_uri in nodetype.regions]
+            if provider and provider != provider_name:
+                continue
+
+            if region and region not in regions:
+                continue
+            data_list.append([nodetype.name, nodetype.label, provider_name,
+                              ", ".join(regions)])
+
         if len(data_list) == 0:
-            data_list.append(["", "", ""])
+            data_list.append(["", "", "", ""])
         utils.tabulate_result(data_list, headers)
     except Exception as e:
         print(e, file=sys.stderr)
