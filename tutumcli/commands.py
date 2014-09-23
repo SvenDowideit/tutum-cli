@@ -693,9 +693,9 @@ def nodecluster_list(quiet):
             node_type = nodecluster.node_type
             region = nodecluster.region
             try:
-                node_type = tutum.NodeType.fetch(nodecluster.node_type.strip("/").split("/")[-1]).label
-                region = tutum.Region.fetch(nodecluster.region.strip("/").split("/")[-1]).label
-            except:
+                node_type = tutum.NodeType.fetch(nodecluster.node_type.strip("/").split("api/v1/nodetype/")[-1]).label
+                region = tutum.Region.fetch(nodecluster.region.strip("/").split("api/v1/region/")[-1]).label
+            except Exception as e:
                 pass
 
             data_list.append([nodecluster.name,

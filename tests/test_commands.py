@@ -1176,3 +1176,81 @@ class NodeRmTestCase(unittest.TestCase):
         node_rm(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+class NodeClusterListTestCase(unittest.TestCase):
+    def setUp(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+        nodecluster1 = tutumcli.commands.tutum.NodeCluster()
+        nodecluster1.name = 'test_sfo'
+        nodecluster1.uuid = 'b0374cc2-4003-4270-b131-25fc494ea2be'
+        nodecluster1.region = '/api/v1/region/digitalocean/sfo1/'
+        nodecluster1.node_type = '/api/v1/nodetype/digitalocean/512mb/'
+        nodecluster1.deployed_datetime = None
+        nodecluster1.state = 'Deployed'
+        nodecluster1.current_num_nodes = 2
+        nodecluster1.target_num_nodes = 2
+        nodecluster2 = tutumcli.commands.tutum.NodeCluster()
+        nodecluster2.name = 'newyork3'
+        nodecluster2.uuid = 'a4c1e712-ca26-4547-adb7-8da1057b964b'
+        nodecluster2.region = '/api/v1/region/digitalocean/nyc3/'
+        nodecluster2.node_type = '/api/v1/nodetype/digitalocean/512mb/'
+        nodecluster2.deployed_datetime = None
+        nodecluster2.state = 'Provisioning'
+        nodecluster2.current_num_nodes = 1
+        nodecluster2.target_num_nodes = 1
+        self.nodeclusterlist=[nodecluster1, nodecluster2]
+
+        region1 = tutumcli.commands.tutum.Region()
+        region1.label = 'New York 3'
+        region2 = tutumcli.commands.tutum.Region()
+        region2.label = 'San Francisco 1'
+        self.regionlist = [region1, region2]
+
+
+        nodetype1 = tutumcli.commands.tutum.NodeType()
+        nodetype1.label = '512MB'
+        nodetype2 = tutumcli.commands.tutum.NodeType()
+        nodetype2.label = '512MB'
+        self.nodetypelist = [nodetype1, nodetype2]
+
+
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+
+    @mock.patch('tutumcli.commands.tutum.Region.fetch')
+    @mock.patch('tutumcli.commands.tutum.NodeType.fetch')
+    @mock.patch('tutumcli.commands.tutum.NodeCluster.list')
+    def test_clusternode_list(self, mock_list, mock_nodetype_fetch, mock_region_fetch):
+        mock_list.return_value = self.nodeclusterlist
+        mock_nodetype_fetch.side_effect = self.nodetypelist
+        mock_region_fetch.side_effect = self.regionlist
+        output='''NAME      UUID      REGION           TYPE    DEPLOYED    STATUS          CURRENT#NODES    TARGET#NODES
+test_sfo  b0374cc2  New York 3       512MB               Deployed                    2               2
+newyork3  a4c1e712  San Francisco 1  512MB               Provisioning                1               1'''
+        nodecluster_list(quiet=False)
+
+        self.assertEqual(output, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+
+    @mock.patch('tutumcli.commands.tutum.Region.fetch')
+    @mock.patch('tutumcli.commands.tutum.NodeType.fetch')
+    @mock.patch('tutumcli.commands.tutum.NodeCluster.list')
+    def test_clusternode_list_quiet(self, mock_list, mock_nodetype_fetch, mock_region_fetch):
+        mock_list.return_value = self.nodeclusterlist
+        mock_nodetype_fetch.side_effect = self.nodetypelist
+        mock_region_fetch.side_effect = self.regionlist
+        output='b0374cc2-4003-4270-b131-25fc494ea2be\na4c1e712-ca26-4547-adb7-8da1057b964b'
+        nodecluster_list(quiet=True)
+
+        self.assertEqual(output, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch('tutumcli.commands.tutum.NodeCluster.list', side_effect=TutumApiError)
+    def test_clusternode_list_with_excepiton(self, mock_list, mock_exit):
+        nodecluster_list(quiet=True)
+
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
