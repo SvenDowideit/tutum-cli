@@ -548,15 +548,15 @@ tutum node commands:
 # ##################################################
 
 TUTUM_NODECLUSTER_CREATE = '''usage: tutum nodecluster create [-h] [-t TARGET_NUM_NODES]
-                                name provider_id region_id nodetype_id
+                                name provider region nodetype
 
 Create a nodecluster
 
 positional arguments:
   name                  name of the node cluster to create
-  provider_id           id of the provider
-  region_id             id of the region
-  nodetype_id           id of the nodetype
+  provider              name of the provider
+  region                name of the region
+  nodetype              name of the node type
 
 optional arguments:
   -h, --help            show this help message and exit

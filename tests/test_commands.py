@@ -1415,33 +1415,33 @@ class NodeClusterShowRegionsTestCase(unittest.TestCase):
         region1.label = 'Amsterdam 1'
         region1.resource_uri = '/api/v1/region/digitalocean/ams1/'
         region1.node_types = ["/api/v1/nodetype/digitalocean/512mb/",
-                             "/api/v1/nodetype/digitalocean/1gb/",
-                             "/api/v1/nodetype/digitalocean/2gb/",
-                             "/api/v1/nodetype/digitalocean/4gb/",
-                             "/api/v1/nodetype/digitalocean/8gb/",
-                             "/api/v1/nodetype/digitalocean/16gb/"]
+                              "/api/v1/nodetype/digitalocean/1gb/",
+                              "/api/v1/nodetype/digitalocean/2gb/",
+                              "/api/v1/nodetype/digitalocean/4gb/",
+                              "/api/v1/nodetype/digitalocean/8gb/",
+                              "/api/v1/nodetype/digitalocean/16gb/"]
         region2 = tutumcli.commands.tutum.Region()
         region2.name = 'sfo1'
         region2.label = 'San Francisco 1'
         region2.resource_uri = '/api/v1/region/digitalocean/sfo1/'
         region2.node_types = ["/api/v1/nodetype/digitalocean/512mb/",
-                             "/api/v1/nodetype/digitalocean/1gb/",
-                             "/api/v1/nodetype/digitalocean/2gb/",
-                             "/api/v1/nodetype/digitalocean/4gb/",
-                             "/api/v1/nodetype/digitalocean/8gb/",
-                             "/api/v1/nodetype/digitalocean/16gb/",
-                             "/api/v1/nodetype/digitalocean/32gb/",
-                             "/api/v1/nodetype/digitalocean/48gb/",
-                             "/api/v1/nodetype/digitalocean/64gb/"]
+                              "/api/v1/nodetype/digitalocean/1gb/",
+                              "/api/v1/nodetype/digitalocean/2gb/",
+                              "/api/v1/nodetype/digitalocean/4gb/",
+                              "/api/v1/nodetype/digitalocean/8gb/",
+                              "/api/v1/nodetype/digitalocean/16gb/",
+                              "/api/v1/nodetype/digitalocean/32gb/",
+                              "/api/v1/nodetype/digitalocean/48gb/",
+                              "/api/v1/nodetype/digitalocean/64gb/"]
         region3 = tutumcli.commands.tutum.Region()
         region3.name = 'jap1'
         region3.label = 'Japan 1'
         region3.resource_uri = '/api/v1/region/aws/jap1/'
         region3.node_types = ["/api/v1/nodetype/aws/512mb/",
-                             "/api/v1/nodetype/aws/1gb/",
-                             "/api/v1/nodetype/aws/2gb/",
-                             "/api/v1/nodetype/aws/4gb/",
-                             "/api/v1/nodetype/aws/8gb/"]
+                              "/api/v1/nodetype/aws/1gb/",
+                              "/api/v1/nodetype/aws/2gb/",
+                              "/api/v1/nodetype/aws/4gb/",
+                              "/api/v1/nodetype/aws/8gb/"]
         self.regionlist = [region1, region2, region3]
 
     def tearDown(self):
@@ -1477,6 +1477,7 @@ sfo1    San Francisco 1  digitalocean  512mb, 1gb, 2gb, 4gb, 8gb, 16gb, 32gb, 48
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
+
 class NodeClusterShowTypesTestCase(unittest.TestCase):
     def setUp(self):
         self.stdout = sys.stdout
@@ -1486,25 +1487,25 @@ class NodeClusterShowTypesTestCase(unittest.TestCase):
         nodetype1.label = '512MB'
         nodetype1.resource_uri = '/api/v1/nodetype/digitalocean/512mb/'
         nodetype1.regions = ["/api/v1/region/digitalocean/ams1/",
-                "/api/v1/region/digitalocean/sfo1/",
-                "/api/v1/region/digitalocean/nyc2/",
-                "/api/v1/region/digitalocean/ams2/",
-                "/api/v1/region/digitalocean/sgp1/",
-                "/api/v1/region/digitalocean/lon1/",
-                "/api/v1/region/digitalocean/nyc3/",
-                "/api/v1/region/digitalocean/nyc1/"]
+                             "/api/v1/region/digitalocean/sfo1/",
+                             "/api/v1/region/digitalocean/nyc2/",
+                             "/api/v1/region/digitalocean/ams2/",
+                             "/api/v1/region/digitalocean/sgp1/",
+                             "/api/v1/region/digitalocean/lon1/",
+                             "/api/v1/region/digitalocean/nyc3/",
+                             "/api/v1/region/digitalocean/nyc1/"]
         nodetype2 = tutumcli.commands.tutum.NodeType()
         nodetype2.name = '1gb'
         nodetype2.label = '1GB'
         nodetype2.resource_uri = '/api/v1/nodetype/digitalocean/1gb/'
         nodetype2.regions = ["/api/v1/region/digitalocean/ams1/",
-                "/api/v1/region/digitalocean/sfo1/",
-                "/api/v1/region/digitalocean/nyc2/",
-                "/api/v1/region/digitalocean/ams2/",
-                "/api/v1/region/digitalocean/sgp1/",
-                "/api/v1/region/digitalocean/lon1/",
-                "/api/v1/region/digitalocean/nyc3/",
-                "/api/v1/region/digitalocean/nyc1/"]
+                             "/api/v1/region/digitalocean/sfo1/",
+                             "/api/v1/region/digitalocean/nyc2/",
+                             "/api/v1/region/digitalocean/ams2/",
+                             "/api/v1/region/digitalocean/sgp1/",
+                             "/api/v1/region/digitalocean/lon1/",
+                             "/api/v1/region/digitalocean/nyc3/",
+                             "/api/v1/region/digitalocean/nyc1/"]
         nodetype3 = tutumcli.commands.tutum.NodeType()
         nodetype3.name = '3gb'
         nodetype3.label = '3GB'
@@ -1561,5 +1562,42 @@ class NodeClusterShowTypesTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.tutum.NodeType.list', side_effect=TutumApiError)
     def test_nodecluster_show_types_with_exception(self, mock_list, mock_exit):
         nodecluster_show_types('', '')
+
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+
+class NodeClusterCreateTestCase(unittest.TestCase):
+    def setUp(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+
+
+    @mock.patch('tutumcli.commands.tutum.NodeCluster.deploy')
+    @mock.patch('tutumcli.commands.tutum.NodeCluster.save')
+    @mock.patch('tutumcli.commands.tutum.NodeCluster.create')
+    def test_nodecluster_create(self, mock_create, mock_save, mock_deploy):
+        provider_name = 'digitalocean'
+        region_name = 'lon1'
+        nodetype_name = '1gb'
+        region_uri = "/api/v1/region/%s/%s/" % (provider_name, region_name)
+        nodetype_uri = "/api/v1/nodetype/%s/%s/" % (provider_name, nodetype_name)
+        nodecluster = tutumcli.commands.tutum.NodeCluster()
+        nodecluster.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
+        mock_create.return_value = nodecluster
+        nodecluster_create(3, 'name', provider_name, region_name, nodetype_name)
+
+        mock_create.assert_called_with(name='name', target_num_nodes=3, region=region_uri,
+                                       node_type=nodetype_uri)
+        self.assertEqual(nodecluster.uuid, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch('tutumcli.commands.tutum.NodeCluster.create', side_effect=TutumApiError)
+    def test_nodecluster_create_with_exception(self, mock_create, mock_exit):
+        nodecluster_create(3, 'name', 'provider', 'region', 'nodetype')
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)

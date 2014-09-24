@@ -140,8 +140,7 @@ def dispatch_cmds(args):
             commands.node_rm(args.identifier)
     elif args.cmd == 'nodecluster':
         if args.subcmd == 'create':
-            commands.nodecluster_create(args.target_num_nodes, args.name,
-                                        args.provider_id, args.region_id, args.nodetype_id)
+            commands.nodecluster_create(args.target_num_nodes, args.name, args.provider, args.region, args.nodetype)
         elif args.subcmd == 'inspect':
             commands.nodecluster_inspect(args.identifier)
         elif args.subcmd == 'list':

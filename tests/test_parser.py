@@ -241,7 +241,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
         args = self.parser.parse_args(['nodecluster', 'create', 'name', '1', '2', '3'])
         dispatch_cmds(args)
         mock_cmds.nodecluster_create(args.target_num_nodes, args.name,
-                                     args.provider_id, args.region_id, args.nodetype_id)
+                                     args.provider, args.region, args.nodetype)
 
         args = self.parser.parse_args(['nodecluster', 'inspect', 'id'])
         dispatch_cmds(args)

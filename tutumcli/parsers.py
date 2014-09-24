@@ -246,9 +246,9 @@ def add_nodecluster_parser(subparsers):
                                help='the target number of nodes to run for this cluster (default: 1)', type=int,
                                default=1)
     create_parser.add_argument('name', help='name of the node cluster to create')
-    create_parser.add_argument('provider_id', help='id of the provider', type=int)
-    create_parser.add_argument('region_id', help='id of the region', type=int)
-    create_parser.add_argument('nodetype_id', help='id of the nodetype', type=int)
+    create_parser.add_argument('provider', help='name of the provider')
+    create_parser.add_argument('region', help='name of the region')
+    create_parser.add_argument('nodetype', help='name of the node type')
 
     # tutum nodecluster inspect
     inspect_parser = nodecluster_subparser.add_parser('inspect', help='Inspect a nodecluster',

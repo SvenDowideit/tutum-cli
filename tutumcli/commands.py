@@ -802,14 +802,13 @@ def nodecluster_show_types(provider, region):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def nodecluster_create(target_num_nodes, name, provider_id, region_id, nodetype_id):
-    provider = "/api/v1/provider/%d/" % provider_id
-    region = "/api/v1/region/%d/" % region_id
-    nodetype = "/api/v1/nodetype/%d/" % nodetype_id
+def nodecluster_create(target_num_nodes, name, provider, region, nodetype):
+    region_uri = "/api/v1/region/%s/%s/" % (provider, region)
+    nodetype_uri = "/api/v1/nodetype/%s/%s/" % (provider, nodetype)
 
     try:
         nodecluster = tutum.NodeCluster.create(name=name, target_num_nodes=target_num_nodes,
-                                               provider=provider, region=region, node_type=nodetype)
+                                               region=region_uri, node_type=nodetype_uri)
         nodecluster.save()
         result = nodecluster.deploy()
         if result:
