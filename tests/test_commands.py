@@ -279,9 +279,9 @@ class ServicePsTestCase(unittest.TestCase):
 
     @mock.patch('tutumcli.commands.tutum.Service.list')
     def test_service_ps(self, mock_list):
-        output = u'''NAME      UUID      STATUS     IMAGE          DEPLOYED    WEB HOSTNAME
-SERVICE1  7A4CFE51  ▶ Running  test/service1              service1.io
-SERVICE2  8B4CFE51  ◼ Stopped  test/service2              service2.io'''
+        output = u'''NAME      UUID      STATUS     IMAGE          DEPLOYED
+SERVICE1  7A4CFE51  ▶ Running  test/service1
+SERVICE2  8B4CFE51  ◼ Stopped  test/service2'''
         mock_list.return_value = self.servicelist
         service_ps(status='Running')
 
