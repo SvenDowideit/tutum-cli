@@ -16,7 +16,6 @@ class PatchHelpOptionTestCase(unittest.TestCase):
         self.add_help_argv_list = [
             ['tutum'],
             ['tutum', 'service'],
-            ['tutum', 'service', 'alias'],
             ['tutum', 'service', 'inspect'],
             ['tutum', 'service', 'logs'],
             ['tutum', 'service', 'redeploy'],
@@ -50,7 +49,6 @@ class PatchHelpOptionTestCase(unittest.TestCase):
         ]
         self.not_add_help_argv_list = [
             ["tutum", "service", "ps"],
-            ["tutum", "service", "open"],
             ["tutum", "container", "ps"],
             ["tutum", "image", "list"],
             ["tutum", "node", "list"],
@@ -112,10 +110,6 @@ class CommandsDispatchTestCase(unittest.TestCase):
 
     @mock.patch('tutumcli.tutum_cli.commands')
     def test_service_dispatch(self, mock_cmds):
-        args = self.parser.parse_args(['service', 'alias', 'id', 'dns'])
-        dispatch_cmds(args)
-        mock_cmds.service_alias.assert_called_with(args.identifier, args.dns)
-
         args = self.parser.parse_args(['service', 'inspect', 'id'])
         dispatch_cmds(args)
         mock_cmds.service_inspect.assert_called_with(args.identifier)
@@ -123,10 +117,6 @@ class CommandsDispatchTestCase(unittest.TestCase):
         args = self.parser.parse_args(['service', 'logs', 'id'])
         dispatch_cmds(args)
         mock_cmds.service_logs.assert_called_with(args.identifier)
-
-        args = self.parser.parse_args(['service', 'open'])
-        dispatch_cmds(args)
-        mock_cmds.service_open.assert_called_with()
 
         args = self.parser.parse_args(['service', 'ps'])
         dispatch_cmds(args)
@@ -148,7 +138,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                  autorestart=args.autorestart,
                                                  autoreplace=args.autoreplace, autodestroy=args.autodestroy,
                                                  roles=args.role,
-                                                 sequential=args.sequential, web_public_dns=args.web_public_dns)
+                                                 sequential=args.sequential)
 
         args = self.parser.parse_args(['service', 'scale', 'id', '3'])
         dispatch_cmds(args)
@@ -309,10 +299,8 @@ class ParserTestCase(unittest.TestCase):
         self.compare_output(TUTUM_CONTAINER_STOP, args=['tutum', 'container', 'stop', '-h'])
         self.compare_output(TUTUM_CONTAINER_TERMINATE, args=['tutum', 'container', 'terminate', '-h'])
         self.compare_output(TUTUM_SERVICE, args=['tutum', 'service', '-h'])
-        self.compare_output(TUTUM_SERVICE_ALIAS, args=['tutum', 'service', 'alias', '-h'])
         self.compare_output(TUTUM_SERVICE_INSPECT, args=['tutum', 'service', 'inspect', '-h'])
         self.compare_output(TUTUM_SERVICE_LOGS, args=['tutum', 'service', 'logs', '-h'])
-        self.compare_output(TUTUM_SERVICE_OPEN, args=['tutum', 'service', 'open', '-h'])
         self.compare_output(TUTUM_SERVICE_PS, args=['tutum', 'service', 'ps', '-h'])
         self.compare_output(TUTUM_SERVICE_REDEPLOY, args=['tutum', 'service', 'redeploy', '-h'])
         self.compare_output(TUTUM_SERVICE_RUN, args=['tutum', 'service', 'run', '-h'])

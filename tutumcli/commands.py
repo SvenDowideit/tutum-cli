@@ -109,23 +109,6 @@ def build(tag, working_directory, quiet, no_cache):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def service_alias(identifiers, dns):
-    has_exception = False
-    for identifier in identifiers:
-        try:
-            service_details = utils.fetch_remote_service(identifier)
-            if dns is not None:
-                service_details.web_public_dns = dns
-                result = service_details.save()
-                if result:
-                    print(service_details.uuid)
-        except Exception as e:
-            print(e, file=sys.stderr)
-            has_exception = True
-    if has_exception:
-        sys.exit(EXCEPTION_EXIT_CODE)
-
-
 def service_inspect(identifiers):
     has_exception = False
     for identifier in identifiers:
@@ -151,28 +134,9 @@ def service_logs(identifiers):
     if has_exception:
         sys.exit(EXCEPTION_EXIT_CODE)
 
-
-def service_open():
-    try:
-        service_list = tutum.Service.list()
-        deployed_datetimes = {}
-        for service in service_list:
-            if service.web_public_dns and service.state in ["Running", "Partly running"]:
-                deployed_datetimes[
-                    utils.from_utc_string_to_utc_datetime(service.deployed_datetime)] = service.web_public_dns
-        if deployed_datetimes:
-            max_datetime = max(deployed_datetimes.keys())
-            webbrowser.open("http://" + deployed_datetimes[max_datetime])
-        else:
-            print("Error: There are not web applications Running or Partly Running", file=sys.stderr)
-    except Exception as e:
-        print(e, file=sys.stderr)
-        sys.exit(EXCEPTION_EXIT_CODE)
-
-
 def service_ps(quiet=False, status=None):
     try:
-        headers = ["NAME", "UUID", "STATUS", "IMAGE", "DEPLOYED", "WEB HOSTNAME"]
+        headers = ["NAME", "UUID", "STATUS", "IMAGE", "DEPLOYED"]
         service_list = tutum.Service.list(state=status)
         data_list = []
         long_uuid_list = []
@@ -180,11 +144,10 @@ def service_ps(quiet=False, status=None):
             data_list.append([service.unique_name, service.uuid[:8],
                               utils.add_unicode_symbol_to_state(service.state),
                               service.image_name,
-                              utils.get_humanize_local_datetime_from_utc_datetime_string(service.deployed_datetime),
-                              service.web_public_dns])
+                              utils.get_humanize_local_datetime_from_utc_datetime_string(service.deployed_datetime)])
             long_uuid_list.append(service.uuid)
         if len(data_list) == 0:
-            data_list.append(["", "", "", "", "", ""])
+            data_list.append(["", "", "", "", ""])
 
         if quiet:
             for uuid in long_uuid_list:
@@ -214,7 +177,7 @@ def service_redeploy(identifiers, tag):
 
 def service_run(image, name, cpu_shares, memory, memory_swap, target_num_containers, run_command, entrypoint,
                 container_ports, container_envvars, linked_to_service, linked_to_container, autorestart, autoreplace,
-                autodestroy, roles, sequential, web_public_dns):
+                autodestroy, roles, sequential):
     try:
         ports = utils.parse_ports(container_ports)
         envvars = utils.parse_envvars(container_envvars)
@@ -226,7 +189,7 @@ def service_run(image, name, cpu_shares, memory, memory_swap, target_num_contain
                                        entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
                                        linked_to_service=links_service, linked_to_container=links_container,
                                        autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
-                                       roles=roles, sequential_deployment=sequential, web_public_dns=web_public_dns)
+                                       roles=roles, sequential_deployment=sequential)
         service.save()
         result = service.start()
         if result:

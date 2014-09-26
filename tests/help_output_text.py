@@ -132,7 +132,7 @@ optional arguments:
 
 TUTUM_SERVICE = '''usage: tutum service [-h]
 
-                     {alias,inspect,logs,open,ps,redeploy,run,scale,set,start,stop,terminate}
+                     {inspect,logs,ps,redeploy,run,scale,set,start,stop,terminate}
                      ...
 
 Service-related operations
@@ -141,11 +141,9 @@ optional arguments:
   -h, --help            show this help message and exit
 
 tutum service commands:
-  {alias,inspect,logs,open,ps,redeploy,run,scale,set,start,stop,terminate}
-    alias               Set a custom FQDN (CNAME) to a running web service
+  {inspect,logs,ps,redeploy,run,scale,set,start,stop,terminate}
     inspect             Get all details from an service
     logs                Get logs from an service
-    open                Open last web service launched
     ps                  List services
     redeploy            Redeploy a running service with a new version/tag
     run                 Create and run a new service
@@ -155,19 +153,6 @@ tutum service commands:
     start               Start a stopped service
     stop                Stop a running service
     terminate           Terminate an service'''
-
-# ##################################################
-
-TUTUM_SERVICE_ALIAS = '''usage: tutum service alias [-h] identifier [identifier ...] dns
-
-Set a custom DNS record (CNAME) to a running web service
-
-positional arguments:
-  identifier  service's UUID (either long or short) or name
-  dns         custom FQDN to use for this web service
-
-optional arguments:
-  -h, --help  show this help message and exit'''
 
 # ##################################################
 
@@ -193,14 +178,6 @@ positional arguments:
 optional arguments:
   -h, --help  show this help message and exit'''
 
-# ##################################################
-
-TUTUM_SERVICE_OPEN = '''usage: tutum service open [-h]
-
-Open last web service launched
-
-optional arguments:
-  -h, --help  show this help message and exit'''
 
 # ##################################################
 
@@ -238,7 +215,7 @@ TUTUM_SERVICE_RUN = '''usage: tutum service run [-h] [-n NAME] [--cpushares CPUS
                          [--autorestart {OFF,ON_FAILURE,ALWAYS}]
                          [--autoreplace {OFF,ON_FAILURE,ALWAYS}]
                          [--autodestroy {OFF,ON_FAILURE,ALWAYS}] [--role ROLE]
-                         [--sequential] [--web-public-dns WEB_PUBLIC_DNS]
+                         [--sequential]
                          image
 
 Create and run a new service
@@ -284,9 +261,7 @@ optional arguments:
   --role ROLE           Tutum API roles to grant the service, i.e. "global"
                         (default: none, possible values: "global")
   --sequential          whether the containers should be launched and scaled
-                        sequentially
-  --web-public-dns WEB_PUBLIC_DNS
-                        Set your own web public dns'''
+                        sequentially'''
 
 # ##################################################
 

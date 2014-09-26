@@ -78,8 +78,6 @@ def dispatch_cmds(args):
             commands.service_inspect(args.identifier)
         elif args.subcmd == 'logs':
             commands.service_logs(args.identifier)
-        elif args.subcmd == 'open':
-            commands.service_open()
         elif args.subcmd == 'ps':
             commands.service_ps(args.quiet, args.status)
         elif args.subcmd == 'redeploy':
@@ -92,7 +90,7 @@ def dispatch_cmds(args):
                                  linked_to_service=args.link_service,
                                  autorestart=args.autorestart,
                                  autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role,
-                                 sequential=args.sequential, web_public_dns=args.web_public_dns)
+                                 sequential=args.sequential)
         elif args.subcmd == 'scale':
             commands.service_scale(args.identifier, args.target_num_containers)
         elif args.subcmd == 'set':

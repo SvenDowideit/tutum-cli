@@ -22,13 +22,6 @@ def add_service_parser(subparsers):
                                            description='Service-related operations')
     service_subparser = service_parser.add_subparsers(title='tutum service commands', dest='subcmd')
 
-    # tutum service alias
-    alias_parser = service_subparser.add_parser('alias',
-                                                help="Set a custom FQDN (CNAME) to a running web service",
-                                                description="Set a custom DNS record (CNAME) to a running web service")
-    alias_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
-    alias_parser.add_argument('dns', help='custom FQDN to use for this web service')
-
     # tutum service inspect
     inspect_parser = service_subparser.add_parser('inspect', help="Get all details from an service",
                                                   description="Get all details from an service")
@@ -38,10 +31,6 @@ def add_service_parser(subparsers):
     logs_parser = service_subparser.add_parser('logs', help='Get logs from an service',
                                                description='Get logs from an service')
     logs_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
-
-    # tutum service open
-    service_subparser.add_parser('open', help='Open last web service launched',
-                                 description='Open last web service launched', )
 
     # tutum service ps
     ps_parser = service_subparser.add_parser('ps', help='List services', description='List services')
@@ -92,7 +81,6 @@ def add_service_parser(subparsers):
                                            'i.e. "global" (default: none, possible values: "global")', action='append')
     run_parser.add_argument('--sequential', help='whether the containers should be launched and scaled sequentially',
                             action='store_true')
-    run_parser.add_argument('--web-public-dns', help="Set your own web public dns")
 
     # tutum service scale
     scale_parser = service_subparser.add_parser('scale', help='Scale a running service',

@@ -183,86 +183,6 @@ CMD ["/start","web"]'''
             os.remove('/tmp/Dockerfile')
             os.remove('/tmp/Procfile')
 
-
-class ServiceAliasTestCase(unittest.TestCase):
-    def setUp(self):
-        self.stdout = sys.stdout
-        sys.stdout = self.buf = StringIO.StringIO()
-
-    def tearDown(self):
-        sys.stdout = self.stdout
-
-    @mock.patch('tutumcli.commands.tutum.Service.save')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_service')
-    def test_service_alias_with_dns(self, mock_fetch_remote_service, mock_save):
-        uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
-        new_dns = 'new_dns'
-        service = tutumcli.commands.tutum.Service()
-        service.uuid = uuid
-        service.web_public_dns = 'placeholder'
-        mock_fetch_remote_service.return_value = service
-        mock_save.return_value = True
-        service_alias(['test_id'], new_dns)
-
-        self.assertEqual(uuid, self.buf.getvalue().strip())
-        self.assertEqual(new_dns, service.web_public_dns)
-        self.buf.truncate(0)
-
-    @mock.patch('tutumcli.commands.tutum.Service.save')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_service')
-    def test_service_alias_empty_dns(self, mock_fetch_remote_service, mock_save):
-        service = tutumcli.commands.tutum.Service()
-        service.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
-        service.web_public_dns = 'placeholder'
-        mock_fetch_remote_service.return_value = service
-        mock_save.return_value = True
-        service_alias(['test_id'], None)
-
-        self.assertEqual('', self.buf.getvalue().strip())
-        self.assertEqual('placeholder', service.web_public_dns)
-        self.buf.truncate(0)
-
-    @mock.patch('tutumcli.commands.tutum.Service.save')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_service')
-    def test_service_alias_multi_identifier(self, mock_fetch_remote_service, mock_save):
-        uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
-        new_dns = 'new_dns'
-        service = tutumcli.commands.tutum.Service()
-        service.uuid = uuid
-        service.web_public_dns = 'placeholder'
-        mock_fetch_remote_service.return_value = service
-        mock_save.return_value = True
-        service_alias(['test_id', 'test_id2'], new_dns)
-
-        self.assertEqual('\n'.join([uuid, uuid]), self.buf.getvalue().strip())
-        self.assertEqual(new_dns, service.web_public_dns)
-        self.buf.truncate(0)
-
-    @mock.patch('tutumcli.commands.tutum.Service.save')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_service')
-    def test_service_alias_multi_identifier_empty_dns(self, mock_fetch_remote_service, mock_save):
-        uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
-        service = tutumcli.commands.tutum.Service()
-        service.uuid = uuid
-        service.web_public_dns = 'placeholder'
-        mock_fetch_remote_service.return_value = service
-        mock_save.return_value = True
-        service_alias(['test_id', 'test_id2'], None)
-
-        self.assertEqual('', self.buf.getvalue().strip())
-        self.assertEqual('placeholder', service.web_public_dns)
-        self.buf.truncate(0)
-
-    @mock.patch('tutumcli.commands.sys.exit')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_service', side_effect=TutumApiError)
-    def test_service_alias_with_exception(self, mock_fetch_remote_service, mock_exit):
-        service = tutumcli.commands.tutum.Service()
-        mock_fetch_remote_service.return_value = service
-        service_alias(['test_id', 'test_id2'], None)
-
-        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
-
-
 class ServiceInspectTestCase(unittest.TestCase):
     def setUp(self):
         self.stdout = sys.stdout
@@ -332,59 +252,6 @@ class ServiceLogsTestCase(unittest.TestCase):
         service_logs(['test_id', 'test_id2'])
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
-
-
-class ServiceOpenTestCase(unittest.TestCase):
-    def setUp(self):
-        self.stderr = sys.stderr
-        sys.stderr = self.buf = StringIO.StringIO()
-
-    def tearDown(self):
-        sys.stderr = self.stderr
-
-    @mock.patch('tutumcli.commands.webbrowser.open')
-    @mock.patch('tutumcli.commands.tutum.Service.list')
-    def test_service_open(self, mock_list, mock_open):
-        service1 = tutumcli.commands.tutum.Service()
-        service1.state = 'Running'
-        service1.deployed_datetime = 'Sun, 6 Apr 2014 18:11:17 +0000'
-        service1.web_public_dns = 'server1.co'
-        service2 = tutumcli.commands.tutum.Service()
-        service2.state = 'Partly running'
-        service2.deployed_datetime = 'Mon, 7 Apr 2014 18:11:17 +0000'
-        service2.web_public_dns = 'service2.co'
-        service3 = tutumcli.commands.tutum.Service()
-        service3.state = 'Stopped'
-        service3.deployed_datetime = 'Tue, 8 Apr 2014 18:11:17 +0000'
-        service3.web_public_dns = 'service3.co'
-        mock_list.return_value = [service1, service2, service3]
-        service_open()
-
-        mock_open.assert_called_with('http://service2.co')
-
-    @mock.patch('tutumcli.commands.tutum.Service.list')
-    def test_service_open_no_running_service(self, mock_list):
-        service1 = tutumcli.commands.tutum.Service()
-        service1.state = 'Stopped'
-        service1.deployed_datetime = 'Sun, 6 Apr 2014 18:11:17 +0000'
-        service1.web_public_dns = 'server1.co'
-        service2 = tutumcli.commands.tutum.Service()
-        service2.state = 'Terminated'
-        service2.deployed_datetime = 'Mon, 7 Apr 2014 18:11:17 +0000'
-        service2.web_public_dns = 'service2.co'
-        mock_list.return_value = [service1, service2]
-        service_open()
-
-        self.assertEqual('Error: There are not web applications Running or Partly Running', self.buf.getvalue().strip())
-        self.buf.truncate(0)
-
-    @mock.patch('tutumcli.commands.sys.exit')
-    @mock.patch('tutumcli.commands.tutum.Service.list', side_effect=TutumApiError)
-    def test_service_open_with_exception(self, mock_list, mock_exit):
-        service_open()
-
-        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
-
 
 class ServicePsTestCase(unittest.TestCase):
     def setUp(self):
@@ -463,7 +330,7 @@ class ServiceRunTestCase(unittest.TestCase):
         mock_start.return_value = True
         service_run('imagename', 'containername', 1, '256M', '1024M', 3, '-d', '/bin/mysql',
                     container_ports, container_envvars, linked_to_service, linked_to_container,
-                    'OFF', 'OFF', 'OFF', 'poweruser', True, 'tutum.co')
+                    'OFF', 'OFF', 'OFF', 'poweruser', True)
 
         mock_create.assert_called_with(image='imagename', name='containername', cpu_shares=1,
                                        memory='256M', memory_swap='1024M',
@@ -473,7 +340,7 @@ class ServiceRunTestCase(unittest.TestCase):
                                        linked_to_service=utils.parse_links(linked_to_service, 'to_service'),
                                        linked_to_container=utils.parse_links(linked_to_container, 'to_container'),
                                        autorestart='OFF', autoreplace='OFF', autodestroy='OFF',
-                                       roles='poweruser', sequential_deployment=True, web_public_dns='tutum.co')
+                                       roles='poweruser', sequential_deployment=True)
         mock_save.asser_called()
         self.assertEqual(service.uuid, self.buf.getvalue().strip())
         self.buf.truncate(0)
@@ -487,7 +354,7 @@ class ServiceRunTestCase(unittest.TestCase):
         linked_to_container = ['mariadb:mariadb', 'wordpress:wordpress']
         service_run('imagename', 'containername', 1, '256M', '1024M', 3, '-d', '/bin/mysql',
                     container_ports, container_envvars, linked_to_service, linked_to_container,
-                    'OFF', 'OFF', 'OFF', 'poweruser', True, 'tutum.co')
+                    'OFF', 'OFF', 'OFF', 'poweruser', True)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
