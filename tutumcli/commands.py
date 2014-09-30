@@ -511,7 +511,7 @@ def image_push(name, public):
         stream = docker_client.push(repository, stream=True)
         try:
             utils.stream_output(stream, sys.stdout)
-        except docker.client.APIError as e:
+        except docker.errors.APIError as e:
             print(e.explanation, file=sys.stderr)
             sys.exit(EXCEPTION_EXIT_CODE)
         except Exception as e:
