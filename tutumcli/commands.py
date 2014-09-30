@@ -499,11 +499,19 @@ def image_push(name, public):
 
         if repository:
             repository = filter(None, repository.split('/'))[-1]
+        tag = None
+        if ':' in repository:
+            tag = repository.split(':')[-1]
+            repository = repository.replace(':%s' % tag, '')
         repository = '%s/%s/%s' % (registry.split('//')[-1].split('/')[0], user, repository)
 
-        try:
+        if tag:
+            print ('Tagging %s as %s:%s ...' % (name, repository, tag))
+        else:
             print('Tagging %s as %s ...' % (name, repository))
-            docker_client.tag(name, repository)
+
+        try:
+            docker_client.tag(name, repository, tag=tag)
         except Exception as e:
             print(e, file=sys.stderr)
             sys.exit(EXCEPTION_EXIT_CODE)
