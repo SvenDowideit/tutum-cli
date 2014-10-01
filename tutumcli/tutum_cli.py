@@ -1,49 +1,69 @@
 import argparse
 import logging
 import sys
+import copy
 import codecs
 
 from . import __version__
 from tutumcli import parsers
 from tutumcli import commands
-
+from tutumcli.exceptions import InternalError
 
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 
 logging.basicConfig()
 
-# Top parser
-parser = argparse.ArgumentParser(description="Tutum's CLI", prog='tutum')
-parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
-parser.add_argument('--debug', action='store_true', help=argparse.SUPPRESS)
-subparsers = parser.add_subparsers(title="Tutum's CLI commands", dest='cmd')
+
+def initialize_parser():
+    # Top parser
+    parser = argparse.ArgumentParser(description="Tutum's CLI", prog='tutum')
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
+    parser.add_argument('--debug', action='store_true', help=argparse.SUPPRESS)
+    subparsers = parser.add_subparsers(title="Tutum's CLI commands", dest='cmd')
+    # Command Parsers
+    parsers.add_build_parser(subparsers)
+    parsers.add_container_parser(subparsers)
+    parsers.add_image_parser(subparsers)
+    parsers.add_login_parser(subparsers)
+    parsers.add_node_parser(subparsers)
+    parsers.add_nodecluster_parser(subparsers)
+    parsers.add_service_parser(subparsers)
+    return parser
 
 
-# Command Parsers
-parsers.add_cluster_parser(subparsers)
-parsers.add_build_parser(subparsers)
-parsers.add_container_parser(subparsers)
-parsers.add_image_parser(subparsers)
-parsers.add_login_parser(subparsers)
+def patch_help_option(argv=sys.argv):
+    args = copy.copy(argv)
+
+    if not args:
+        raise InternalError("Wrong argument is set, cannot be empty")
+    debug = False
+    if len(args) >= 2 and args[1] == '--debug':
+        debug = True
+        args.pop(1)
+
+    if len(args) == 1:
+        args.append('-h')
+    elif len(args) == 2 and args[1] in ['service', 'build', 'container', 'image', 'node', 'nodecluster']:
+        args.append('-h')
+    elif len(args) == 3:
+        if args[1] == 'service' and args[2] in ['alias', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
+                                                'start', 'stop', 'terminate']:
+            args.append('-h')
+        elif args[1] == 'container' and args[2] in ['inspect', 'logs', 'redeploy', 'start', 'stop',
+                                                    'terminate']:
+            args.append('-h')
+        elif args[1] == 'image' and args[2] in ['register', 'push', 'rm', 'search', 'update']:
+            args.append('-h')
+        elif args[1] == 'node' and args[2] in ['inspect', 'rm']:
+            args.append('-h')
+        elif args[1] == 'nodecluster' and args[2] in ['create', 'inspect', 'rm', 'scale']:
+            args.append('-h')
+    if debug:
+        args.insert(1, '--debug')
+    return args[1:]
 
 
-def main():
-    if len(sys.argv) == 1:
-        sys.argv.append('-h')
-    elif len(sys.argv) == 2 and sys.argv[1] in ['cluster', 'build', 'container', 'image', ]:
-        sys.argv.append('-h')
-    elif len(sys.argv) == 3:
-        if sys.argv[1] == 'cluster' and sys.argv[2] in ['alias', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
-                                                    'start', 'stop', 'terminate']:
-            sys.argv.append('-h')
-        elif sys.argv[1] == 'container' and sys.argv[2] in ['inspect', 'logs', 'redeploy', 'run', 'start', 'stop',
-                                                            'terminate']:
-            sys.argv.append('-h')
-        elif sys.argv[1] == 'image' and sys.argv[2] in ['register', 'push', 'rm', 'search', 'update']:
-            sys.argv.append('-h')
-
-    # dispatch commands
-    args = parser.parse_args()
+def dispatch_cmds(args):
     if args.debug:
         requests_log = logging.getLogger("python-tutum")
         requests_log.setLevel(logging.INFO)
@@ -51,37 +71,36 @@ def main():
         commands.login()
     if args.cmd == 'build':
         commands.build(args.tag, args.directory, args.quiet, args.no_cache)
-    elif args.cmd == 'cluster':
+    elif args.cmd == 'service':
         if args.subcmd == 'alias':
-            commands.cluster_alias(args.identifier, args.dns)
+            commands.service_alias(args.identifier, args.dns)
         elif args.subcmd == 'inspect':
-            commands.cluster_inspect(args.identifier)
+            commands.service_inspect(args.identifier)
         elif args.subcmd == 'logs':
-            commands.cluster_logs(args.identifier)
-        elif args.subcmd == 'open':
-            commands.cluster_open()
+            commands.service_logs(args.identifier)
         elif args.subcmd == 'ps':
-            commands.cluster_ps(args.quiet, args.status)
+            commands.service_ps(args.quiet, args.status)
         elif args.subcmd == 'redeploy':
-            commands.cluster_redeploy(args.identifier, args.tag)
+            commands.service_redeploy(args.identifier, args.tag)
         elif args.subcmd == 'run':
-            commands.cluster_run(image=args.image, name=args.name, container_size=args.container_size,
-                             target_num_containers=args.target_num_containers, run_command=args.run_command,
-                             entrypoint=args.entrypoint, container_ports=args.port, container_envvars=args.env,
-                             linked_to_cluster=args.link_cluster, linked_to_container=args.link_container,
-                             autorestart=args.autorestart,
-                             autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role,
-                             sequential=args.sequential, web_public_dns=args.web_public_dns)
+            commands.service_run(image=args.image, name=args.name, cpu_shares=args.cpushares,
+                                 memory=args.memory, memory_swap=args.memoryswap,
+                                 target_num_containers=args.target_num_containers, run_command=args.run_command,
+                                 entrypoint=args.entrypoint, container_ports=args.port, container_envvars=args.env,
+                                 linked_to_service=args.link_service,
+                                 autorestart=args.autorestart,
+                                 autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role,
+                                 sequential=args.sequential)
         elif args.subcmd == 'scale':
-            commands.cluster_scale(args.identifier, args.target_num_containers)
+            commands.service_scale(args.identifier, args.target_num_containers)
         elif args.subcmd == 'set':
-            commands.cluster_set(args.autorestart, args.autoreplace, args.autodestroy, args.identifier)
+            commands.service_set(args.autorestart, args.autoreplace, args.autodestroy, args.identifier)
         elif args.subcmd == 'start':
-            commands.cluster_start(args.identifier)
+            commands.service_start(args.identifier)
         elif args.subcmd == 'stop':
-            commands.cluster_stop(args.identifier)
+            commands.service_stop(args.identifier)
         elif args.subcmd == 'terminate':
-            commands.cluster_terminate(args.identifier)
+            commands.service_terminate(args.identifier)
     elif args.cmd == 'container':
         if args.subcmd == 'inspect':
             commands.container_inspect(args.identifier)
@@ -91,13 +110,6 @@ def main():
             commands.container_ps(args.identifier, args.quiet, args.status)
         elif args.subcmd == 'redeploy':
             commands.container_redeploy(args.identifier, args.tag)
-        elif args.subcmd == 'run':
-            commands.container_run(image=args.image, name=args.name, container_size=args.container_size,
-                             run_command=args.run_command, entrypoint=args.entrypoint, container_ports=args.port,
-                             container_envvars=args.env,
-                             linked_to_cluster=args.link_cluster, linked_to_container=args.link_container,
-                             autorestart=args.autorestart,autoreplace=args.autoreplace, autodestroy=args.autodestroy,
-                             roles=args.role, web_public_dns=args.web_public_dns)
         elif args.subcmd == 'start':
             commands.container_start(args.identifier)
         elif args.subcmd == 'stop':
@@ -117,6 +129,37 @@ def main():
             commands.image_search(args.query)
         elif args.subcmd == 'update':
             commands.image_update(args.image_name, args.username, args.password, args.description)
+    elif args.cmd == 'node':
+        if args.subcmd == 'inspect':
+            commands.node_inspect(args.identifier)
+        elif args.subcmd == 'list':
+            commands.node_list(args.quiet)
+        elif args.subcmd == 'rm':
+            commands.node_rm(args.identifier)
+    elif args.cmd == 'nodecluster':
+        if args.subcmd == 'create':
+            commands.nodecluster_create(args.target_num_nodes, args.name, args.provider, args.region, args.nodetype)
+        elif args.subcmd == 'inspect':
+            commands.nodecluster_inspect(args.identifier)
+        elif args.subcmd == 'list':
+            commands.nodecluster_list(args.quiet)
+        elif args.subcmd == 'provider':
+            commands.nodecluster_show_providers(args.quiet)
+        elif args.subcmd == 'region':
+            commands.nodecluster_show_regions(args.provider)
+        elif args.subcmd == 'nodetype':
+            commands.nodecluster_show_types(args.provider, args.region)
+        elif args.subcmd == 'rm':
+            commands.nodecluster_rm(args.identifier)
+        elif args.subcmd == 'scale':
+            commands.nodecluster_scale(args.identifier, args.target_num_nodes)
+
+
+def main():
+    parser = initialize_parser()
+    argv = patch_help_option(sys.argv)
+    args = parser.parse_args(argv)
+    dispatch_cmds(args)
 
 
 if __name__ == '__main__':
