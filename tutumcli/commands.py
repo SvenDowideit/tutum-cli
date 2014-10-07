@@ -176,18 +176,17 @@ def service_redeploy(identifiers, tag):
 
 
 def service_run(image, name, cpu_shares, memory, memory_swap, target_num_containers, run_command, entrypoint,
-                container_ports, container_envvars, linked_to_service, linked_to_container, autorestart, autoreplace,
+                container_ports, container_envvars, linked_to_service,  autorestart, autoreplace,
                 autodestroy, roles, sequential):
     try:
         ports = utils.parse_ports(container_ports)
         envvars = utils.parse_envvars(container_envvars)
         links_service = utils.parse_links(linked_to_service, 'to_service')
-        links_container = utils.parse_links(linked_to_container, 'to_container')
         service = tutum.Service.create(image=image, name=name, cpu_shares=cpu_shares,
                                        memory=memory, memory_swap=memory_swap,
                                        target_num_containers=target_num_containers, run_command=run_command,
                                        entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
-                                       linked_to_service=links_service, linked_to_container=links_container,
+                                       linked_to_service=links_service,
                                        autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
                                        roles=roles, sequential_deployment=sequential)
         service.save()
