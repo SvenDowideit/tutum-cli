@@ -175,7 +175,7 @@ def service_redeploy(identifiers, tag):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def service_run(image, name, cpu_shares, memory, memory_swap, target_num_containers, run_command, entrypoint,
+def service_run(image, name, cpu_shares, memory,  target_num_containers, run_command, entrypoint,
                 container_ports, container_envvars, linked_to_service,  autorestart, autoreplace,
                 autodestroy, roles, sequential):
     try:
@@ -183,7 +183,7 @@ def service_run(image, name, cpu_shares, memory, memory_swap, target_num_contain
         envvars = utils.parse_envvars(container_envvars)
         links_service = utils.parse_links(linked_to_service, 'to_service')
         service = tutum.Service.create(image=image, name=name, cpu_shares=cpu_shares,
-                                       memory=memory, memory_swap=memory_swap,
+                                       memory=memory,
                                        target_num_containers=target_num_containers, run_command=run_command,
                                        entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
                                        linked_to_service=links_service,

@@ -208,7 +208,7 @@ optional arguments:
 # ##################################################
 
 TUTUM_SERVICE_RUN = '''usage: tutum service run [-h] [-n NAME] [--cpushares CPUSHARES]
-                         [--memory MEMORY] [--memoryswap MEMORYSWAP]
+                         [--memory MEMORY]
                          [-t TARGET_NUM_CONTAINERS] [-r RUN_COMMAND]
                          [--entrypoint ENTRYPOINT] [-p PORT] [-e ENV]
                          [--link-service LINK_SERVICE]
@@ -230,8 +230,6 @@ optional arguments:
   --cpushares CPUSHARES
                         Relative weight for CPU Shares
   --memory MEMORY       RAM memory hard limit in MB
-  --memoryswap MEMORYSWAP
-                        Memory swap hard limit in MB
   -t TARGET_NUM_CONTAINERS, --target-num-containers TARGET_NUM_CONTAINERS
                         the number of containers to run for this service
                         (default: 1)

@@ -327,12 +327,12 @@ class ServiceRunTestCase(unittest.TestCase):
         service.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
         mock_create.return_value = service
         mock_start.return_value = True
-        service_run('imagename', 'containername', 1, '256M', '1024M', 3, '-d', '/bin/mysql',
+        service_run('imagename', 'containername', 1, '256M', 3, '-d', '/bin/mysql',
                     container_ports, container_envvars, linked_to_service,
                     'OFF', 'OFF', 'OFF', 'poweruser', True)
 
         mock_create.assert_called_with(image='imagename', name='containername', cpu_shares=1,
-                                       memory='256M', memory_swap='1024M',
+                                       memory='256M',
                                        target_num_containers=3, run_command='-d',
                                        entrypoint='/bin/mysql', container_ports=utils.parse_ports(container_ports),
                                        container_envvars=utils.parse_envvars(container_envvars),
@@ -349,7 +349,7 @@ class ServiceRunTestCase(unittest.TestCase):
         container_ports = ['80:80/tcp', '22:22']
         container_envvars = ['MYSQL_ADMIN=admin', 'MYSQL_PASS=password']
         linked_to_service = ['mysql:mysql', 'redis:redis']
-        service_run('imagename', 'containername', 1, '256M', '1024M', 3, '-d', '/bin/mysql',
+        service_run('imagename', 'containername', 1, '256M',  3, '-d', '/bin/mysql',
                     container_ports, container_envvars, linked_to_service,
                     'OFF', 'OFF', 'OFF', 'poweruser', True)
 
