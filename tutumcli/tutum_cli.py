@@ -86,7 +86,7 @@ def dispatch_cmds(args):
             commands.service_run(image=args.image, name=args.name, cpu_shares=args.cpushares,
                                  memory=args.memory,
                                  target_num_containers=args.target_num_containers, run_command=args.run_command,
-                                 entrypoint=args.entrypoint, container_ports=args.port, container_envvars=args.env,
+                                 entrypoint=args.entrypoint, expose=args.expose, publish=args.publish, envvars=args.env,
                                  linked_to_service=args.link_service,
                                  autorestart=args.autorestart,
                                  autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role,

@@ -17,6 +17,7 @@ from exceptions import StreamOutputError
 
 from . import __version__
 
+
 def tabulate_result(data_list, headers):
     print(tabulate(data_list, headers, stralign="left", tablefmt="plain"))
 
@@ -168,7 +169,6 @@ def fetch_remote_container(identifier, raise_exceptions=True):
         else:
             objects_same_identifier = tutum.Container.list(uuid__startswith=identifier) or \
                                       tutum.Container.list(unique_name=identifier)
-
             if len(objects_same_identifier) == 1:
                 return objects_same_identifier[0]
             elif len(objects_same_identifier) == 0:
@@ -259,7 +259,7 @@ def parse_links(links, target):
     return [_format_link(link) for link in links] if links else []
 
 
-def parse_ports(port_list):
+def parse_published_ports(port_list):
     def _get_port_dict(_port):
         port_regexp = re.compile('^([0-9]{1,5}:)?([0-9]{1,5})(/tcp|/udp)?$')
         match = port_regexp.match(_port)
@@ -272,13 +272,28 @@ def parse_ports(port_list):
             else:
                 protocol = protocol[1:]
 
-            port_spec = {'protocol': protocol, 'inner_port': inner_port}
+            port_spec = {'protocol': protocol, 'inner_port': inner_port, 'publish_port': True}
 
             if outer_port is not None:
                 port_spec['outer_port'] = outer_port[:-1]
             return port_spec
-        raise BadParameter("Port argument %s does not match with 'host_port:container_port/protocol'. E.g: 80:80/tcp"
-                           % _port)
+        raise BadParameter("publish port %s does not match with '[host_port:]container_port[/protocol]'."
+                           " E.g: 80:80/tcp" % _port)
+
+    parsed_ports = []
+    if port_list is not None:
+        parsed_ports = []
+        for port in port_list:
+            parsed_ports.append(_get_port_dict(port))
+    return parsed_ports
+
+
+def parse_exposed_ports(port_list):
+    def _get_port_dict(_port):
+        if isinstance(_port, int) and 0 <= _port < 65535:
+            port_spec = {'protocol': 'tcp', 'inner_port': '%d' % _port, 'publish_port': False}
+            return port_spec
+        raise BadParameter("expose port %s is not a valid port number" % _port)
 
     parsed_ports = []
     if port_list is not None:
