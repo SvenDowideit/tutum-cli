@@ -11,7 +11,13 @@ In order to install the Tutum CLI, you can use ``pip install``:
 
 .. sourcecode:: bash
 
-    pip install tutum --pre
+    pip install tutum
+
+For Mac OS users, you can use ``brew install``:
+
+.. sourcecode:: bash
+
+    brew install tutum
 
 Now you can start using it:
 
