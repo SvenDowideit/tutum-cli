@@ -2,5 +2,5 @@ PyYAML==3.10
 ago==0.0.6
 python-dateutil==2.2
 python-tutum==0.9.8
-docker-py==0.5.1
+docker-py==0.5.3
 tabulate==0.7.2

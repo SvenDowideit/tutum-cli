@@ -4,7 +4,7 @@ import datetime
 import json
 import os
 import urlparse
-from os import getenv
+import ssl
 
 from tabulate import tabulate
 import tutum
@@ -63,10 +63,31 @@ def add_unicode_symbol_to_state(state):
 
 def get_docker_client():
     try:
-        docker_client = docker.Client(base_url=getenv("DOCKER_HOST"))
+        DOCKER_TLS_VERIFY = bool(os.environ.get('DOCKER_TLS_VERIFY', False))
+
+        if not DOCKER_TLS_VERIFY:
+            tls_config = False
+        else:
+            cert_path = os.environ.get('DOCKER_CERT_PATH')
+            if cert_path:
+                ca_cert_path = os.path.join(cert_path, "ca.pem")
+                client_cert = (os.path.join(cert_path, "cert.pem"), os.path.join(cert_path, "key.pem"))
+                tls_config = docker.tls.TLSConfig(
+                    ssl_version=ssl.PROTOCOL_TLSv1,
+                    client_cert=client_cert,
+                    verify=ca_cert_path,
+                    assert_hostname=False)
+            else:
+                tls_config = False
+
+        base_url=os.getenv("DOCKER_HOST")
+        if tls_config and base_url.startswith("tcp://"):
+            base_url=base_url.replace("tcp://", "https://")
+
+        docker_client = docker.Client(base_url=base_url, tls=tls_config)
         docker_client.version()
         return docker_client
-    except Exception:
+    except Exception as e:
         raise DockerNotFound("Cannot connect to docker (is it running?)")
 
 
