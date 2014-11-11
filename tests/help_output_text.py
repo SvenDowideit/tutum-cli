@@ -208,9 +208,10 @@ optional arguments:
 # ##################################################
 
 TUTUM_SERVICE_RUN = '''usage: tutum service run [-h] [-n NAME] [--cpushares CPUSHARES]
-                         [--memory MEMORY] [-t TARGET_NUM_CONTAINERS]
-                         [-r RUN_COMMAND] [--entrypoint ENTRYPOINT]
-                         [-p PUBLISH] [--expose EXPOSE] [-e ENV]
+                         [--memory MEMORY] [--privileged]
+                         [-t TARGET_NUM_CONTAINERS] [-r RUN_COMMAND]
+                         [--entrypoint ENTRYPOINT] [-p PUBLISH]
+                         [--expose EXPOSE] [-e ENV]
                          [--link-service LINK_SERVICE]
                          [--autorestart {OFF,ON_FAILURE,ALWAYS}]
                          [--autoreplace {OFF,ON_FAILURE,ALWAYS}]
@@ -230,6 +231,7 @@ optional arguments:
   --cpushares CPUSHARES
                         Relative weight for CPU Shares
   --memory MEMORY       RAM memory hard limit in MB
+  --privileged          Give extended privileges to this container
   -t TARGET_NUM_CONTAINERS, --target-num-containers TARGET_NUM_CONTAINERS
                         the number of containers to run for this service
                         (default: 1)

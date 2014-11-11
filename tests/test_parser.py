@@ -129,8 +129,8 @@ class CommandsDispatchTestCase(unittest.TestCase):
         args = self.parser.parse_args(['service', 'run', 'mysql'])
         dispatch_cmds(args)
         mock_cmds.service_run.assert_called_with(image=args.image, name=args.name, cpu_shares=args.cpushares,
-                                                 memory=args.memory,
-                                                 target_num_containers=args.target_num_containers,
+                                                 memory=args.memory,target_num_containers=args.target_num_containers, 
+                                                 privileged=args.privileged,
                                                  run_command=args.run_command,
                                                  entrypoint=args.entrypoint, expose=args.expose, publish=args.publish,
                                                  envvars=args.env,

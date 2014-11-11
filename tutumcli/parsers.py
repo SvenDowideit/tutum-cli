@@ -53,6 +53,7 @@ def add_service_parser(subparsers):
                                                  '(default: image_tag without namespace)')
     run_parser.add_argument('--cpushares', help='Relative weight for CPU Shares', type=int)
     run_parser.add_argument('--memory', help='RAM memory hard limit in MB', type=int)
+    run_parser.add_argument('--privileged', help='Give extended privileges to this container', action='store_true')
     run_parser.add_argument('-t', '--target-num-containers',
                             help='the number of containers to run for this service (default: 1)', type=int,
                             default=1)
