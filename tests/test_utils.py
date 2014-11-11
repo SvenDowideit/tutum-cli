@@ -76,12 +76,7 @@ class AddUnicodeSymbolToStateTestCase(unittest.TestCase):
 
 
 class GetDockerClientTestCase(unittest.TestCase):
-    @mock.patch('tutumcli.utils.docker')
-    def test_get_docker_client(self, mock_docker):
-        get_docker_client()
-        mock_docker.Client.assert_called_with(base_url=getenv("DOCKER_HOST"))
-
-    @mock.patch('tutumcli.utils.getenv')
+    @mock.patch('tutumcli.utils.os.getenv')
     def test_get_docker_client_exception(self, mock_getenv):
         mock_getenv.return_value = '/run/mock.docker.sock'
         self.assertRaises(DockerNotFound, get_docker_client)
@@ -425,6 +420,4 @@ class TryRegisterTestCase(unittest.TestCase):
         mock_post.return_value = response
 
         ret, text = try_register(username, password)
-        self.assertEqual((False,
-                          u'username: A user with that username already exists.\nemail: This email address is already in use. Please supply a different email address.'),
-                         (ret, text))
+        self.assertEqual((False, u'username: A user with that username already exists.\nemail: This email address is already in use. Please supply a different email address.'),(ret, text))
