@@ -130,7 +130,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
         dispatch_cmds(args)
         mock_cmds.service_run.assert_called_with(image=args.image, name=args.name, cpu_shares=args.cpushares,
                                                  memory=args.memory, memory_swap=args.memoryswap,
-                                                 target_num_containers=args.target_num_containers,
+                                                 target_num_containers=args.target_num_containers, privileged=args.privileged,
                                                  run_command=args.run_command,
                                                  entrypoint=args.entrypoint, container_ports=args.port,
                                                  container_envvars=args.env,
