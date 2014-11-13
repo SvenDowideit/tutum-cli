@@ -81,9 +81,9 @@ def get_docker_client():
             else:
                 tls_config = False
 
-        base_url=os.getenv("DOCKER_HOST")
+        base_url = os.getenv("DOCKER_HOST")
         if tls_config and base_url.startswith("tcp://"):
-            base_url=base_url.replace("tcp://", "https://")
+            base_url = base_url.replace("tcp://", "https://")
 
         docker_client = docker.Client(base_url=base_url, tls=tls_config)
         docker_client.version()

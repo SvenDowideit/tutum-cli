@@ -63,9 +63,10 @@ def add_service_parser(subparsers):
     run_parser.add_argument('--entrypoint',
                             help='the command prefix used to start the service containers '
                                  '(default: as defined in the image)')
-    run_parser.add_argument('-p', '--publish', help = "Publish a container's port to the host. "
-                               "Format: [hostPort:]containerPort[/protocol], i.e. \"80:80/tcp\"", action='append')
-    run_parser.add_argument('--expose', help = 'Expose a port from the container without publishing it to your host',
+    run_parser.add_argument('-p', '--publish', help="Publish a container's port to the host. "
+                                                    "Format: [hostPort:]containerPort[/protocol], i.e. \"80:80/tcp\"",
+                            action='append')
+    run_parser.add_argument('--expose', help='Expose a port from the container without publishing it to your host',
                             action='append', type=int)
     run_parser.add_argument('-e', '--env',
                             help='set environment variables i.e. "ENVVAR=foo" '
