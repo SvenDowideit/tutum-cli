@@ -1,11 +1,12 @@
 clean:
-	rm -rf venv build dist tutum.egg-info
+	rm -rf venv build dist tutum.egg-info python-tutum*
 	rm -f *.tar.gz
 	find . -name '*.pyc ' -delete
 
 prepare:clean
 	set -ex
 	virtualenv venv
+	export SDK_VER=$(shell cat requirements.txt | grep python-tutum | grep -o '[0-9.]*') && curl -0L https://github.com/tutumcloud/python-tutum/archive/$${SDK_VER}.tar.gz | tar -zxv && venv/bin/pip install python-tutum-$${SDK_VER}/. && rm -rf python-tutum-$${SDK_VER}
 	venv/bin/pip install -r requirements.txt
 	venv/bin/pip install .
 
