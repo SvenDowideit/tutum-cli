@@ -1,9 +1,14 @@
-FROM ubuntu:trusty
+FROM tutum/curl
 MAINTAINER Tutum <info@tutum.co>
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y update
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y install python python-dev python-pip libyaml-dev
+RUN apt-get update && \
+    apt-get install -y python python-dev python-pip libyaml-dev
 ADD . /app
-RUN pip install /app
+RUN export SDK_VER=$(cat /app/requirements.txt | grep python-tutum | grep -o '[0-9.]*') && \
+    curl -0L https://github.com/tutumcloud/python-tutum/archive/${SDK_VER}.tar.gz | tar -zxv &&\
+    pip install python-tutum-${SDK_VER}/. && \
+    pip install /app && \
+    rm -rf /app python-tutum-${SDK_VER} && \
+    tutum -v
 
 ENTRYPOINT ["tutum"]
