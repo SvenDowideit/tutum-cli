@@ -208,9 +208,10 @@ optional arguments:
 # ##################################################
 
 TUTUM_SERVICE_RUN = '''usage: tutum service run [-h] [-n NAME] [--cpushares CPUSHARES]
-                         [--memory MEMORY] [--memoryswap MEMORYSWAP]
+                         [--memory MEMORY] [--privileged]
                          [-t TARGET_NUM_CONTAINERS] [-r RUN_COMMAND]
-                         [--entrypoint ENTRYPOINT] [-p PORT] [-e ENV]
+                         [--entrypoint ENTRYPOINT] [-p PUBLISH]
+                         [--expose EXPOSE] [-e ENV]
                          [--link-service LINK_SERVICE]
                          [--autorestart {OFF,ON_FAILURE,ALWAYS}]
                          [--autoreplace {OFF,ON_FAILURE,ALWAYS}]
@@ -230,8 +231,7 @@ optional arguments:
   --cpushares CPUSHARES
                         Relative weight for CPU Shares
   --memory MEMORY       RAM memory hard limit in MB
-  --memoryswap MEMORYSWAP
-                        Memory swap hard limit in MB
+  --privileged          Give extended privileges to this container
   -t TARGET_NUM_CONTAINERS, --target-num-containers TARGET_NUM_CONTAINERS
                         the number of containers to run for this service
                         (default: 1)
@@ -241,8 +241,11 @@ optional arguments:
   --entrypoint ENTRYPOINT
                         the command prefix used to start the service
                         containers (default: as defined in the image)
-  -p PORT, --port PORT  set ports i.e. "80/tcp" (default: as defined in the
-                        image)
+  -p PUBLISH, --publish PUBLISH
+                        Publish a container's port to the host. Format:
+                        [hostPort:]containerPort[/protocol], i.e. "80:80/tcp"
+  --expose EXPOSE       Expose a port from the container without publishing it
+                        to your host
   -e ENV, --env ENV     set environment variables i.e. "ENVVAR=foo" (default:
                         as defined in the image, plus any link- or role-
                         generated variables)

@@ -325,25 +325,35 @@ class ParseLinksTestCase(unittest.TestCase):
         self.assertRaises(BadParameter, parse_links, [''], 'to_service')
 
 
-class ParsePortsTestCase(unittest.TestCase):
-    def test_parse_ports(self):
-        output = [{'protocol': 'tcp', 'inner_port': '80'}]
-        self.assertEqual(output, parse_ports(['80']))
+class ParsePublishedPortsTestCase(unittest.TestCase):
+    def test_parse_published_ports(self):
+        output = [{'protocol': 'tcp', 'inner_port': '80', 'publish_port': True},
+                  {'protocol': 'udp', 'inner_port': '53', 'publish_port': True},
+                  {'protocol': 'tcp', 'inner_port': '3306', 'outer_port': '3307', 'publish_port': True},
+                  {'protocol': 'udp', 'inner_port': '8080', 'outer_port': '8083', 'publish_port': True}]
+        self.assertEqual(output, parse_published_ports(['80', '53/udp', '3307:3306', '8083:8080/udp']))
 
-        output = [{'protocol': 'tcp', 'inner_port': '80'},
-                  {'protocol': 'udp', 'inner_port': '53'},
-                  {'protocol': 'tcp', 'inner_port': '3306', 'outer_port': '3307'},
-                  {'protocol': 'udp', 'inner_port': '8080', 'outer_port': '8083'}]
-        self.assertEqual(output, parse_ports(['80', '53/udp', '3307:3306', '8083:8080/udp']))
+    def test_parse_published_ports_bad_format(self):
+        self.assertRaises(BadParameter, parse_published_ports, ['abc'])
+        self.assertRaises(BadParameter, parse_published_ports, ['abc:80'])
+        self.assertRaises(BadParameter, parse_published_ports, ['80:abc'])
+        self.assertRaises(BadParameter, parse_published_ports, ['80:80:abc'])
+        self.assertRaises(BadParameter, parse_published_ports, ['80:80/abc'])
+        self.assertRaises(BadParameter, parse_published_ports, ['80/80:tcp'])
+        self.assertRaises(BadParameter, parse_published_ports, [''])
 
-    def test_parse_ports_bad_format(self):
-        self.assertRaises(BadParameter, parse_ports, ['abc'])
-        self.assertRaises(BadParameter, parse_ports, ['abc:80'])
-        self.assertRaises(BadParameter, parse_ports, ['80:abc'])
-        self.assertRaises(BadParameter, parse_ports, ['80:80:abc'])
-        self.assertRaises(BadParameter, parse_ports, ['80:80/abc'])
-        self.assertRaises(BadParameter, parse_ports, ['80/80:tcp'])
-        self.assertRaises(BadParameter, parse_ports, [''])
+
+class ParseExposedPortsTestCase(unittest.TestCase):
+    def test_parse_exposed_ports(self):
+        output = [{'protocol': 'tcp', 'inner_port': '80', 'publish_port': False},
+                  {'protocol': 'tcp', 'inner_port': '8080', 'publish_port': False}]
+        self.assertEqual(output, parse_exposed_ports([80, 8080]))
+
+    def test_parse_exposed_ports_bad_format(self):
+        self.assertRaises(BadParameter, parse_exposed_ports, ['abc'])
+        self.assertRaises(BadParameter, parse_exposed_ports, ['abc'])
+        self.assertRaises(BadParameter, parse_exposed_ports, ['-1'])
+        self.assertRaises(BadParameter, parse_exposed_ports, ['999999'])
 
 
 class ParseEnvironmentVariablesTestCase(unittest.TestCase):
@@ -380,11 +390,11 @@ class TryRegisterTestCase(unittest.TestCase):
         url = urlparse.urljoin(tutum.base_url, "register/")
         headers = {'Content-Type': "application/json", "User-Agent": "tutum/%s" % tutumcli.__version__}
         data = json.dumps({'username': 'test_username', "password1": 'test_password', "password2": 'test_password',
-                          "email": 'test@email.com'})
+                           "email": 'test@email.com'})
 
         ret, text = try_register(username, password)
         mock_post.assert_called_with(url, headers=headers, data=data)
-        self.assertEqual((True, ('Account created. Please check your email for activation instructions.')),(ret, text))
+        self.assertEqual((True, ('Account created. Please check your email for activation instructions.')), (ret, text))
 
     @mock.patch('tutumcli.utils.requests.post')
     def test_try_register_too_many_retries(self, mock_post):
@@ -395,7 +405,7 @@ class TryRegisterTestCase(unittest.TestCase):
         response.status_code = 429
         mock_post.return_value = response
         ret, text = try_register(username, password)
-        self.assertEqual((False, "Too many retries. Please login again later."),(ret, text))
+        self.assertEqual((False, "Too many retries. Please login again later."), (ret, text))
 
     @mock.patch('tutumcli.utils.requests.post')
     def test_try_register_failed(self, mock_post):
@@ -404,7 +414,9 @@ class TryRegisterTestCase(unittest.TestCase):
         __builtin__.raw_input = lambda _: 'test@email.com'  # set email
         response = mock.Mock()
         response.status_code = 400
-        response.json.return_value = {u'register': {u'username': [u'A user with that username already exists.'], u'email': [u'This email address is already in use. Please supply a different email address.']}}
+        response.json.return_value = {u'register': {u'username': [u'A user with that username already exists.'],
+                                                    u'email': [
+                                                        u'This email address is already in use. Please supply a different email address.']}}
         mock_post.return_value = response
 
         ret, text = try_register(username, password)

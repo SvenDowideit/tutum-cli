@@ -53,7 +53,7 @@ def add_service_parser(subparsers):
                                                  '(default: image_tag without namespace)')
     run_parser.add_argument('--cpushares', help='Relative weight for CPU Shares', type=int)
     run_parser.add_argument('--memory', help='RAM memory hard limit in MB', type=int)
-    run_parser.add_argument('--memoryswap', help='Memory swap hard limit in MB', type=int)
+    run_parser.add_argument('--privileged', help='Give extended privileges to this container', action='store_true')
     run_parser.add_argument('-t', '--target-num-containers',
                             help='the number of containers to run for this service (default: 1)', type=int,
                             default=1)
@@ -63,8 +63,11 @@ def add_service_parser(subparsers):
     run_parser.add_argument('--entrypoint',
                             help='the command prefix used to start the service containers '
                                  '(default: as defined in the image)')
-    run_parser.add_argument('-p', '--port',
-                            help='set ports i.e. "80/tcp" (default: as defined in the image)', action='append')
+    run_parser.add_argument('-p', '--publish', help="Publish a container's port to the host. "
+                                                    "Format: [hostPort:]containerPort[/protocol], i.e. \"80:80/tcp\"",
+                            action='append')
+    run_parser.add_argument('--expose', help='Expose a port from the container without publishing it to your host',
+                            action='append', type=int)
     run_parser.add_argument('-e', '--env',
                             help='set environment variables i.e. "ENVVAR=foo" '
                                  '(default: as defined in the image, plus any link- or role-generated variables)',

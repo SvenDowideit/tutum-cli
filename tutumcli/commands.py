@@ -134,6 +134,7 @@ def service_logs(identifiers):
     if has_exception:
         sys.exit(EXCEPTION_EXIT_CODE)
 
+
 def service_ps(quiet=False, status=None):
     try:
         headers = ["NAME", "UUID", "STATUS", "IMAGE", "DEPLOYED"]
@@ -175,15 +176,16 @@ def service_redeploy(identifiers, tag):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def service_run(image, name, cpu_shares, memory, memory_swap, target_num_containers, run_command, entrypoint,
-                container_ports, container_envvars, linked_to_service,  autorestart, autoreplace,
+def service_run(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
+                expose, publish, envvars, linked_to_service, autorestart, autoreplace,
                 autodestroy, roles, sequential):
     try:
-        ports = utils.parse_ports(container_ports)
-        envvars = utils.parse_envvars(container_envvars)
+        ports = utils.parse_published_ports(publish)
+        ports.extend(utils.parse_exposed_ports(expose))
+        envvars = utils.parse_envvars(envvars)
         links_service = utils.parse_links(linked_to_service, 'to_service')
         service = tutum.Service.create(image=image, name=name, cpu_shares=cpu_shares,
-                                       memory=memory, memory_swap=memory_swap,
+                                       memory=memory, privileged=privileged,
                                        target_num_containers=target_num_containers, run_command=run_command,
                                        entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
                                        linked_to_service=links_service,
@@ -505,7 +507,7 @@ def image_push(name, public):
         repository = '%s/%s/%s' % (registry.split('//')[-1].split('/')[0], user, repository)
 
         if tag:
-            print ('Tagging %s as %s:%s ...' % (name, repository, tag))
+            print('Tagging %s as %s:%s ...' % (name, repository, tag))
         else:
             print('Tagging %s as %s ...' % (name, repository))
 
