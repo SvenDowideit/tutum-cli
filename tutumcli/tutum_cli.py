@@ -91,7 +91,7 @@ def dispatch_cmds(args):
                                  memory=args.memory, privileged=args.privileged,
                                  target_num_containers=args.target_num_containers, run_command=args.run_command,
                                  entrypoint=args.entrypoint, expose=args.expose, publish=args.publish, envvars=args.env,
-                                 linked_to_service=args.link_service,
+                                 tag=args.tag, linked_to_service=args.link_service,
                                  autorestart=args.autorestart,
                                  autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role,
                                  sequential=args.sequential)

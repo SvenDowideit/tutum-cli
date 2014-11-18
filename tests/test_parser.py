@@ -133,7 +133,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                  privileged=args.privileged,
                                                  run_command=args.run_command,
                                                  entrypoint=args.entrypoint, expose=args.expose, publish=args.publish,
-                                                 envvars=args.env,
+                                                 envvars=args.env, tag=args.tag,
                                                  linked_to_service=args.link_service,
                                                  autorestart=args.autorestart,
                                                  autoreplace=args.autoreplace, autodestroy=args.autodestroy,

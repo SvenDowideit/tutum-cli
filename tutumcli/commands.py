@@ -176,7 +176,7 @@ def service_redeploy(identifiers, tag):
 
 
 def service_run(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
-                expose, publish, envvars, linked_to_service, autorestart, autoreplace,
+                expose, publish, envvars, tag, linked_to_service, autorestart, autoreplace,
                 autodestroy, roles, sequential):
     try:
         ports = utils.parse_published_ports(publish)
@@ -191,6 +191,8 @@ def service_run(image, name, cpu_shares, memory, privileged, target_num_containe
                                        autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
                                        roles=roles, sequential_deployment=sequential)
         service.save()
+        if tag:
+            service.tag.add(tag)
         result = service.start()
         if result:
             print(service.uuid)

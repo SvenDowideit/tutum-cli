@@ -331,7 +331,7 @@ class ServiceRunTestCase(unittest.TestCase):
         mock_create.return_value = service
         mock_start.return_value = True
         service_run('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
-                    exposed_ports, published_ports, container_envvars, linked_to_service,
+                    exposed_ports, published_ports, container_envvars, '', linked_to_service,
                     'OFF', 'OFF', 'OFF', 'poweruser', True)
 
         mock_create.assert_called_with(image='imagename', name='containername', cpu_shares=1,
@@ -354,7 +354,7 @@ class ServiceRunTestCase(unittest.TestCase):
         container_envvars = ['MYSQL_ADMIN=admin', 'MYSQL_PASS=password']
         linked_to_service = ['mysql:mysql', 'redis:redis']
         service_run('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
-                    exposed_ports, published_ports, container_envvars, linked_to_service,
+                    exposed_ports, published_ports, container_envvars, '', linked_to_service,
                     'OFF', 'OFF', 'OFF', 'poweruser', True)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
