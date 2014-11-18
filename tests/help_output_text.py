@@ -1,5 +1,5 @@
 TUTUM = '''usage: tutum [-h] [-v]
-             {build,container,image,login,node,nodecluster,service} ...
+             {build,container,image,login,node,nodecluster,service,tag} ...
 
 Tutum's CLI
 
@@ -8,7 +8,7 @@ optional arguments:
   -v, --version         show program's version number and exit
 
 Tutum's CLI commands:
-  {build,container,image,login,node,nodecluster,service}
+  {build,container,image,login,node,nodecluster,service,tag}
     build               Build an image using an existing Dockerfile, or create
                         one using buildstep
     container           Container-related operations
@@ -16,7 +16,8 @@ Tutum's CLI commands:
     login               Login into Tutum
     node                Node-related operations
     nodecluster         NodeCluster-related operations
-    service             Service-related operations'''
+    service             Service-related operations
+    tag                 Tag-related operations'''
 
 # ##################################################
 

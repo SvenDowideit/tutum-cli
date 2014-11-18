@@ -274,3 +274,27 @@ def add_nodecluster_parser(subparsers):
     nodetype_parser = nodecluster_subparser.add_parser('nodetype', help='Show all available types')
     nodetype_parser.add_argument('-p', '--provider', help="filtered by provider name (e.g. digitalocean)")
     nodetype_parser.add_argument('-r', '--region', help="filtered by region name (e.g. ams1)")
+
+
+def add_tag_parser(subparsers):
+    # tutum tag
+    tag_parser = subparsers.add_parser('tag', help='Tag-related operations', description='Tag-related operations')
+    tag_subparser = tag_parser.add_subparsers(title='tutum tag commands', dest='subcmd')
+
+    # tutum tag add
+    add_parser = tag_subparser.add_parser('add', help='Add tags to a service, node or nodecluster',
+                                          description='Add tags to a service, node or nodecluster')
+    add_parser.add_argument('-t', '--tag', help="name of the tag",action='append', required=True)
+    add_parser.add_argument('identifier', help="UUID or name of a service, node or nodecluster", action='append')
+
+    # tutum tag delete
+    list_parser = tag_subparser.add_parser('list', help='List all tags associated with a service, node or nodecluster',
+                                           description='List all tags associated with a service, node or nodecluster')
+    list_parser.add_argument('identifier', help="UUID or name of a service, node or nodecluster", nargs='+')
+    list_parser.add_argument('-q', '--quiet', help='print only tag names', action='store_true')
+
+    # tutum tag list
+    rm_parser = tag_subparser.add_parser('rm', help='Remove tags from a service, node or nodecluster',
+                                         description='Remove tags from a service, node or nodecluster')
+    rm_parser.add_argument('-t', '--tag', help="name of the tag", action='append', required=True)
+    rm_parser.add_argument('identifier', help="UUID or name of a service, node or nodecluster", nargs='+')

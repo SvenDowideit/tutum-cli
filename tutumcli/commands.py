@@ -3,7 +3,6 @@ import getpass
 import ConfigParser
 import json
 import sys
-import webbrowser
 import re
 import os
 from os.path import join, expanduser, abspath, isfile
@@ -11,10 +10,10 @@ from os.path import join, expanduser, abspath, isfile
 import yaml
 import tutum
 import docker
-
-from exceptions import StreamOutputError
 from tutum.api import auth
 from tutum.api import exceptions
+
+from exceptions import StreamOutputError, ObjectNotFound
 from tutumcli import utils
 
 
@@ -814,6 +813,150 @@ def nodecluster_scale(identifiers, target_num_nodes):
             result = nodecluster.save()
             if result:
                 print(nodecluster.uuid)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def tag_add(identifiers, tag):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            obj_type = None
+            obj = utils.fetch_remote_service(identifier, raise_exceptions=False)
+            if isinstance(obj, Exception):
+                obj = utils.fetch_remote_nodecluster(identifier, raise_exceptions=False)
+                if isinstance(obj, Exception):
+                    obj = utils.fetch_remote_node(identifier, raise_exceptions=False)
+                    if isinstance(obj, Exception):
+                        pass
+                    else:
+                        obj_type = 'Node'
+                else:
+                    obj_type = 'NodeCluster'
+            else:
+                obj_type = 'Service'
+
+            if obj_type == 'Service':
+                tutum.Service.fetch(obj.uuid).tag.add(tag)
+            elif obj_type == 'Node':
+                tutum.Node.fetch(obj.uuid).tag.add(tag)
+            elif obj_type == 'NodeCluster':
+                tutum.NodeCluster.fetch(obj.uuid).tag.add(tag)
+            else:
+                raise ObjectNotFound("Identifier '%s' does not match any service, node or nodecluster" % identifier)
+            print(obj.uuid)
+
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def tag_list(identifiers, quiet):
+    has_exception = False
+
+    headers = ["IDENTIFIER", "TYPE", "TAGS"]
+    data_list = []
+    tags_list = []
+    for identifier in identifiers:
+        try:
+            obj_type = None
+            obj = utils.fetch_remote_service(identifier, raise_exceptions=False)
+            if isinstance(obj, Exception):
+                obj = utils.fetch_remote_nodecluster(identifier, raise_exceptions=False)
+                if isinstance(obj, Exception):
+                    obj = utils.fetch_remote_node(identifier, raise_exceptions=False)
+                    if isinstance(obj, Exception):
+                        pass
+                    else:
+                        obj_type = 'Node'
+                else:
+                    obj_type = 'NodeCluster'
+            else:
+                obj_type = 'Service'
+
+            tags_obj = ""
+            if obj_type == 'Service':
+                tags_obj = tutum.Service.fetch(obj.uuid).tag.list()
+            elif obj_type == 'Node':
+                tags_obj = tutum.Node.fetch(obj.uuid).tag.list()
+            elif obj_type == 'NodeCluster':
+                tags_obj = tutum.NodeCluster.fetch(obj.uuid).tag.list()
+            else:
+                raise ObjectNotFound("Identifier '%s' does not match any service, node or nodecluster" % identifier)
+
+            tagnames = []
+            for tags in tags_obj:
+                tagname = tags.get('name', '')
+                if tagname:
+                    tagnames.append(tagname)
+
+            data_list.append([identifier, obj_type, ' '.join(tagnames)])
+            tags_list.append(' '.join(tagnames))
+        except Exception as e:
+            if isinstance(e, ObjectNotFound):
+                data_list.append([identifier, 'None', ''])
+            else:
+                data_list.append([identifier, '', ''])
+            tags_list.append('')
+            has_exception = True
+    if quiet:
+        for tags in tags_list:
+            print(tags)
+    else:
+        utils.tabulate_result(data_list, headers)
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def tag_rm(identifiers, tag):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            obj_type = None
+            obj = utils.fetch_remote_service(identifier, raise_exceptions=False)
+            if isinstance(obj, Exception):
+                obj = utils.fetch_remote_nodecluster(identifier, raise_exceptions=False)
+                if isinstance(obj, Exception):
+                    obj = utils.fetch_remote_node(identifier, raise_exceptions=False)
+                    if isinstance(obj, Exception):
+                        pass
+                    else:
+                        obj_type = 'Node'
+                else:
+                    obj_type = 'NodeCluster'
+            else:
+                obj_type = 'Service'
+
+            if obj_type == 'Service':
+                for t in tag:
+                    try:
+                        tutum.Service.fetch(obj.uuid).tag.delete(t)
+                    except Exception as e:
+                        print(e, file=sys.stderr)
+                        has_exception = True
+            elif obj_type == 'Node':
+                for t in tag:
+                    try:
+                        tutum.Node.fetch(obj.uuid).tag.delete(t)
+                    except Exception as e:
+                        print(e, file=sys.stderr)
+                        has_exception = True
+            elif obj_type == 'NodeCluster':
+                for t in tag:
+                    try:
+                        tutum.NodeCluster.fetch(obj.uuid).tag.delete(t)
+                    except Exception as e:
+                        print(e, file=sys.stderr)
+                        has_exception = True
+            else:
+                raise ObjectNotFound("Identifier '%s' does not match any service, node or nodecluster" % identifier)
+            print(obj.uuid)
+
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True

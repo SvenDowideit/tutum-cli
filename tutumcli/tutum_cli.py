@@ -9,6 +9,7 @@ from tutumcli import parsers
 from tutumcli import commands
 from tutumcli.exceptions import InternalError
 
+
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 
 logging.basicConfig()
@@ -28,6 +29,7 @@ def initialize_parser():
     parsers.add_node_parser(subparsers)
     parsers.add_nodecluster_parser(subparsers)
     parsers.add_service_parser(subparsers)
+    parsers.add_tag_parser(subparsers)
     return parser
 
 
@@ -43,7 +45,7 @@ def patch_help_option(argv=sys.argv):
 
     if len(args) == 1:
         args.append('-h')
-    elif len(args) == 2 and args[1] in ['service', 'build', 'container', 'image', 'node', 'nodecluster']:
+    elif len(args) == 2 and args[1] in ['service', 'build', 'container', 'image', 'node', 'nodecluster', 'tag']:
         args.append('-h')
     elif len(args) == 3:
         if args[1] == 'service' and args[2] in ['alias', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
@@ -57,6 +59,8 @@ def patch_help_option(argv=sys.argv):
         elif args[1] == 'node' and args[2] in ['inspect', 'rm']:
             args.append('-h')
         elif args[1] == 'nodecluster' and args[2] in ['create', 'inspect', 'rm', 'scale']:
+            args.append('-h')
+        elif args[1] == 'tag' and args[2] in ['add', 'list', 'rm']:
             args.append('-h')
     if debug:
         args.insert(1, '--debug')
@@ -153,6 +157,13 @@ def dispatch_cmds(args):
             commands.nodecluster_rm(args.identifier)
         elif args.subcmd == 'scale':
             commands.nodecluster_scale(args.identifier, args.target_num_nodes)
+    elif args.cmd == 'tag':
+        if args.subcmd == 'add':
+            commands.tag_add(args.identifier, args.tag)
+        elif args.subcmd == 'list':
+            commands.tag_list(args.identifier, args.quiet)
+        if args.subcmd == 'rm':
+            commands.tag_rm(args.identifier, args.tag)
 
 
 def main():
