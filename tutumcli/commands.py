@@ -180,7 +180,18 @@ def service_run(image, name, cpu_shares, memory, privileged, target_num_containe
                 autodestroy, roles, sequential):
     try:
         ports = utils.parse_published_ports(publish)
-        ports.extend(utils.parse_exposed_ports(expose))
+
+        # Add exposed_port to ports, excluding whose inner_port that has been defined in published ports
+        exposed_ports = utils.parse_exposed_ports(expose)
+        for exposed_port in exposed_ports:
+            existed = False
+            for port in ports:
+                if exposed_port.get('inner_port', '') == port.get('inner_port', ''):
+                    existed = True
+                    break
+            if not existed:
+                ports.append(exposed_port)
+
         envvars = utils.parse_envvars(envvars)
         links_service = utils.parse_links(linked_to_service, 'to_service')
         service = tutum.Service.create(image=image, name=name, cpu_shares=cpu_shares,
