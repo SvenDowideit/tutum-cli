@@ -327,10 +327,10 @@ class ParseLinksTestCase(unittest.TestCase):
 
 class ParsePublishedPortsTestCase(unittest.TestCase):
     def test_parse_published_ports(self):
-        output = [{'protocol': 'tcp', 'inner_port': '80', 'publish_port': True},
-                  {'protocol': 'udp', 'inner_port': '53', 'publish_port': True},
-                  {'protocol': 'tcp', 'inner_port': '3306', 'outer_port': '3307', 'publish_port': True},
-                  {'protocol': 'udp', 'inner_port': '8080', 'outer_port': '8083', 'publish_port': True}]
+        output = [{'protocol': 'tcp', 'inner_port': '80', 'published': True},
+                  {'protocol': 'udp', 'inner_port': '53', 'published': True},
+                  {'protocol': 'tcp', 'inner_port': '3306', 'outer_port': '3307', 'published': True},
+                  {'protocol': 'udp', 'inner_port': '8080', 'outer_port': '8083', 'published': True}]
         self.assertEqual(output, parse_published_ports(['80', '53/udp', '3307:3306', '8083:8080/udp']))
 
     def test_parse_published_ports_bad_format(self):
@@ -345,8 +345,8 @@ class ParsePublishedPortsTestCase(unittest.TestCase):
 
 class ParseExposedPortsTestCase(unittest.TestCase):
     def test_parse_exposed_ports(self):
-        output = [{'protocol': 'tcp', 'inner_port': '80', 'publish_port': False},
-                  {'protocol': 'tcp', 'inner_port': '8080', 'publish_port': False}]
+        output = [{'protocol': 'tcp', 'inner_port': '80', 'published': False},
+                  {'protocol': 'tcp', 'inner_port': '8080', 'published': False}]
         self.assertEqual(output, parse_exposed_ports([80, 8080]))
 
     def test_parse_exposed_ports_bad_format(self):
