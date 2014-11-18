@@ -293,7 +293,7 @@ def parse_published_ports(port_list):
             else:
                 protocol = protocol[1:]
 
-            port_spec = {'protocol': protocol, 'inner_port': inner_port, 'publish_port': True}
+            port_spec = {'protocol': protocol, 'inner_port': inner_port, 'published': True}
 
             if outer_port is not None:
                 port_spec['outer_port'] = outer_port[:-1]
@@ -312,7 +312,7 @@ def parse_published_ports(port_list):
 def parse_exposed_ports(port_list):
     def _get_port_dict(_port):
         if isinstance(_port, int) and 0 <= _port < 65535:
-            port_spec = {'protocol': 'tcp', 'inner_port': '%d' % _port, 'publish_port': False}
+            port_spec = {'protocol': 'tcp', 'inner_port': '%d' % _port, 'published': False}
             return port_spec
         raise BadParameter("expose port %s is not a valid port number" % _port)
 
