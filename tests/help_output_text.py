@@ -132,8 +132,7 @@ optional arguments:
 # ##################################################
 
 TUTUM_SERVICE = '''usage: tutum service [-h]
-
-                     {inspect,logs,ps,redeploy,run,scale,set,start,stop,terminate}
+                     {create,inspect,logs,ps,redeploy,run,scale,set,start,stop,terminate}
                      ...
 
 Service-related operations
@@ -142,7 +141,8 @@ optional arguments:
   -h, --help            show this help message and exit
 
 tutum service commands:
-  {inspect,logs,ps,redeploy,run,scale,set,start,stop,terminate}
+  {create,inspect,logs,ps,redeploy,run,scale,set,start,stop,terminate}
+    create              Create a new service
     inspect             Get all details from an service
     logs                Get logs from an service
     ps                  List services
@@ -154,6 +154,18 @@ tutum service commands:
     start               Start a stopped service
     stop                Stop a running service
     terminate           Terminate an service'''
+
+# ##################################################
+
+TUTUM_SERVICE_CREATE = '''usage: tutum service inspect [-h] identifier [identifier ...]
+
+Get all details from an service
+
+positional arguments:
+  identifier  service's UUID (either long or short) or name
+
+optional arguments:
+  -h, --help  show this help message and exit'''
 
 # ##################################################
 

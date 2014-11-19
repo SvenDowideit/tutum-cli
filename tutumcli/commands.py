@@ -175,6 +175,42 @@ def service_redeploy(identifiers, tag):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
+def service_create(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
+                   expose, publish, envvars, tag, linked_to_service, autorestart, autoreplace,
+                   autodestroy, roles, sequential):
+    try:
+        ports = utils.parse_published_ports(publish)
+
+        # Add exposed_port to ports, excluding whose inner_port that has been defined in published ports
+        exposed_ports = utils.parse_exposed_ports(expose)
+        for exposed_port in exposed_ports:
+            existed = False
+            for port in ports:
+                if exposed_port.get('inner_port', '') == port.get('inner_port', ''):
+                    existed = True
+                    break
+            if not existed:
+                ports.append(exposed_port)
+
+        envvars = utils.parse_envvars(envvars)
+        links_service = utils.parse_links(linked_to_service, 'to_service')
+        service = tutum.Service.create(image=image, name=name, cpu_shares=cpu_shares,
+                                       memory=memory, privileged=privileged,
+                                       target_num_containers=target_num_containers, run_command=run_command,
+                                       entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
+                                       linked_to_service=links_service,
+                                       autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
+                                       roles=roles, sequential_deployment=sequential)
+        result = service.save()
+        if tag:
+            result = service.tag.add(tag)
+        if result:
+            print(service.uuid)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
 def service_run(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
                 expose, publish, envvars, tag, linked_to_service, autorestart, autoreplace,
                 autodestroy, roles, sequential):

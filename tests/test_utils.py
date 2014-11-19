@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
 import unittest
-import mock
 import tempfile
 import __builtin__
-import urlparse
-import json
+
+import mock
+from tutum.api.exceptions import *
 
 import tutumcli
-
 from tutumcli.utils import *
 from tutumcli.exceptions import *
-from tutum.api.exceptions import *
 
 
 class TabulateResultTestCase(unittest.TestCase):
@@ -420,4 +418,6 @@ class TryRegisterTestCase(unittest.TestCase):
         mock_post.return_value = response
 
         ret, text = try_register(username, password)
-        self.assertEqual((False, u'username: A user with that username already exists.\nemail: This email address is already in use. Please supply a different email address.'),(ret, text))
+        self.assertEqual((False,
+                          u'username: A user with that username already exists.\nemail: This email address is already in use. Please supply a different email address.'),
+                         (ret, text))
