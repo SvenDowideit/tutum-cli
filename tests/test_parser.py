@@ -1,13 +1,13 @@
 import unittest
 import copy
-import mock
 import StringIO
 import sys
+
+import mock
 
 from tutumcli.tutum_cli import patch_help_option, dispatch_cmds, initialize_parser
 from tutumcli.exceptions import InternalError
 import tutumcli
-
 from help_output_text import *
 
 
@@ -16,6 +16,7 @@ class PatchHelpOptionTestCase(unittest.TestCase):
         self.add_help_argv_list = [
             ['tutum'],
             ['tutum', 'service'],
+            ['tutum', 'service', 'create'],
             ['tutum', 'service', 'inspect'],
             ['tutum', 'service', 'logs'],
             ['tutum', 'service', 'redeploy'],
@@ -110,6 +111,22 @@ class CommandsDispatchTestCase(unittest.TestCase):
 
     @mock.patch('tutumcli.tutum_cli.commands')
     def test_service_dispatch(self, mock_cmds):
+        args = self.parser.parse_args(['service', 'create', 'mysql'])
+        dispatch_cmds(args)
+        mock_cmds.service_create.assert_called_with(image=args.image, name=args.name, cpu_shares=args.cpushares,
+                                                    memory=args.memory,
+                                                    target_num_containers=args.target_num_containers,
+                                                    privileged=args.privileged,
+                                                    run_command=args.run_command,
+                                                    entrypoint=args.entrypoint, expose=args.expose,
+                                                    publish=args.publish,
+                                                    envvars=args.env, tag=args.tag,
+                                                    linked_to_service=args.link_service,
+                                                    autorestart=args.autorestart,
+                                                    autoreplace=args.autoreplace, autodestroy=args.autodestroy,
+                                                    roles=args.role,
+                                                    sequential=args.sequential)
+
         args = self.parser.parse_args(['service', 'inspect', 'id'])
         dispatch_cmds(args)
         mock_cmds.service_inspect.assert_called_with(args.identifier)
@@ -129,11 +146,11 @@ class CommandsDispatchTestCase(unittest.TestCase):
         args = self.parser.parse_args(['service', 'run', 'mysql'])
         dispatch_cmds(args)
         mock_cmds.service_run.assert_called_with(image=args.image, name=args.name, cpu_shares=args.cpushares,
-                                                 memory=args.memory,target_num_containers=args.target_num_containers, 
+                                                 memory=args.memory, target_num_containers=args.target_num_containers,
                                                  privileged=args.privileged,
                                                  run_command=args.run_command,
                                                  entrypoint=args.entrypoint, expose=args.expose, publish=args.publish,
-                                                 envvars=args.env,
+                                                 envvars=args.env, tag=args.tag,
                                                  linked_to_service=args.link_service,
                                                  autorestart=args.autorestart,
                                                  autoreplace=args.autoreplace, autodestroy=args.autodestroy,

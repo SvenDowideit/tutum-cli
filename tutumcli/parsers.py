@@ -22,6 +22,50 @@ def add_service_parser(subparsers):
                                            description='Service-related operations')
     service_subparser = service_parser.add_subparsers(title='tutum service commands', dest='subcmd')
 
+    # tutum service run
+    create_parser = service_subparser.add_parser('create', help='Create a new service',
+                                                 description='Create a new service', )
+    create_parser.add_argument('image', help='the name of the image used to deploy this service')
+    create_parser.add_argument('-n', '--name', help='a human-readable name for the service '
+                                                    '(default: image_tag without namespace)')
+    create_parser.add_argument('--cpushares', help='Relative weight for CPU Shares', type=int)
+    create_parser.add_argument('--memory', help='RAM memory hard limit in MB', type=int)
+    create_parser.add_argument('--privileged', help='Give extended privileges to this container', action='store_true')
+    create_parser.add_argument('-t', '--target-num-containers',
+                               help='the number of containers to run for this service (default: 1)', type=int,
+                               default=1)
+    create_parser.add_argument('-r', '--run-command',
+                               help='the command used to start the service containers '
+                                    '(default: as defined in the image)')
+    create_parser.add_argument('--entrypoint',
+                               help='the command prefix used to start the service containers '
+                                    '(default: as defined in the image)')
+    create_parser.add_argument('-p', '--publish', help="Publish a container's port to the host. "
+                                                       "Format: [hostPort:]containerPort[/protocol], i.e. \"80:80/tcp\"",
+                               action='append')
+    create_parser.add_argument('--expose', help='Expose a port from the container without publishing it to your host',
+                               action='append', type=int)
+    create_parser.add_argument('-e', '--env',
+                               help='set environment variables i.e. "ENVVAR=foo" '
+                                    '(default: as defined in the image, plus any link- or role-generated variables)',
+                               action='append')
+    create_parser.add_argument('--tag', help="the tag name being added to the service", action='append')
+    create_parser.add_argument('--link-service',
+                               help="Add link to another service (name:alias) or (uuid:alias)", action='append')
+    create_parser.add_argument('--autorestart', help='whether the containers should be restarted if they stop '
+                                                     '(default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
+    create_parser.add_argument('--autoreplace', help='whether the containers should be replaced with a new one if '
+                                                     'they stop (default: OFF)',
+                               choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
+    create_parser.add_argument('--autodestroy', help='whether the containers should be terminated if '
+                                                     'they stop (default: OFF)',
+                               choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
+    create_parser.add_argument('--role', help='Tutum API roles to grant the service, '
+                                              'i.e. "global" (default: none, possible values: "global")',
+                               action='append')
+    create_parser.add_argument('--sequential', help='whether the containers should be launched and scaled sequentially',
+                               action='store_true')
+
     # tutum service inspect
     inspect_parser = service_subparser.add_parser('inspect', help="Get all details from an service",
                                                   description="Get all details from an service")
@@ -72,6 +116,7 @@ def add_service_parser(subparsers):
                             help='set environment variables i.e. "ENVVAR=foo" '
                                  '(default: as defined in the image, plus any link- or role-generated variables)',
                             action='append')
+    run_parser.add_argument('--tag', help="the tag name being added to the service", action='append')
     run_parser.add_argument('--link-service',
                             help="Add link to another service (name:alias) or (uuid:alias)", action='append')
     run_parser.add_argument('--autorestart', help='whether the containers should be restarted if they stop '
@@ -274,3 +319,27 @@ def add_nodecluster_parser(subparsers):
     nodetype_parser = nodecluster_subparser.add_parser('nodetype', help='Show all available types')
     nodetype_parser.add_argument('-p', '--provider', help="filtered by provider name (e.g. digitalocean)")
     nodetype_parser.add_argument('-r', '--region', help="filtered by region name (e.g. ams1)")
+
+
+def add_tag_parser(subparsers):
+    # tutum tag
+    tag_parser = subparsers.add_parser('tag', help='Tag-related operations', description='Tag-related operations')
+    tag_subparser = tag_parser.add_subparsers(title='tutum tag commands', dest='subcmd')
+
+    # tutum tag add
+    add_parser = tag_subparser.add_parser('add', help='Add tags to a service, node or nodecluster',
+                                          description='Add tags to a service, node or nodecluster')
+    add_parser.add_argument('-t', '--tag', help="name of the tag", action='append', required=True)
+    add_parser.add_argument('identifier', help="UUID or name of a service, node or nodecluster", action='append')
+
+    # tutum tag delete
+    list_parser = tag_subparser.add_parser('list', help='List all tags associated with a service, node or nodecluster',
+                                           description='List all tags associated with a service, node or nodecluster')
+    list_parser.add_argument('identifier', help="UUID or name of a service, node or nodecluster", nargs='+')
+    list_parser.add_argument('-q', '--quiet', help='print only tag names', action='store_true')
+
+    # tutum tag list
+    rm_parser = tag_subparser.add_parser('rm', help='Remove tags from a service, node or nodecluster',
+                                         description='Remove tags from a service, node or nodecluster')
+    rm_parser.add_argument('-t', '--tag', help="name of the tag", action='append', required=True)
+    rm_parser.add_argument('identifier', help="UUID or name of a service, node or nodecluster", nargs='+')

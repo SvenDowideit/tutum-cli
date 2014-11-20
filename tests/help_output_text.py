@@ -1,5 +1,5 @@
 TUTUM = '''usage: tutum [-h] [-v]
-             {build,container,image,login,node,nodecluster,service} ...
+             {build,container,image,login,node,nodecluster,service,tag} ...
 
 Tutum's CLI
 
@@ -8,7 +8,7 @@ optional arguments:
   -v, --version         show program's version number and exit
 
 Tutum's CLI commands:
-  {build,container,image,login,node,nodecluster,service}
+  {build,container,image,login,node,nodecluster,service,tag}
     build               Build an image using an existing Dockerfile, or create
                         one using buildstep
     container           Container-related operations
@@ -16,7 +16,8 @@ Tutum's CLI commands:
     login               Login into Tutum
     node                Node-related operations
     nodecluster         NodeCluster-related operations
-    service             Service-related operations'''
+    service             Service-related operations
+    tag                 Tag-related operations'''
 
 # ##################################################
 
@@ -131,8 +132,7 @@ optional arguments:
 # ##################################################
 
 TUTUM_SERVICE = '''usage: tutum service [-h]
-
-                     {inspect,logs,ps,redeploy,run,scale,set,start,stop,terminate}
+                     {create,inspect,logs,ps,redeploy,run,scale,set,start,stop,terminate}
                      ...
 
 Service-related operations
@@ -141,7 +141,8 @@ optional arguments:
   -h, --help            show this help message and exit
 
 tutum service commands:
-  {inspect,logs,ps,redeploy,run,scale,set,start,stop,terminate}
+  {create,inspect,logs,ps,redeploy,run,scale,set,start,stop,terminate}
+    create              Create a new service
     inspect             Get all details from an service
     logs                Get logs from an service
     ps                  List services
@@ -153,6 +154,18 @@ tutum service commands:
     start               Start a stopped service
     stop                Stop a running service
     terminate           Terminate an service'''
+
+# ##################################################
+
+TUTUM_SERVICE_CREATE = '''usage: tutum service inspect [-h] identifier [identifier ...]
+
+Get all details from an service
+
+positional arguments:
+  identifier  service's UUID (either long or short) or name
+
+optional arguments:
+  -h, --help  show this help message and exit'''
 
 # ##################################################
 
@@ -211,7 +224,7 @@ TUTUM_SERVICE_RUN = '''usage: tutum service run [-h] [-n NAME] [--cpushares CPUS
                          [--memory MEMORY] [--privileged]
                          [-t TARGET_NUM_CONTAINERS] [-r RUN_COMMAND]
                          [--entrypoint ENTRYPOINT] [-p PUBLISH]
-                         [--expose EXPOSE] [-e ENV]
+                         [--expose EXPOSE] [-e ENV] [--tag TAG]
                          [--link-service LINK_SERVICE]
                          [--autorestart {OFF,ON_FAILURE,ALWAYS}]
                          [--autoreplace {OFF,ON_FAILURE,ALWAYS}]
@@ -249,6 +262,7 @@ optional arguments:
   -e ENV, --env ENV     set environment variables i.e. "ENVVAR=foo" (default:
                         as defined in the image, plus any link- or role-
                         generated variables)
+  --tag TAG             the tag name being added to the service
   --link-service LINK_SERVICE
                         Add link to another service (name:alias) or
                         (uuid:alias)

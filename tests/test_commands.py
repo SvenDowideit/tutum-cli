@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 import unittest
-import mock
 import __builtin__
 import StringIO
 import uuid
 
-from tutumcli.commands import *
+import mock
 from tutum.api.exceptions import *
 
+from tutumcli.commands import *
 import tutumcli
 
 
@@ -183,6 +183,89 @@ CMD ["/start","web"]'''
             os.remove('/tmp/Dockerfile')
             os.remove('/tmp/Procfile')
 
+
+class ServiceCreateTestCase(unittest.TestCase):
+    def setUp(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+
+    @mock.patch('tutumcli.commands.tutum.Service.start')
+    @mock.patch('tutumcli.commands.tutum.Service.save')
+    @mock.patch('tutumcli.commands.tutum.Service.create')
+    def test_service_create(self, mock_create, mock_save, mock_start):
+        exposed_ports = [800, 222]
+        published_ports = ['80:80/tcp', '22:22']
+        ports = utils.parse_published_ports(published_ports)
+        ports.extend(utils.parse_exposed_ports(exposed_ports))
+        container_envvars = ['MYSQL_ADMIN=admin', 'MYSQL_PASS=password']
+        linked_to_service = ['mysql:mysql', 'redis:redis']
+
+        service = tutumcli.commands.tutum.Service()
+        service.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
+        mock_create.return_value = service
+        service_create('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
+                       exposed_ports, published_ports, container_envvars, '', linked_to_service,
+                       'OFF', 'OFF', 'OFF', 'poweruser', True)
+
+        mock_create.assert_called_with(image='imagename', name='containername', cpu_shares=1,
+                                       memory='256M', privileged=True,
+                                       target_num_containers=3, run_command='-d',
+                                       entrypoint='/bin/mysql', container_ports=ports,
+                                       container_envvars=utils.parse_envvars(container_envvars),
+                                       linked_to_service=utils.parse_links(linked_to_service, 'to_service'),
+                                       autorestart='OFF', autoreplace='OFF', autodestroy='OFF',
+                                       roles='poweruser', sequential_deployment=True)
+        mock_save.assert_called()
+        mock_start.assert_not_called()
+        self.assertEqual(service.uuid, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.tutum.Service.start')
+    @mock.patch('tutumcli.commands.tutum.Service.save')
+    @mock.patch('tutumcli.commands.tutum.Service.create')
+    def test_service_create_exposing_publishing_same_port(self, mock_create, mock_save, mock_start):
+        exposed_ports = [80]
+        published_ports = ['800:80/tcp']
+        ports = [{'inner_port': '80', 'outer_port': '800', 'protocol': 'tcp', 'published': True}]
+        container_envvars = ['MYSQL_ADMIN=admin', 'MYSQL_PASS=password']
+        linked_to_service = ['mysql:mysql', 'redis:redis']
+        service = tutumcli.commands.tutum.Service()
+        service.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
+        mock_create.return_value = service
+        service_run('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
+                    exposed_ports, published_ports, container_envvars, '', linked_to_service,
+                    'OFF', 'OFF', 'OFF', 'poweruser', True)
+
+        mock_create.assert_called_with(image='imagename', name='containername', cpu_shares=1,
+                                       memory='256M', privileged=True,
+                                       target_num_containers=3, run_command='-d',
+                                       entrypoint='/bin/mysql', container_ports=ports,
+                                       container_envvars=utils.parse_envvars(container_envvars),
+                                       linked_to_service=utils.parse_links(linked_to_service, 'to_service'),
+                                       autorestart='OFF', autoreplace='OFF', autodestroy='OFF',
+                                       roles='poweruser', sequential_deployment=True)
+        mock_save.assert_called()
+        mock_start.assert_not_called()
+        self.assertEqual(service.uuid, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch('tutumcli.commands.tutum.Service.create', side_effect=TutumApiError)
+    def test_service_create_with_exception(self, mock_create, mock_exit):
+        exposed_ports = ['80', '22']
+        published_ports = ['80:80/tcp', '22:22']
+        container_envvars = ['MYSQL_ADMIN=admin', 'MYSQL_PASS=password']
+        linked_to_service = ['mysql:mysql', 'redis:redis']
+        service_create('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
+                       exposed_ports, published_ports, container_envvars, '', linked_to_service,
+                       'OFF', 'OFF', 'OFF', 'poweruser', True)
+
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+
 class ServiceInspectTestCase(unittest.TestCase):
     def setUp(self):
         self.stdout = sys.stdout
@@ -253,6 +336,7 @@ class ServiceLogsTestCase(unittest.TestCase):
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
+
 class ServicePsTestCase(unittest.TestCase):
     def setUp(self):
         self.stdout = sys.stdout
@@ -319,7 +403,7 @@ class ServiceRunTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.tutum.Service.save')
     @mock.patch('tutumcli.commands.tutum.Service.create')
     def test_service_run(self, mock_create, mock_save, mock_start):
-        exposed_ports = [80, 22]
+        exposed_ports = [800, 222]
         published_ports = ['80:80/tcp', '22:22']
         ports = utils.parse_published_ports(published_ports)
         ports.extend(utils.parse_exposed_ports(exposed_ports))
@@ -331,18 +415,50 @@ class ServiceRunTestCase(unittest.TestCase):
         mock_create.return_value = service
         mock_start.return_value = True
         service_run('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
-                    exposed_ports, published_ports, container_envvars, linked_to_service,
+                    exposed_ports, published_ports, container_envvars, '', linked_to_service,
                     'OFF', 'OFF', 'OFF', 'poweruser', True)
 
         mock_create.assert_called_with(image='imagename', name='containername', cpu_shares=1,
-                                       memory='256M',  privileged=True,
+                                       memory='256M', privileged=True,
                                        target_num_containers=3, run_command='-d',
                                        entrypoint='/bin/mysql', container_ports=ports,
                                        container_envvars=utils.parse_envvars(container_envvars),
                                        linked_to_service=utils.parse_links(linked_to_service, 'to_service'),
                                        autorestart='OFF', autoreplace='OFF', autodestroy='OFF',
                                        roles='poweruser', sequential_deployment=True)
-        mock_save.asser_called()
+        mock_save.assert_called()
+        mock_start.assert_called()
+        self.assertEqual(service.uuid, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.tutum.Service.start')
+    @mock.patch('tutumcli.commands.tutum.Service.save')
+    @mock.patch('tutumcli.commands.tutum.Service.create')
+    def test_service_run_exposing_publishing_same_port(self, mock_create, mock_save, mock_start):
+        exposed_ports = [80]
+        published_ports = ['800:80/tcp']
+        ports = [{'inner_port': '80', 'outer_port': '800', 'protocol': 'tcp', 'published': True}]
+        container_envvars = ['MYSQL_ADMIN=admin', 'MYSQL_PASS=password']
+        linked_to_service = ['mysql:mysql', 'redis:redis']
+
+        service = tutumcli.commands.tutum.Service()
+        service.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
+        mock_create.return_value = service
+        mock_start.return_value = True
+        service_run('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
+                    exposed_ports, published_ports, container_envvars, '', linked_to_service,
+                    'OFF', 'OFF', 'OFF', 'poweruser', True)
+
+        mock_create.assert_called_with(image='imagename', name='containername', cpu_shares=1,
+                                       memory='256M', privileged=True,
+                                       target_num_containers=3, run_command='-d',
+                                       entrypoint='/bin/mysql', container_ports=ports,
+                                       container_envvars=utils.parse_envvars(container_envvars),
+                                       linked_to_service=utils.parse_links(linked_to_service, 'to_service'),
+                                       autorestart='OFF', autoreplace='OFF', autodestroy='OFF',
+                                       roles='poweruser', sequential_deployment=True)
+        mock_save.assert_called()
+        mock_start.assert_called()
         self.assertEqual(service.uuid, self.buf.getvalue().strip())
         self.buf.truncate(0)
 
@@ -354,7 +470,7 @@ class ServiceRunTestCase(unittest.TestCase):
         container_envvars = ['MYSQL_ADMIN=admin', 'MYSQL_PASS=password']
         linked_to_service = ['mysql:mysql', 'redis:redis']
         service_run('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
-                    exposed_ports, published_ports, container_envvars, linked_to_service,
+                    exposed_ports, published_ports, container_envvars, '', linked_to_service,
                     'OFF', 'OFF', 'OFF', 'poweruser', True)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
