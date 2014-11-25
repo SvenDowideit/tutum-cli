@@ -332,13 +332,13 @@ def add_tag_parser(subparsers):
     add_parser.add_argument('-t', '--tag', help="name of the tag", action='append', required=True)
     add_parser.add_argument('identifier', help="UUID or name of a service, node or nodecluster", action='append')
 
-    # tutum tag delete
+    # tutum tag list
     list_parser = tag_subparser.add_parser('list', help='List all tags associated with a service, node or nodecluster',
                                            description='List all tags associated with a service, node or nodecluster')
     list_parser.add_argument('identifier', help="UUID or name of a service, node or nodecluster", nargs='+')
     list_parser.add_argument('-q', '--quiet', help='print only tag names', action='store_true')
 
-    # tutum tag list
+    # tutum tag rm
     rm_parser = tag_subparser.add_parser('rm', help='Remove tags from a service, node or nodecluster',
                                          description='Remove tags from a service, node or nodecluster')
     rm_parser.add_argument('-t', '--tag', help="name of the tag", action='append', required=True)
