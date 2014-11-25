@@ -641,7 +641,7 @@ def image_update(repositories, username, password, description):
 
 def node_list(quiet=False):
     try:
-        headers = ["UUID", "FQDN", "LASTSEEN", "STATUS", "CLUSTER"]
+        headers = ["UUID", "FQDN", "LASTSEEN", "STATUS", "CLUSTER", "DOCKER_VER"]
         node_list = tutum.Node.list()
         data_list = []
         long_uuid_list = []
@@ -656,10 +656,10 @@ def node_list(quiet=False):
                               node.external_fqdn,
                               utils.get_humanize_local_datetime_from_utc_datetime_string(node.last_seen),
                               utils.add_unicode_symbol_to_state(node.state),
-                              cluster_name])
+                              cluster_name, node.docker_version])
             long_uuid_list.append(node.uuid)
         if len(data_list) == 0:
-            data_list.append(["", "", "", "", ""])
+            data_list.append(["", "", "", "", "", ""])
         if quiet:
             for uuid in long_uuid_list:
                 print(uuid)
