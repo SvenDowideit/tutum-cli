@@ -633,3 +633,75 @@ optional arguments:
                         filtered by provider name (e.g. digitalocean)
   -r REGION, --region REGION
                         filtered by region name (e.g. ams1)'''
+
+# ##################################################
+
+TUTUM_TAG = '''usage: tutum tag [-h] {add,list,rm,set} ...
+
+Tag-related operations
+
+optional arguments:
+  -h, --help         show this help message and exit
+
+tutum tag commands:
+  {add,list,rm,set}
+    add              Add tags to a service, node or nodecluster
+    list             List all tags associated with a service, node or
+                     nodecluster
+    rm               Remove tags from a service, node or nodecluster
+    set              Set tags from a service, node or nodecluster'''
+
+# ##################################################
+
+TUTUM_TAG_ADD = '''usage: tutum tag add [-h] -t TAG identifier
+
+Add tags to a service, node or nodecluster
+
+positional arguments:
+  identifier         UUID or name of a service, node or nodecluster
+
+optional arguments:
+  -h, --help         show this help message and exit
+  -t TAG, --tag TAG  name of the tag
+'''
+
+# ##################################################
+
+TUTUM_TAG_LIST = '''usage: tutum tag list [-h] [-q] identifier [identifier ...]
+
+List all tags associated with a service, node or nodecluster
+
+positional arguments:
+  identifier   UUID or name of a service, node or nodecluster
+
+optional arguments:
+  -h, --help   show this help message and exit
+  -q, --quiet  print only tag names'''
+
+# ##################################################
+
+TUTUM_TAG_RM = '''usage: tutum tag rm [-h] -t TAG identifier [identifier ...]
+
+Remove tags from a service, node or nodecluster
+
+positional arguments:
+  identifier         UUID or name of a service, node or nodecluster
+
+optional arguments:
+  -h, --help         show this help message and exit
+  -t TAG, --tag TAG  name of the tag
+'''
+
+# ##################################################
+
+TUTUM_TAG_SET = '''usage: tutum tag set [-h] -t TAG identifier [identifier ...]
+
+Set tags from a service, node or nodecluster. This will remove all the
+existing tags
+
+positional arguments:
+  identifier         UUID or name of a service, node or nodecluster
+
+optional arguments:
+  -h, --help         show this help message and exit
+  -t TAG, --tag TAG  name of the tag'''

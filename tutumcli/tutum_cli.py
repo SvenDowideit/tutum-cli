@@ -60,7 +60,7 @@ def patch_help_option(argv=sys.argv):
             args.append('-h')
         elif args[1] == 'nodecluster' and args[2] in ['create', 'inspect', 'rm', 'scale']:
             args.append('-h')
-        elif args[1] == 'tag' and args[2] in ['add', 'list', 'rm']:
+        elif args[1] == 'tag' and args[2] in ['add', 'list', 'rm', 'set']:
             args.append('-h')
     if debug:
         args.insert(1, '--debug')
@@ -170,8 +170,10 @@ def dispatch_cmds(args):
             commands.tag_add(args.identifier, args.tag)
         elif args.subcmd == 'list':
             commands.tag_list(args.identifier, args.quiet)
-        if args.subcmd == 'rm':
+        elif args.subcmd == 'rm':
             commands.tag_rm(args.identifier, args.tag)
+        elif args.subcmd == 'set':
+            commands.tag_set(args.identifier, args.tag)
 
 
 def main():

@@ -12,7 +12,6 @@ from dateutil import tz
 import ago
 import docker
 import requests
-
 from tutumcli.exceptions import NonUniqueIdentifier, ObjectNotFound, BadParameter, DockerNotFound
 from exceptions import StreamOutputError
 from . import __version__

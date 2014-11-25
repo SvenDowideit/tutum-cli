@@ -343,3 +343,10 @@ def add_tag_parser(subparsers):
                                          description='Remove tags from a service, node or nodecluster')
     rm_parser.add_argument('-t', '--tag', help="name of the tag", action='append', required=True)
     rm_parser.add_argument('identifier', help="UUID or name of a service, node or nodecluster", nargs='+')
+
+    # tutum tag set
+    set_parser = tag_subparser.add_parser('set', help='Set tags from a service, node or nodecluster',
+                                          description='Set tags from a service, node or nodecluster. '
+                                                      'This will remove all the existing tags')
+    set_parser.add_argument('-t', '--tag', help="name of the tag", action='append', required=True)
+    set_parser.add_argument('identifier', help="UUID or name of a service, node or nodecluster", nargs='+')

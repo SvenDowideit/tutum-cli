@@ -12,7 +12,6 @@ import tutum
 import docker
 from tutum.api import auth
 from tutum.api import exceptions
-
 from exceptions import StreamOutputError, ObjectNotFound
 from tutumcli import utils
 
@@ -873,7 +872,6 @@ def tag_add(identifiers, tags):
     has_exception = False
     for identifier in identifiers:
         try:
-            obj = None
             try:
                 obj = utils.fetch_remote_service(identifier)
             except ObjectNotFound:
@@ -883,8 +881,8 @@ def tag_add(identifiers, tags):
                     try:
                         obj = utils.fetch_remote_node(identifier)
                     except ObjectNotFound:
-                        raise ObjectNotFound("Identifier '%s' does not match any service, node or nodecluster" % identifier)
-
+                        raise ObjectNotFound(
+                            "Identifier '%s' does not match any service, node or nodecluster" % identifier)
 
             tag = tutum.Tag.fetch(obj)
             tag.add(tags)
@@ -905,14 +903,14 @@ def tag_list(identifiers, quiet):
     tags_list = []
     for identifier in identifiers:
         try:
-            obj_type = None
             obj = utils.fetch_remote_service(identifier, raise_exceptions=False)
             if isinstance(obj, ObjectNotFound):
                 obj = utils.fetch_remote_nodecluster(identifier, raise_exceptions=False)
                 if isinstance(obj, ObjectNotFound):
                     obj = utils.fetch_remote_node(identifier, raise_exceptions=False)
                     if isinstance(obj, ObjectNotFound):
-                        raise ObjectNotFound("Identifier '%s' does not match any service, node or nodecluster" % identifier)
+                        raise ObjectNotFound(
+                            "Identifier '%s' does not match any service, node or nodecluster" % identifier)
                     else:
                         obj_type = 'Node'
                 else:
@@ -948,7 +946,6 @@ def tag_rm(identifiers, tags):
     has_exception = False
     for identifier in identifiers:
         try:
-            obj = None
             try:
                 obj = utils.fetch_remote_service(identifier)
             except ObjectNotFound:
@@ -958,7 +955,8 @@ def tag_rm(identifiers, tags):
                     try:
                         obj = utils.fetch_remote_node(identifier)
                     except ObjectNotFound:
-                        raise ObjectNotFound("Identifier '%s' does not match any service, node or nodecluster" % identifier)
+                        raise ObjectNotFound(
+                            "Identifier '%s' does not match any service, node or nodecluster" % identifier)
 
             tag = tutum.Tag.fetch(obj)
             for t in tags:
@@ -967,6 +965,37 @@ def tag_rm(identifiers, tags):
                 except Exception as e:
                     print(e, file=sys.stderr)
                     has_exception = True
+            print(obj.uuid)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def tag_set(identifiers, tags):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            try:
+                obj = utils.fetch_remote_service(identifier)
+            except ObjectNotFound:
+                try:
+                    obj = utils.fetch_remote_nodecluster(identifier)
+                except ObjectNotFound:
+                    try:
+                        obj = utils.fetch_remote_node(identifier)
+                    except ObjectNotFound:
+                        raise ObjectNotFound(
+                            "Identifier '%s' does not match any service, node or nodecluster" % identifier)
+
+            obj.tags = []
+            for t in tags:
+                new_tag = {"name": t}
+                if new_tag not in obj.tags:
+                    obj.tags.append(new_tag)
+            obj.save()
+
             print(obj.uuid)
         except Exception as e:
             print(e, file=sys.stderr)

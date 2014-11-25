@@ -6,7 +6,6 @@ import uuid
 
 import mock
 from tutum.api.exceptions import *
-
 from tutumcli.commands import *
 import tutumcli
 
