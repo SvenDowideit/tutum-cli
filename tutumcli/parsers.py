@@ -268,6 +268,11 @@ def add_node_parser(subparsers):
     rm_parser = node_subparser.add_parser('rm', help='Remove a node', description='Remove a container')
     rm_parser.add_argument('identifier', help="node's UUID (either long or short)", nargs='+')
 
+    # tutum node upgrade
+    upgrade_parser = node_subparser.add_parser('upgrade', help='Upgrade docker daemon on the node',
+                                          description='Upgrade docker daemon to the latest version on the node')
+    upgrade_parser.add_argument('identifier', help="node's UUID (either long or short)", nargs='+')
+
 
 def add_nodecluster_parser(subparsers):
     # tutum nodecluster

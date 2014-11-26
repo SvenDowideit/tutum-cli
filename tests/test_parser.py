@@ -41,6 +41,7 @@ class PatchHelpOptionTestCase(unittest.TestCase):
             ['tutum', 'node'],
             ['tutum', 'node', 'inspect'],
             ['tutum', 'node', 'rm'],
+            ['tutum', 'node', 'upgrade'],
             ['tutum', 'nodecluster'],
             ['tutum', 'nodecluster', 'create'],
             ['tutum', 'nodecluster', 'inspect'],
@@ -246,6 +247,10 @@ class CommandsDispatchTestCase(unittest.TestCase):
         dispatch_cmds(args)
         mock_cmds.node_rm(args.identifier)
 
+        args = self.parser.parse_args(['node', 'upgrade', 'id'])
+        dispatch_cmds(args)
+        mock_cmds.node_rm(args.identifier)
+
     @mock.patch('tutumcli.tutum_cli.commands')
     def test_nodecluster_dispatch(self, mock_cmds):
         args = self.parser.parse_args(['nodecluster', 'create', 'name', '1', '2', '3'])
@@ -359,6 +364,7 @@ class ParserTestCase(unittest.TestCase):
         self.compare_output(TUTUM_NODE_INSPECT, args=['tutum', 'node', 'inspect', '-h'])
         self.compare_output(TUTUM_NODE_LIST, args=['tutum', 'node', 'list', '-h'])
         self.compare_output(TUTUM_NODE_RM, args=['tutum', 'node', 'rm', '-h'])
+        self.compare_output(TUTUM_NODE_UPGRADE, args=['tutum', 'node', 'upgrade', '-h'])
         self.compare_output(TUTUM_NODECLUSTER, args=['tutum', 'nodecluster', '-h'])
         self.compare_output(TUTUM_NODECLUSTER_CREATE, args=['tutum', 'nodecluster', 'create', '-h'])
         self.compare_output(TUTUM_NODECLUSTER_INSPECT, args=['tutum', 'nodecluster', 'inspect', '-h'])

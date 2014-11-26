@@ -467,18 +467,19 @@ optional arguments:
 
 # ##################################################
 
-TUTUM_NODE = '''usage: tutum node [-h] {inspect,list,rm} ...
+TUTUM_NODE = '''usage: tutum node [-h] {inspect,list,rm,upgrade} ...
 
 Node-related operations
 
 optional arguments:
-  -h, --help         show this help message and exit
+  -h, --help            show this help message and exit
 
 tutum node commands:
-  {inspect,list,rm}
-    inspect          Inspect a node
-    list             List nodes
-    rm               Remove a node'''
+  {inspect,list,rm,upgrade}
+    inspect             Inspect a node
+    list                List nodes
+    rm                  Remove a node
+    upgrade             Upgrade docker daemon on the node'''
 
 # ##################################################
 
@@ -507,6 +508,18 @@ optional arguments:
 TUTUM_NODE_RM = '''usage: tutum node rm [-h] identifier [identifier ...]
 
 Remove a container
+
+positional arguments:
+  identifier  node's UUID (either long or short)
+
+optional arguments:
+  -h, --help  show this help message and exit'''
+
+# ##################################################
+
+TUTUM_NODE_UPGRADE = '''usage: tutum node upgrade [-h] identifier [identifier ...]
+
+Upgrade docker daemon to the latest version on the node
 
 positional arguments:
   identifier  node's UUID (either long or short)

@@ -56,7 +56,7 @@ def patch_help_option(argv=sys.argv):
             args.append('-h')
         elif args[1] == 'image' and args[2] in ['register', 'push', 'rm', 'search', 'update']:
             args.append('-h')
-        elif args[1] == 'node' and args[2] in ['inspect', 'rm']:
+        elif args[1] == 'node' and args[2] in ['inspect', 'rm', 'upgrade']:
             args.append('-h')
         elif args[1] == 'nodecluster' and args[2] in ['create', 'inspect', 'rm', 'scale']:
             args.append('-h')
@@ -120,8 +120,6 @@ def dispatch_cmds(args):
             commands.container_logs(args.identifier)
         elif args.subcmd == 'ps':
             commands.container_ps(args.identifier, args.quiet, args.status)
-        elif args.subcmd == 'redeploy':
-            commands.container_redeploy(args.identifier, args.tag)
         elif args.subcmd == 'start':
             commands.container_start(args.identifier)
         elif args.subcmd == 'stop':
@@ -148,6 +146,8 @@ def dispatch_cmds(args):
             commands.node_list(args.quiet)
         elif args.subcmd == 'rm':
             commands.node_rm(args.identifier)
+        elif args.subcmd == 'upgrade':
+            commands.node_upgrade(args.identifier)
     elif args.cmd == 'nodecluster':
         if args.subcmd == 'create':
             commands.nodecluster_create(args.target_num_nodes, args.name, args.provider, args.region, args.nodetype)
