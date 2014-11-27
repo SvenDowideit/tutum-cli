@@ -58,6 +58,8 @@ def add_unicode_symbol_to_state(state):
         return u"\u0021 " + state
     elif state == "Terminated":
         return u"\u2718 " + state
+    elif state == "Unreachable":
+        return u"\u2753 " + state
     return state
 
 
