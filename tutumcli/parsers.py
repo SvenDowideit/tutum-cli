@@ -332,26 +332,51 @@ def add_tag_parser(subparsers):
     tag_subparser = tag_parser.add_subparsers(title='tutum tag commands', dest='subcmd')
 
     # tutum tag add
-    add_parser = tag_subparser.add_parser('add', help='Add tags to a service, node or nodecluster',
-                                          description='Add tags to a service, node or nodecluster')
+    add_parser = tag_subparser.add_parser('add', help='Add tags to services, nodes or nodeclusters',
+                                          description='Add tags to services, nodes or nodeclusters')
     add_parser.add_argument('-t', '--tag', help="name of the tag", action='append', required=True)
-    add_parser.add_argument('identifier', help="UUID or name of a service, node or nodecluster", action='append')
+    add_parser.add_argument('identifier', help="UUID or name of services, nodes or nodeclusters", nargs='+')
 
     # tutum tag list
-    list_parser = tag_subparser.add_parser('list', help='List all tags associated with a service, node or nodecluster',
-                                           description='List all tags associated with a service, node or nodecluster')
-    list_parser.add_argument('identifier', help="UUID or name of a service, node or nodecluster", nargs='+')
+    list_parser = tag_subparser.add_parser('list', help='List all tags associated with services, nodes or nodeclusters',
+                                           description='List all tags associated with services, nodes or nodeclusters')
+    list_parser.add_argument('identifier', help="UUID or name of services, nodes or nodeclusters", nargs='+')
     list_parser.add_argument('-q', '--quiet', help='print only tag names', action='store_true')
 
     # tutum tag rm
-    rm_parser = tag_subparser.add_parser('rm', help='Remove tags from a service, node or nodecluster',
-                                         description='Remove tags from a service, node or nodecluster')
+    rm_parser = tag_subparser.add_parser('rm', help='Remove tags from services, nodes or nodeclusters',
+                                         description='Remove tags from services, nodes or nodeclusters')
     rm_parser.add_argument('-t', '--tag', help="name of the tag", action='append', required=True)
-    rm_parser.add_argument('identifier', help="UUID or name of a service, node or nodecluster", nargs='+')
+    rm_parser.add_argument('identifier', help="UUID or name of services, nodes or nodeclusters", nargs='+')
 
     # tutum tag set
-    set_parser = tag_subparser.add_parser('set', help='Set tags from a service, node or nodecluster',
-                                          description='Set tags from a service, node or nodecluster. '
+    set_parser = tag_subparser.add_parser('set', help='Set tags from services, nodes or nodeclusters',
+                                          description='Set tags from services, nodes or nodeclusters. '
                                                       'This will remove all the existing tags')
     set_parser.add_argument('-t', '--tag', help="name of the tag", action='append', required=True)
-    set_parser.add_argument('identifier', help="UUID or name of a service, node or nodecluster", nargs='+')
+    set_parser.add_argument('identifier', help="UUID or name of services, nodes or nodeclusters", nargs='+')
+
+
+def add_webhookhandler_parser(subparsers):
+    # tutum webhook-handler
+    webhookhandler_parser = subparsers.add_parser('webhook-handler', help='Webhook-handler-related operations',
+                                                  description='Webhook-handler-related operations')
+    webhookhandler_subparser = webhookhandler_parser.add_subparsers(title='tutum webhook-handler commands', dest='subcmd')
+
+    # tutum webhook-handler create
+    create_parser = webhookhandler_subparser.add_parser('create', help='create webhook handler to services',
+                                          description='create webhook handler to services')
+    create_parser.add_argument('-n', '--name', help="name of the webhook handler (optional)", action='append')
+    create_parser.add_argument('identifier', help="UUID or name of services", nargs='+')
+
+    # tutum twebhook-handler list
+    list_parser = webhookhandler_subparser.add_parser('list', help='List all webhook handler associated with services',
+                                           description='List all webhook handler associated with services')
+    list_parser.add_argument('identifier', help="UUID or name of services", nargs='+')
+    list_parser.add_argument('-q', '--quiet', help='print only webhook andler uuid', action='store_true')
+    
+    # tutum webhook-handler delete
+    rm_parser = webhookhandler_subparser.add_parser('rm', help='Remove webhook handler to a service',
+                                          description='create webhook handler to a service')
+    rm_parser.add_argument('identifier', help="UUID or name of services")
+    rm_parser.add_argument('webhookhandler', help="UUID or name of the webhook handler", nargs='+')

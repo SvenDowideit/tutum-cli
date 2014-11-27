@@ -266,6 +266,24 @@ def fetch_remote_nodecluster(identifier, raise_exceptions=True):
         raise e
 
 
+def get_uuids_of_webhookhandler(handlers, identifiers):
+    uuid = []
+    for identifier in identifiers:
+        if is_uuid4(identifier):
+            uuid.append(identifier)
+        else:
+            appended = False
+            for handler in handlers:
+                if handler.get("name", "") == identifier:
+                    uuid.append(handler.get("uuid", identifier))
+                    appended = True
+                elif handler.get("uuid", "").startswith(identifier):
+                    uuid.append(handler.get("uuid", identifier))
+                    appended = True
+            if not appended:
+                uuid.append(identifier)
+    return uuid
+
 def parse_links(links, target):
     def _format_link(_link):
         link_regexp = re.compile('^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+$')

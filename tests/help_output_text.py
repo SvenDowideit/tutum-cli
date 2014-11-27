@@ -1,5 +1,6 @@
 TUTUM = '''usage: tutum [-h] [-v]
-             {build,container,image,login,node,nodecluster,service,tag} ...
+             {build,container,image,login,node,nodecluster,service,tag,webhook-handler}
+             ...
 
 Tutum's CLI
 
@@ -8,7 +9,7 @@ optional arguments:
   -v, --version         show program's version number and exit
 
 Tutum's CLI commands:
-  {build,container,image,login,node,nodecluster,service,tag}
+  {build,container,image,login,node,nodecluster,service,tag,webhook-handler}
     build               Build an image using an existing Dockerfile, or create
                         one using buildstep
     container           Container-related operations
@@ -17,7 +18,9 @@ Tutum's CLI commands:
     node                Node-related operations
     nodecluster         NodeCluster-related operations
     service             Service-related operations
-    tag                 Tag-related operations'''
+    tag                 Tag-related operations
+    webhook-handler     Webhook-handler-related operations
+'''
 
 # ##################################################
 
@@ -658,20 +661,20 @@ optional arguments:
 
 tutum tag commands:
   {add,list,rm,set}
-    add              Add tags to a service, node or nodecluster
-    list             List all tags associated with a service, node or
-                     nodecluster
-    rm               Remove tags from a service, node or nodecluster
-    set              Set tags from a service, node or nodecluster'''
+    add              Add tags to services, nodes or nodeclusters
+    list             List all tags associated with services, nodes or
+                     nodeclusters
+    rm               Remove tags from services, nodes or nodeclusters
+    set              Set tags from services, nodes or nodeclusters'''
 
 # ##################################################
 
-TUTUM_TAG_ADD = '''usage: tutum tag add [-h] -t TAG identifier
+TUTUM_TAG_ADD = '''usage: tutum tag add [-h] -t TAG identifier [identifier ...]
 
-Add tags to a service, node or nodecluster
+Add tags to services, nodes or nodeclusters
 
 positional arguments:
-  identifier         UUID or name of a service, node or nodecluster
+  identifier         UUID or name of services, nodes or nodeclusters
 
 optional arguments:
   -h, --help         show this help message and exit
@@ -682,10 +685,10 @@ optional arguments:
 
 TUTUM_TAG_LIST = '''usage: tutum tag list [-h] [-q] identifier [identifier ...]
 
-List all tags associated with a service, node or nodecluster
+List all tags associated with services, nodes or nodeclusters
 
 positional arguments:
-  identifier   UUID or name of a service, node or nodecluster
+  identifier   UUID or name of services, nodes or nodeclusters
 
 optional arguments:
   -h, --help   show this help message and exit
@@ -695,25 +698,24 @@ optional arguments:
 
 TUTUM_TAG_RM = '''usage: tutum tag rm [-h] -t TAG identifier [identifier ...]
 
-Remove tags from a service, node or nodecluster
+Remove tags from services, nodes or nodeclusters
 
 positional arguments:
-  identifier         UUID or name of a service, node or nodecluster
+  identifier         UUID or name of services, nodes or nodeclusters
 
 optional arguments:
   -h, --help         show this help message and exit
-  -t TAG, --tag TAG  name of the tag
-'''
+  -t TAG, --tag TAG  name of the tag'''
 
 # ##################################################
 
 TUTUM_TAG_SET = '''usage: tutum tag set [-h] -t TAG identifier [identifier ...]
 
-Set tags from a service, node or nodecluster. This will remove all the
+Set tags from services, nodes or nodeclusters. This will remove all the
 existing tags
 
 positional arguments:
-  identifier         UUID or name of a service, node or nodecluster
+  identifier         UUID or name of services, nodes or nodeclusters
 
 optional arguments:
   -h, --help         show this help message and exit

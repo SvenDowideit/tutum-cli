@@ -697,6 +697,7 @@ def node_rm(identifiers):
     if has_exception:
         sys.exit(EXCEPTION_EXIT_CODE)
 
+
 def node_upgrade(identifiers):
     has_exception = False
     for identifier in identifiers:
@@ -710,6 +711,7 @@ def node_upgrade(identifiers):
             has_exception = True
     if has_exception:
         sys.exit(EXCEPTION_EXIT_CODE)
+
 
 def nodecluster_list(quiet):
     try:
@@ -945,6 +947,7 @@ def tag_list(identifiers, quiet):
             else:
                 data_list.append([identifier, '', ''])
             tags_list.append('')
+            print(e, file=sys.stderr)
             has_exception = True
     if quiet:
         for tags in tags_list:
@@ -1013,5 +1016,68 @@ def tag_set(identifiers, tags):
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def webhookhandler_create(identifiers, names):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            service = utils.fetch_remote_service(identifier)
+            webhookhandler = tutum.WebhookHandler.fetch(service)
+            webhookhandler.add(names)
+            webhookhandler.save()
+            print(service.uuid)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+def webhookhandler_list(identifiers, quiet):
+    has_exception = False
+
+    headers = ["IDENTIFIER", "NAME", "UUID"]
+    data_list = []
+    uuid_list = []
+    for identifier in identifiers:
+        try:
+            service = utils.fetch_remote_service(identifier)
+            webhookhandler = tutum.WebhookHandler.fetch(service)
+            handlers = webhookhandler.list()
+            for handler in handlers:
+                data_list.append([identifier, handler.get('name', ''), handler.get('uuid', '')])
+                uuid_list.append(handler.get('uuid', ''))
+        except Exception as e:
+            print(e, file=sys.stderr)
+            data_list.append([identifier, '', ''])
+            uuid_list.append('')
+            has_exception = True
+    if quiet:
+        for uuid in uuid_list:
+            print(uuid)
+    else:
+        utils.tabulate_result(data_list, headers)
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def webhookhandler_rm(identifier, webhook_identifiers):
+    has_exception = False
+    try:
+        service = utils.fetch_remote_service(identifier)
+        webhookhandler = tutum.WebhookHandler.fetch(service)
+        try:
+            uuid_list = utils.get_uuids_of_webhookhandler(service.webhooks, webhook_identifiers)
+            for uuid in uuid_list:
+                webhookhandler.delete(uuid)
+                print (uuid)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    except Exception as e:
+        print(e, file=sys.stderr)
+        has_exception = True
     if has_exception:
         sys.exit(EXCEPTION_EXIT_CODE)
