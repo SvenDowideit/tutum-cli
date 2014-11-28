@@ -1065,8 +1065,8 @@ def webhookhandler_rm(identifier, webhook_identifiers):
     try:
         service = utils.fetch_remote_service(identifier)
         webhookhandler = tutum.WebhookHandler.fetch(service)
+        uuid_list = utils.get_uuids_of_webhookhandler(webhookhandler, webhook_identifiers)
         try:
-            uuid_list = utils.get_uuids_of_webhookhandler(service.webhooks, webhook_identifiers)
             for uuid in uuid_list:
                 webhookhandler.delete(uuid)
                 print (uuid)
