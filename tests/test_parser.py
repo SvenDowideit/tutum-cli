@@ -126,8 +126,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                     publish=args.publish,
                                                     envvars=args.env, tag=args.tag,
                                                     linked_to_service=args.link_service,
-                                                    autorestart=args.autorestart,
-                                                    autoreplace=args.autoreplace, autodestroy=args.autodestroy,
+                                                    autorestart=args.autorestart, autodestroy=args.autodestroy,
                                                     roles=args.role,
                                                     sequential=args.sequential)
 
@@ -156,8 +155,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                  entrypoint=args.entrypoint, expose=args.expose, publish=args.publish,
                                                  envvars=args.env, tag=args.tag,
                                                  linked_to_service=args.link_service,
-                                                 autorestart=args.autorestart,
-                                                 autoreplace=args.autoreplace, autodestroy=args.autodestroy,
+                                                 autorestart=args.autorestart, autodestroy=args.autodestroy,
                                                  roles=args.role,
                                                  sequential=args.sequential)
 
@@ -167,7 +165,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
 
         args = self.parser.parse_args(['service', 'set', 'id'])
         dispatch_cmds(args)
-        mock_cmds.service_set.assert_called_with(args.autorestart, args.autoreplace, args.autodestroy, args.identifier)
+        mock_cmds.service_set.assert_called_with(args.autorestart, args.autodestroy, args.identifier)
 
         args = self.parser.parse_args(['service', 'start', 'id'])
         dispatch_cmds(args)

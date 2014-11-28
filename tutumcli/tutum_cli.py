@@ -87,8 +87,7 @@ def dispatch_cmds(args):
                                     entrypoint=args.entrypoint, expose=args.expose, publish=args.publish,
                                     envvars=args.env,
                                     tag=args.tag, linked_to_service=args.link_service,
-                                    autorestart=args.autorestart,
-                                    autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role,
+                                    autorestart=args.autorestart, autodestroy=args.autodestroy, roles=args.role,
                                     sequential=args.sequential)
         elif args.subcmd == 'inspect':
             commands.service_inspect(args.identifier)
@@ -104,13 +103,12 @@ def dispatch_cmds(args):
                                  target_num_containers=args.target_num_containers, run_command=args.run_command,
                                  entrypoint=args.entrypoint, expose=args.expose, publish=args.publish, envvars=args.env,
                                  tag=args.tag, linked_to_service=args.link_service,
-                                 autorestart=args.autorestart,
-                                 autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role,
+                                 autorestart=args.autorestart, autodestroy=args.autodestroy, roles=args.role,
                                  sequential=args.sequential)
         elif args.subcmd == 'scale':
             commands.service_scale(args.identifier, args.target_num_containers)
         elif args.subcmd == 'set':
-            commands.service_set(args.autorestart, args.autoreplace, args.autodestroy, args.identifier)
+            commands.service_set(args.autorestart, args.autodestroy, args.identifier)
         elif args.subcmd == 'start':
             commands.service_start(args.identifier)
         elif args.subcmd == 'stop':

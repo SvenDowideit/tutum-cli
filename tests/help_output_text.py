@@ -152,8 +152,7 @@ tutum service commands:
     redeploy            Redeploy a running service with a new version/tag
     run                 Create and run a new service
     scale               Scale a running service
-    set                 Enable or disable Crash Recovery and Autodestroy
-                        features to an existing service
+    set                 Change service properties
     start               Start a stopped service
     stop                Stop a running service
     terminate           Terminate an service'''
@@ -230,7 +229,6 @@ TUTUM_SERVICE_RUN = '''usage: tutum service run [-h] [-n NAME] [--cpushares CPUS
                          [--expose EXPOSE] [-e ENV] [--tag TAG]
                          [--link-service LINK_SERVICE]
                          [--autorestart {OFF,ON_FAILURE,ALWAYS}]
-                         [--autoreplace {OFF,ON_FAILURE,ALWAYS}]
                          [--autodestroy {OFF,ON_FAILURE,ALWAYS}] [--role ROLE]
                          [--sequential]
                          image
@@ -272,9 +270,6 @@ optional arguments:
   --autorestart {OFF,ON_FAILURE,ALWAYS}
                         whether the containers should be restarted if they
                         stop (default: OFF)
-  --autoreplace {OFF,ON_FAILURE,ALWAYS}
-                        whether the containers should be replaced with a new
-                        one if they stop (default: OFF)
   --autodestroy {OFF,ON_FAILURE,ALWAYS}
                         whether the containers should be terminated if they
                         stop (default: OFF)
@@ -301,12 +296,10 @@ optional arguments:
 # ##################################################
 
 TUTUM_SERVICE_SET = '''usage: tutum service set [-h] [--autorestart {OFF,ON_FAILURE,ALWAYS}]
-                         [--autoreplace {OFF,ON_FAILURE,ALWAYS}]
                          [--autodestroy {OFF,ON_FAILURE,ALWAYS}]
                          identifier [identifier ...]
 
-Enable or disable Crash Recovery and Autodestroy features to an existing
-service
+Change service properties
 
 positional arguments:
   identifier            service's UUID (either long or short) or name
@@ -316,9 +309,6 @@ optional arguments:
   --autorestart {OFF,ON_FAILURE,ALWAYS}
                         whether the containers should be restarted if they
                         stop (default: OFF)
-  --autoreplace {OFF,ON_FAILURE,ALWAYS}
-                        whether the containers should be replaced with a new
-                        one if they stop (default: OFF)
   --autodestroy {OFF,ON_FAILURE,ALWAYS}
                         whether the containers should be terminated if they
                         stop (default: OFF)'''

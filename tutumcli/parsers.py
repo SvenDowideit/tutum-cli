@@ -54,9 +54,6 @@ def add_service_parser(subparsers):
                                help="Add link to another service (name:alias) or (uuid:alias)", action='append')
     create_parser.add_argument('--autorestart', help='whether the containers should be restarted if they stop '
                                                      '(default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
-    create_parser.add_argument('--autoreplace', help='whether the containers should be replaced with a new one if '
-                                                     'they stop (default: OFF)',
-                               choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     create_parser.add_argument('--autodestroy', help='whether the containers should be terminated if '
                                                      'they stop (default: OFF)',
                                choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
@@ -121,8 +118,6 @@ def add_service_parser(subparsers):
                             help="Add link to another service (name:alias) or (uuid:alias)", action='append')
     run_parser.add_argument('--autorestart', help='whether the containers should be restarted if they stop '
                                                   '(default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
-    run_parser.add_argument('--autoreplace', help='whether the containers should be replaced with a new one if '
-                                                  'they stop (default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     run_parser.add_argument('--autodestroy', help='whether the containers should be terminated if '
                                                   'they stop (default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     run_parser.add_argument('--role', help='Tutum API roles to grant the service, '
@@ -137,16 +132,11 @@ def add_service_parser(subparsers):
     scale_parser.add_argument("target_num_containers", metavar="target-num-containers",
                               help="target number of containers to scale this service to", type=int)
     # tutum service set
-    set_parser = service_subparser.add_parser('set',
-                                              help='Enable or disable Crash Recovery and Autodestroy features to '
-                                                   'an existing service',
-                                              description='Enable or disable Crash Recovery and Autodestroy features to'
-                                                          ' an existing service')
+    set_parser = service_subparser.add_parser('set', help='Change service properties',
+                                              description='Change service properties')
     set_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
     set_parser.add_argument('--autorestart', help="whether the containers should be restarted if they stop "
                                                   "(default: OFF)", choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
-    set_parser.add_argument('--autoreplace', help="whether the containers should be replaced with a new one if "
-                                                  "they stop (default: OFF)", choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     set_parser.add_argument('--autodestroy',
                             help="whether the containers should be terminated if they stop (default: OFF)",
                             choices=['OFF', 'ON_FAILURE', 'ALWAYS'])

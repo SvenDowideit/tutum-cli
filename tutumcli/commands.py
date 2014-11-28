@@ -175,8 +175,7 @@ def service_redeploy(identifiers, tag):
 
 
 def service_create(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
-                   expose, publish, envvars, tag, linked_to_service, autorestart, autoreplace,
-                   autodestroy, roles, sequential):
+                   expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, roles, sequential):
     try:
         ports = utils.parse_published_ports(publish)
 
@@ -198,7 +197,7 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
                                        target_num_containers=target_num_containers, run_command=run_command,
                                        entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
                                        linked_to_service=links_service,
-                                       autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
+                                       autorestart=autorestart, autodestroy=autodestroy,
                                        roles=roles, sequential_deployment=sequential)
         result = service.save()
         if tag:
@@ -211,8 +210,7 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
 
 
 def service_run(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
-                expose, publish, envvars, tag, linked_to_service, autorestart, autoreplace,
-                autodestroy, roles, sequential):
+                expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, roles, sequential):
     try:
         ports = utils.parse_published_ports(publish)
 
@@ -234,7 +232,7 @@ def service_run(image, name, cpu_shares, memory, privileged, target_num_containe
                                        target_num_containers=target_num_containers, run_command=run_command,
                                        entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
                                        linked_to_service=links_service,
-                                       autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
+                                       autorestart=autorestart, autodestroy=autodestroy,
                                        roles=roles, sequential_deployment=sequential)
         service.save()
         if tag:
@@ -263,14 +261,13 @@ def service_scale(identifiers, target_num_containers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def service_set(autorestart, autoreplace, autodestroy, identifiers):
+def service_set(autorestart, autodestroy, identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
             service_details = utils.fetch_remote_service(identifier, raise_exceptions=True)
             if service_details is not None:
                 service_details.autorestart = autorestart
-                service_details.autoreplace = autoreplace
                 service_details.autodestroy = autodestroy
                 result = service_details.save()
                 if result:
