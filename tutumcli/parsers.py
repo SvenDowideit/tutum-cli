@@ -16,6 +16,11 @@ def add_build_parser(subparsers):
     build_parser.add_argument('directory', help='working directory')
 
 
+def add_byos_parser(subparsers):
+    # tutum BYOS
+    subparsers.add_parser('BYOS', help='Instructions on how to Bring Your Wwn Server to Tutum',
+                                description='Instructions on how to Bring Your Own Server to Tutum')
+
 def add_service_parser(subparsers):
     # tutum service
     service_parser = subparsers.add_parser('service', help='Service-related operations',

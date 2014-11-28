@@ -106,6 +106,13 @@ def build(tag, working_directory, quiet, no_cache):
         print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
 
+def byos():
+    print("Tutum lets you use your own servers as nodes to run containers. For this you have to install our agent.")
+    print("Run the following command on your server:")
+    print()
+    print("curl -Ls http://files.tutum.co.s3.amazonaws.com/scripts/install-agent-staging.sh 9a2447ab720246d39c2c5fb632f694c8 | sudo")
+    print()
+
 
 def service_inspect(identifiers):
     has_exception = False
