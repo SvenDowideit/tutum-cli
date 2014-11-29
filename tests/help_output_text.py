@@ -1,5 +1,5 @@
 TUTUM = '''usage: tutum [-h] [-v]
-             {build,BYOS,container,image,login,node,nodecluster,service,tag,webhook-handler}
+             {build,container,image,login,node,nodecluster,service,tag,webhook-handler}
              ...
 
 Tutum's CLI
@@ -9,10 +9,9 @@ optional arguments:
   -v, --version         show program's version number and exit
 
 Tutum's CLI commands:
-  {build,BYOS,container,image,login,node,nodecluster,service,tag,webhook-handler}
+  {build,container,image,login,node,nodecluster,service,tag,webhook-handler}
     build               Build an image using an existing Dockerfile, or create
                         one using buildstep
-    BYOS                Instructions on how to Bring Your Wwn Server to Tutum
     container           Container-related operations
     image               Image-related operations
     login               Login into Tutum
@@ -460,7 +459,7 @@ optional arguments:
 
 # ##################################################
 
-TUTUM_NODE = '''usage: tutum node [-h] {inspect,list,rm,upgrade} ...
+TUTUM_NODE = '''usage: tutum node [-h] {byo,inspect,list,rm,upgrade} ...
 
 Node-related operations
 
@@ -468,7 +467,8 @@ optional arguments:
   -h, --help            show this help message and exit
 
 tutum node commands:
-  {inspect,list,rm,upgrade}
+  {byo,inspect,list,rm,upgrade}
+    byo                 Instructions on how to Bring Your Own server to Tutum
     inspect             Inspect a node
     list                List nodes
     rm                  Remove a node

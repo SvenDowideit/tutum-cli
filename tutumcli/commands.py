@@ -106,13 +106,6 @@ def build(tag, working_directory, quiet, no_cache):
         print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
 
-def byos():
-    print("Tutum lets you use your own servers as nodes to run containers. For this you have to install our agent.")
-    print("Run the following command on your server:")
-    print()
-    print("curl -Ls http://files.tutum.co.s3.amazonaws.com/scripts/install-agent-staging.sh 9a2447ab720246d39c2c5fb632f694c8 | sudo")
-    print()
-
 
 def service_inspect(identifiers):
     has_exception = False
@@ -717,6 +710,24 @@ def node_upgrade(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
+def node_byo():
+    print("Tutum lets you use your own servers as nodes to run containers. For this you have to install our agent.")
+    print("Run the following command on your server:")
+    print()
+    print("\tcurl -Ls https://files.tutum.co/scripts/install-agent.sh | sudo sh -s 951b36d559864c01a0a990a0a7f19243")
+    print()
+    print("Here is the Tutum Token that you need to setup in our agent:")
+    try:
+        json = tutum.api.http.send_request("POST", "token")
+        if json:
+            print()
+            print("\t%s" % json.get("token", ""))
+            print()
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
 def nodecluster_list(quiet):
     try:
         headers = ["NAME", "UUID", "REGION", "TYPE", "DEPLOYED", "STATUS", "CURRENT#NODES", "TARGET#NODES"]
@@ -1039,6 +1050,7 @@ def webhookhandler_create(identifiers, names):
     if has_exception:
         sys.exit(EXCEPTION_EXIT_CODE)
 
+
 def webhookhandler_list(identifiers, quiet):
     has_exception = False
 
@@ -1076,7 +1088,7 @@ def webhookhandler_rm(identifier, webhook_identifiers):
         try:
             for uuid in uuid_list:
                 webhookhandler.delete(uuid)
-                print (uuid)
+                print(uuid)
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True

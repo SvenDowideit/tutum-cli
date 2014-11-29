@@ -16,11 +16,6 @@ def add_build_parser(subparsers):
     build_parser.add_argument('directory', help='working directory')
 
 
-def add_byos_parser(subparsers):
-    # tutum BYOS
-    subparsers.add_parser('BYOS', help='Instructions on how to Bring Your Wwn Server to Tutum',
-                                description='Instructions on how to Bring Your Own Server to Tutum')
-
 def add_service_parser(subparsers):
     # tutum service
     service_parser = subparsers.add_parser('service', help='Service-related operations',
@@ -251,6 +246,10 @@ def add_node_parser(subparsers):
     node_parser = subparsers.add_parser('node', help='Node-related operations', description='Node-related operations')
     node_subparser = node_parser.add_subparsers(title='tutum node commands', dest='subcmd')
 
+    # tutum byo
+    node_subparser.add_parser('byo', help='Instructions on how to Bring Your Own server to Tutum',
+                              description='Instructions on how to Bring Your Own server to Tutum')
+
     # tutum node inspect
     inspect_parser = node_subparser.add_parser('inspect', help='Inspect a node', description='Inspect a node')
     inspect_parser.add_argument('identifier', help="node's UUID (either long or short)", nargs='+')
@@ -265,7 +264,7 @@ def add_node_parser(subparsers):
 
     # tutum node upgrade
     upgrade_parser = node_subparser.add_parser('upgrade', help='Upgrade docker daemon on the node',
-                                          description='Upgrade docker daemon to the latest version on the node')
+                                               description='Upgrade docker daemon to the latest version on the node')
     upgrade_parser.add_argument('identifier', help="node's UUID (either long or short)", nargs='+')
 
 
@@ -356,22 +355,23 @@ def add_webhookhandler_parser(subparsers):
     # tutum webhook-handler
     webhookhandler_parser = subparsers.add_parser('webhook-handler', help='Webhook-handler-related operations',
                                                   description='Webhook-handler-related operations')
-    webhookhandler_subparser = webhookhandler_parser.add_subparsers(title='tutum webhook-handler commands', dest='subcmd')
+    webhookhandler_subparser = webhookhandler_parser.add_subparsers(title='tutum webhook-handler commands',
+                                                                    dest='subcmd')
 
     # tutum webhook-handler create
     create_parser = webhookhandler_subparser.add_parser('create', help='create webhook handler to services',
-                                          description='create webhook handler to services')
+                                                        description='create webhook handler to services')
     create_parser.add_argument('-n', '--name', help="name of the webhook handler (optional)", action='append')
     create_parser.add_argument('identifier', help="UUID or name of services", nargs='+')
 
     # tutum twebhook-handler list
     list_parser = webhookhandler_subparser.add_parser('list', help='List all webhook handler associated with services',
-                                           description='List all webhook handler associated with services')
+                                                      description='List all webhook handler associated with services')
     list_parser.add_argument('identifier', help="UUID or name of services", nargs='+')
     list_parser.add_argument('-q', '--quiet', help='print only webhook andler uuid', action='store_true')
-    
+
     # tutum webhook-handler delete
     rm_parser = webhookhandler_subparser.add_parser('rm', help='Remove webhook handler to a service',
-                                          description='create webhook handler to a service')
+                                                    description='create webhook handler to a service')
     rm_parser.add_argument('identifier', help="UUID or name of services")
     rm_parser.add_argument('webhookhandler', help="UUID or name of the webhook handler", nargs='+')

@@ -23,7 +23,6 @@ def initialize_parser():
     subparsers = parser.add_subparsers(title="Tutum's CLI commands", dest='cmd')
     # Command Parsers
     parsers.add_build_parser(subparsers)
-    parsers.add_byos_parser(subparsers)
     parsers.add_container_parser(subparsers)
     parsers.add_image_parser(subparsers)
     parsers.add_login_parser(subparsers)
@@ -80,8 +79,6 @@ def dispatch_cmds(args):
         commands.login()
     elif args.cmd == 'build':
         commands.build(args.tag, args.directory, args.quiet, args.no_cache)
-    elif args.cmd == 'BYOS':
-        commands.byos()
     elif args.cmd == 'service':
         if args.subcmd == 'create':
             commands.service_create(image=args.image, name=args.name, cpu_shares=args.cpushares,
@@ -153,6 +150,8 @@ def dispatch_cmds(args):
             commands.node_rm(args.identifier)
         elif args.subcmd == 'upgrade':
             commands.node_upgrade(args.identifier)
+        elif args.subcmd == 'byo':
+            commands.node_byo()
     elif args.cmd == 'nodecluster':
         if args.subcmd == 'create':
             commands.nodecluster_create(args.target_num_nodes, args.name, args.provider, args.region, args.nodetype)
