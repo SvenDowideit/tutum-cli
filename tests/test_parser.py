@@ -4,7 +4,6 @@ import StringIO
 import sys
 
 import mock
-
 from tutumcli.tutum_cli import patch_help_option, dispatch_cmds, initialize_parser
 from tutumcli.exceptions import InternalError
 import tutumcli
@@ -42,11 +41,16 @@ class PatchHelpOptionTestCase(unittest.TestCase):
             ['tutum', 'node'],
             ['tutum', 'node', 'inspect'],
             ['tutum', 'node', 'rm'],
+            ['tutum', 'node', 'upgrade'],
             ['tutum', 'nodecluster'],
             ['tutum', 'nodecluster', 'create'],
             ['tutum', 'nodecluster', 'inspect'],
             ['tutum', 'nodecluster', 'rm'],
             ['tutum', 'nodecluster', 'scale'],
+            ['tutum', 'tag', 'add'],
+            ['tutum', 'tag', 'list'],
+            ['tutum', 'tag', 'rm'],
+            ['tutum', 'tag', 'set'],
         ]
         self.not_add_help_argv_list = [
             ["tutum", "service", "ps"],
@@ -122,8 +126,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                     publish=args.publish,
                                                     envvars=args.env, tag=args.tag,
                                                     linked_to_service=args.link_service,
-                                                    autorestart=args.autorestart,
-                                                    autoreplace=args.autoreplace, autodestroy=args.autodestroy,
+                                                    autorestart=args.autorestart, autodestroy=args.autodestroy,
                                                     roles=args.role,
                                                     sequential=args.sequential)
 
@@ -152,8 +155,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                  entrypoint=args.entrypoint, expose=args.expose, publish=args.publish,
                                                  envvars=args.env, tag=args.tag,
                                                  linked_to_service=args.link_service,
-                                                 autorestart=args.autorestart,
-                                                 autoreplace=args.autoreplace, autodestroy=args.autodestroy,
+                                                 autorestart=args.autorestart, autodestroy=args.autodestroy,
                                                  roles=args.role,
                                                  sequential=args.sequential)
 
@@ -163,7 +165,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
 
         args = self.parser.parse_args(['service', 'set', 'id'])
         dispatch_cmds(args)
-        mock_cmds.service_set.assert_called_with(args.autorestart, args.autoreplace, args.autodestroy, args.identifier)
+        mock_cmds.service_set.assert_called_with(args.autorestart, args.autodestroy, args.identifier)
 
         args = self.parser.parse_args(['service', 'start', 'id'])
         dispatch_cmds(args)
@@ -243,8 +245,12 @@ class CommandsDispatchTestCase(unittest.TestCase):
         dispatch_cmds(args)
         mock_cmds.node_rm(args.identifier)
 
+        args = self.parser.parse_args(['node', 'upgrade', 'id'])
+        dispatch_cmds(args)
+        mock_cmds.node_rm(args.identifier)
+
     @mock.patch('tutumcli.tutum_cli.commands')
-    def test_nodecluste_dispatch(self, mock_cmds):
+    def test_nodecluster_dispatch(self, mock_cmds):
         args = self.parser.parse_args(['nodecluster', 'create', 'name', '1', '2', '3'])
         dispatch_cmds(args)
         mock_cmds.nodecluster_create(args.target_num_nodes, args.name,
@@ -277,6 +283,24 @@ class CommandsDispatchTestCase(unittest.TestCase):
         args = self.parser.parse_args(['nodecluster', 'scale', 'id', '3'])
         dispatch_cmds(args)
         mock_cmds.nodecluster_scale(args.identifier, args.target_num_nodes)
+
+    @mock.patch('tutumcli.tutum_cli.commands')
+    def test_tag_dispatch(self, mock_cmds):
+        args = self.parser.parse_args(['tag', 'add', '-t', 'abc', 'id'])
+        dispatch_cmds(args)
+        mock_cmds.tag_add.assert_called_with(args.identifier, args.tag)
+
+        args = self.parser.parse_args(['tag', 'list', 'abc', 'id'])
+        dispatch_cmds(args)
+        mock_cmds.tag_list.assert_called_with(args.identifier, args.quiet)
+
+        args = self.parser.parse_args(['tag', 'rm', '-t', 'abc', 'id'])
+        dispatch_cmds(args)
+        mock_cmds.tag_rm.assert_called_with(args.identifier, args.tag)
+
+        args = self.parser.parse_args(['tag', 'set', '-t', 'abc', 'id'])
+        dispatch_cmds(args)
+        mock_cmds.tag_set.assert_called_with(args.identifier, args.tag)
 
 
 class ParserTestCase(unittest.TestCase):
@@ -338,6 +362,7 @@ class ParserTestCase(unittest.TestCase):
         self.compare_output(TUTUM_NODE_INSPECT, args=['tutum', 'node', 'inspect', '-h'])
         self.compare_output(TUTUM_NODE_LIST, args=['tutum', 'node', 'list', '-h'])
         self.compare_output(TUTUM_NODE_RM, args=['tutum', 'node', 'rm', '-h'])
+        self.compare_output(TUTUM_NODE_UPGRADE, args=['tutum', 'node', 'upgrade', '-h'])
         self.compare_output(TUTUM_NODECLUSTER, args=['tutum', 'nodecluster', '-h'])
         self.compare_output(TUTUM_NODECLUSTER_CREATE, args=['tutum', 'nodecluster', 'create', '-h'])
         self.compare_output(TUTUM_NODECLUSTER_INSPECT, args=['tutum', 'nodecluster', 'inspect', '-h'])
@@ -347,3 +372,8 @@ class ParserTestCase(unittest.TestCase):
         self.compare_output(TUTUM_NODECLUSTER_PROVIDER, args=['tutum', 'nodecluster', 'provider', '-h'])
         self.compare_output(TUTUM_NODECLUSTER_REGION, args=['tutum', 'nodecluster', 'region', '-h'])
         self.compare_output(TUTUM_NODECLUSTER_NODETYPE, args=['tutum', 'nodecluster', 'nodetype', '-h'])
+        self.compare_output(TUTUM_TAG, args=['tutum', 'tag', '-h'])
+        self.compare_output(TUTUM_TAG_ADD, args=['tutum', 'tag', 'add', '-h'])
+        self.compare_output(TUTUM_TAG_LIST, args=['tutum', 'tag', 'list', '-h'])
+        self.compare_output(TUTUM_TAG_RM, args=['tutum', 'tag', 'rm', '-h'])
+        self.compare_output(TUTUM_TAG_SET, args=['tutum', 'tag', 'set', '-h'])

@@ -1,5 +1,6 @@
 TUTUM = '''usage: tutum [-h] [-v]
-             {build,container,image,login,node,nodecluster,service,tag} ...
+             {build,container,image,login,node,nodecluster,service,tag,webhook-handler}
+             ...
 
 Tutum's CLI
 
@@ -8,7 +9,7 @@ optional arguments:
   -v, --version         show program's version number and exit
 
 Tutum's CLI commands:
-  {build,container,image,login,node,nodecluster,service,tag}
+  {build,container,image,login,node,nodecluster,service,tag,webhook-handler}
     build               Build an image using an existing Dockerfile, or create
                         one using buildstep
     container           Container-related operations
@@ -17,7 +18,8 @@ Tutum's CLI commands:
     node                Node-related operations
     nodecluster         NodeCluster-related operations
     service             Service-related operations
-    tag                 Tag-related operations'''
+    tag                 Tag-related operations
+    webhook-handler     Webhook-handler-related operations'''
 
 # ##################################################
 
@@ -149,8 +151,7 @@ tutum service commands:
     redeploy            Redeploy a running service with a new version/tag
     run                 Create and run a new service
     scale               Scale a running service
-    set                 Enable or disable Crash Recovery and Autodestroy
-                        features to an existing service
+    set                 Change service properties
     start               Start a stopped service
     stop                Stop a running service
     terminate           Terminate an service'''
@@ -227,7 +228,6 @@ TUTUM_SERVICE_RUN = '''usage: tutum service run [-h] [-n NAME] [--cpushares CPUS
                          [--expose EXPOSE] [-e ENV] [--tag TAG]
                          [--link-service LINK_SERVICE]
                          [--autorestart {OFF,ON_FAILURE,ALWAYS}]
-                         [--autoreplace {OFF,ON_FAILURE,ALWAYS}]
                          [--autodestroy {OFF,ON_FAILURE,ALWAYS}] [--role ROLE]
                          [--sequential]
                          image
@@ -269,9 +269,6 @@ optional arguments:
   --autorestart {OFF,ON_FAILURE,ALWAYS}
                         whether the containers should be restarted if they
                         stop (default: OFF)
-  --autoreplace {OFF,ON_FAILURE,ALWAYS}
-                        whether the containers should be replaced with a new
-                        one if they stop (default: OFF)
   --autodestroy {OFF,ON_FAILURE,ALWAYS}
                         whether the containers should be terminated if they
                         stop (default: OFF)
@@ -298,12 +295,10 @@ optional arguments:
 # ##################################################
 
 TUTUM_SERVICE_SET = '''usage: tutum service set [-h] [--autorestart {OFF,ON_FAILURE,ALWAYS}]
-                         [--autoreplace {OFF,ON_FAILURE,ALWAYS}]
                          [--autodestroy {OFF,ON_FAILURE,ALWAYS}]
                          identifier [identifier ...]
 
-Enable or disable Crash Recovery and Autodestroy features to an existing
-service
+Change service properties
 
 positional arguments:
   identifier            service's UUID (either long or short) or name
@@ -313,9 +308,6 @@ optional arguments:
   --autorestart {OFF,ON_FAILURE,ALWAYS}
                         whether the containers should be restarted if they
                         stop (default: OFF)
-  --autoreplace {OFF,ON_FAILURE,ALWAYS}
-                        whether the containers should be replaced with a new
-                        one if they stop (default: OFF)
   --autodestroy {OFF,ON_FAILURE,ALWAYS}
                         whether the containers should be terminated if they
                         stop (default: OFF)'''
@@ -467,18 +459,20 @@ optional arguments:
 
 # ##################################################
 
-TUTUM_NODE = '''usage: tutum node [-h] {inspect,list,rm} ...
+TUTUM_NODE = '''usage: tutum node [-h] {byo,inspect,list,rm,upgrade} ...
 
 Node-related operations
 
 optional arguments:
-  -h, --help         show this help message and exit
+  -h, --help            show this help message and exit
 
 tutum node commands:
-  {inspect,list,rm}
-    inspect          Inspect a node
-    list             List nodes
-    rm               Remove a node'''
+  {byo,inspect,list,rm,upgrade}
+    byo                 Instructions on how to Bring Your Own server to Tutum
+    inspect             Inspect a node
+    list                List nodes
+    rm                  Remove a node
+    upgrade             Upgrade docker daemon on the node'''
 
 # ##################################################
 
@@ -507,6 +501,18 @@ optional arguments:
 TUTUM_NODE_RM = '''usage: tutum node rm [-h] identifier [identifier ...]
 
 Remove a container
+
+positional arguments:
+  identifier  node's UUID (either long or short)
+
+optional arguments:
+  -h, --help  show this help message and exit'''
+
+# ##################################################
+
+TUTUM_NODE_UPGRADE = '''usage: tutum node upgrade [-h] identifier [identifier ...]
+
+Upgrade docker daemon to the latest version on the node
 
 positional arguments:
   identifier  node's UUID (either long or short)
@@ -633,3 +639,74 @@ optional arguments:
                         filtered by provider name (e.g. digitalocean)
   -r REGION, --region REGION
                         filtered by region name (e.g. ams1)'''
+
+# ##################################################
+
+TUTUM_TAG = '''usage: tutum tag [-h] {add,list,rm,set} ...
+
+Tag-related operations
+
+optional arguments:
+  -h, --help         show this help message and exit
+
+tutum tag commands:
+  {add,list,rm,set}
+    add              Add tags to services, nodes or nodeclusters
+    list             List all tags associated with services, nodes or
+                     nodeclusters
+    rm               Remove tags from services, nodes or nodeclusters
+    set              Set tags from services, nodes or nodeclusters'''
+
+# ##################################################
+
+TUTUM_TAG_ADD = '''usage: tutum tag add [-h] -t TAG identifier [identifier ...]
+
+Add tags to services, nodes or nodeclusters
+
+positional arguments:
+  identifier         UUID or name of services, nodes or nodeclusters
+
+optional arguments:
+  -h, --help         show this help message and exit
+  -t TAG, --tag TAG  name of the tag
+'''
+
+# ##################################################
+
+TUTUM_TAG_LIST = '''usage: tutum tag list [-h] [-q] identifier [identifier ...]
+
+List all tags associated with services, nodes or nodeclusters
+
+positional arguments:
+  identifier   UUID or name of services, nodes or nodeclusters
+
+optional arguments:
+  -h, --help   show this help message and exit
+  -q, --quiet  print only tag names'''
+
+# ##################################################
+
+TUTUM_TAG_RM = '''usage: tutum tag rm [-h] -t TAG identifier [identifier ...]
+
+Remove tags from services, nodes or nodeclusters
+
+positional arguments:
+  identifier         UUID or name of services, nodes or nodeclusters
+
+optional arguments:
+  -h, --help         show this help message and exit
+  -t TAG, --tag TAG  name of the tag'''
+
+# ##################################################
+
+TUTUM_TAG_SET = '''usage: tutum tag set [-h] -t TAG identifier [identifier ...]
+
+Set tags from services, nodes or nodeclusters. This will remove all the
+existing tags
+
+positional arguments:
+  identifier         UUID or name of services, nodes or nodeclusters
+
+optional arguments:
+  -h, --help         show this help message and exit
+  -t TAG, --tag TAG  name of the tag'''

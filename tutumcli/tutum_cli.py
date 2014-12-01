@@ -30,6 +30,7 @@ def initialize_parser():
     parsers.add_nodecluster_parser(subparsers)
     parsers.add_service_parser(subparsers)
     parsers.add_tag_parser(subparsers)
+    parsers.add_webhookhandler_parser(subparsers)
     return parser
 
 
@@ -45,7 +46,8 @@ def patch_help_option(argv=sys.argv):
 
     if len(args) == 1:
         args.append('-h')
-    elif len(args) == 2 and args[1] in ['service', 'build', 'container', 'image', 'node', 'nodecluster', 'tag']:
+    elif len(args) == 2 and args[1] in ['service', 'build', 'container', 'image', 'node', 'nodecluster', 'tag',
+                                        'webhook-handler']:
         args.append('-h')
     elif len(args) == 3:
         if args[1] == 'service' and args[2] in ['create', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
@@ -56,11 +58,13 @@ def patch_help_option(argv=sys.argv):
             args.append('-h')
         elif args[1] == 'image' and args[2] in ['register', 'push', 'rm', 'search', 'update']:
             args.append('-h')
-        elif args[1] == 'node' and args[2] in ['inspect', 'rm']:
+        elif args[1] == 'node' and args[2] in ['inspect', 'rm', 'upgrade']:
             args.append('-h')
         elif args[1] == 'nodecluster' and args[2] in ['create', 'inspect', 'rm', 'scale']:
             args.append('-h')
-        elif args[1] == 'tag' and args[2] in ['add', 'list', 'rm']:
+        elif args[1] == 'tag' and args[2] in ['add', 'list', 'rm', 'set']:
+            args.append('-h')
+        elif args[1] == 'webhook-handler' and args[2] in ['create', 'list', 'rm']:
             args.append('-h')
     if debug:
         args.insert(1, '--debug')
@@ -73,7 +77,7 @@ def dispatch_cmds(args):
         requests_log.setLevel(logging.INFO)
     if args.cmd == 'login':
         commands.login()
-    if args.cmd == 'build':
+    elif args.cmd == 'build':
         commands.build(args.tag, args.directory, args.quiet, args.no_cache)
     elif args.cmd == 'service':
         if args.subcmd == 'create':
@@ -83,8 +87,7 @@ def dispatch_cmds(args):
                                     entrypoint=args.entrypoint, expose=args.expose, publish=args.publish,
                                     envvars=args.env,
                                     tag=args.tag, linked_to_service=args.link_service,
-                                    autorestart=args.autorestart,
-                                    autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role,
+                                    autorestart=args.autorestart, autodestroy=args.autodestroy, roles=args.role,
                                     sequential=args.sequential)
         elif args.subcmd == 'inspect':
             commands.service_inspect(args.identifier)
@@ -100,13 +103,12 @@ def dispatch_cmds(args):
                                  target_num_containers=args.target_num_containers, run_command=args.run_command,
                                  entrypoint=args.entrypoint, expose=args.expose, publish=args.publish, envvars=args.env,
                                  tag=args.tag, linked_to_service=args.link_service,
-                                 autorestart=args.autorestart,
-                                 autoreplace=args.autoreplace, autodestroy=args.autodestroy, roles=args.role,
+                                 autorestart=args.autorestart, autodestroy=args.autodestroy, roles=args.role,
                                  sequential=args.sequential)
         elif args.subcmd == 'scale':
             commands.service_scale(args.identifier, args.target_num_containers)
         elif args.subcmd == 'set':
-            commands.service_set(args.autorestart, args.autoreplace, args.autodestroy, args.identifier)
+            commands.service_set(args.autorestart, args.autodestroy, args.identifier)
         elif args.subcmd == 'start':
             commands.service_start(args.identifier)
         elif args.subcmd == 'stop':
@@ -120,8 +122,6 @@ def dispatch_cmds(args):
             commands.container_logs(args.identifier)
         elif args.subcmd == 'ps':
             commands.container_ps(args.identifier, args.quiet, args.status)
-        elif args.subcmd == 'redeploy':
-            commands.container_redeploy(args.identifier, args.tag)
         elif args.subcmd == 'start':
             commands.container_start(args.identifier)
         elif args.subcmd == 'stop':
@@ -148,6 +148,10 @@ def dispatch_cmds(args):
             commands.node_list(args.quiet)
         elif args.subcmd == 'rm':
             commands.node_rm(args.identifier)
+        elif args.subcmd == 'upgrade':
+            commands.node_upgrade(args.identifier)
+        elif args.subcmd == 'byo':
+            commands.node_byo()
     elif args.cmd == 'nodecluster':
         if args.subcmd == 'create':
             commands.nodecluster_create(args.target_num_nodes, args.name, args.provider, args.region, args.nodetype)
@@ -170,8 +174,17 @@ def dispatch_cmds(args):
             commands.tag_add(args.identifier, args.tag)
         elif args.subcmd == 'list':
             commands.tag_list(args.identifier, args.quiet)
-        if args.subcmd == 'rm':
+        elif args.subcmd == 'rm':
             commands.tag_rm(args.identifier, args.tag)
+        elif args.subcmd == 'set':
+            commands.tag_set(args.identifier, args.tag)
+    elif args.cmd == 'webhook-handler':
+        if args.subcmd == 'create':
+            commands.webhookhandler_create(args.identifier, args.name)
+        elif args.subcmd == 'list':
+            commands.webhookhandler_list(args.identifier, args.quiet)
+        elif args.subcmd == 'rm':
+            commands.webhookhandler_rm(args.identifier, args.webhookhandler)
 
 
 def main():

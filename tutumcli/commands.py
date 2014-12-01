@@ -12,7 +12,6 @@ import tutum
 import docker
 from tutum.api import auth
 from tutum.api import exceptions
-
 from exceptions import StreamOutputError, ObjectNotFound
 from tutumcli import utils
 
@@ -176,8 +175,7 @@ def service_redeploy(identifiers, tag):
 
 
 def service_create(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
-                   expose, publish, envvars, tag, linked_to_service, autorestart, autoreplace,
-                   autodestroy, roles, sequential):
+                   expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, roles, sequential):
     try:
         ports = utils.parse_published_ports(publish)
 
@@ -199,7 +197,7 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
                                        target_num_containers=target_num_containers, run_command=run_command,
                                        entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
                                        linked_to_service=links_service,
-                                       autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
+                                       autorestart=autorestart, autodestroy=autodestroy,
                                        roles=roles, sequential_deployment=sequential)
         result = service.save()
         if tag:
@@ -212,8 +210,7 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
 
 
 def service_run(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
-                expose, publish, envvars, tag, linked_to_service, autorestart, autoreplace,
-                autodestroy, roles, sequential):
+                expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, roles, sequential):
     try:
         ports = utils.parse_published_ports(publish)
 
@@ -235,7 +232,7 @@ def service_run(image, name, cpu_shares, memory, privileged, target_num_containe
                                        target_num_containers=target_num_containers, run_command=run_command,
                                        entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
                                        linked_to_service=links_service,
-                                       autorestart=autorestart, autoreplace=autoreplace, autodestroy=autodestroy,
+                                       autorestart=autorestart, autodestroy=autodestroy,
                                        roles=roles, sequential_deployment=sequential)
         service.save()
         if tag:
@@ -264,14 +261,13 @@ def service_scale(identifiers, target_num_containers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def service_set(autorestart, autoreplace, autodestroy, identifiers):
+def service_set(autorestart, autodestroy, identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
             service_details = utils.fetch_remote_service(identifier, raise_exceptions=True)
             if service_details is not None:
                 service_details.autorestart = autorestart
-                service_details.autoreplace = autoreplace
                 service_details.autodestroy = autodestroy
                 result = service_details.save()
                 if result:
@@ -642,7 +638,7 @@ def image_update(repositories, username, password, description):
 
 def node_list(quiet=False):
     try:
-        headers = ["UUID", "FQDN", "LASTSEEN", "STATUS", "CLUSTER"]
+        headers = ["UUID", "FQDN", "LASTSEEN", "STATUS", "CLUSTER", "DOCKER_VER"]
         node_list = tutum.Node.list()
         data_list = []
         long_uuid_list = []
@@ -657,10 +653,10 @@ def node_list(quiet=False):
                               node.external_fqdn,
                               utils.get_humanize_local_datetime_from_utc_datetime_string(node.last_seen),
                               utils.add_unicode_symbol_to_state(node.state),
-                              cluster_name])
+                              cluster_name, node.docker_version])
             long_uuid_list.append(node.uuid)
         if len(data_list) == 0:
-            data_list.append(["", "", "", "", ""])
+            data_list.append(["", "", "", "", "", ""])
         if quiet:
             for uuid in long_uuid_list:
                 print(uuid)
@@ -697,6 +693,38 @@ def node_rm(identifiers):
             has_exception = True
     if has_exception:
         sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def node_upgrade(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            node = utils.fetch_remote_node(identifier)
+            result = node.upgrade_docker()
+            if result:
+                print(node.uuid)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def node_byo():
+    token = ""
+    try:
+        json = tutum.api.http.send_request("POST", "token")
+        if json:
+            token = json.get("token", "")
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+    print("Tutum lets you use your own servers as nodes to run containers. For this you have to install our agent.")
+    print("Run the following command on your server:")
+    print()
+    print("\tcurl -Ls https://files.tutum.co/scripts/install-agent.sh | sudo sh -s", token)
+    print()
 
 
 def nodecluster_list(quiet):
@@ -869,35 +897,26 @@ def nodecluster_scale(identifiers, target_num_nodes):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def tag_add(identifiers, tag):
+def tag_add(identifiers, tags):
     has_exception = False
     for identifier in identifiers:
         try:
-            obj_type = None
-            obj = utils.fetch_remote_service(identifier, raise_exceptions=False)
-            if isinstance(obj, Exception):
-                obj = utils.fetch_remote_nodecluster(identifier, raise_exceptions=False)
-                if isinstance(obj, Exception):
-                    obj = utils.fetch_remote_node(identifier, raise_exceptions=False)
-                    if isinstance(obj, Exception):
-                        pass
-                    else:
-                        obj_type = 'Node'
-                else:
-                    obj_type = 'NodeCluster'
-            else:
-                obj_type = 'Service'
+            try:
+                obj = utils.fetch_remote_service(identifier)
+            except ObjectNotFound:
+                try:
+                    obj = utils.fetch_remote_nodecluster(identifier)
+                except ObjectNotFound:
+                    try:
+                        obj = utils.fetch_remote_node(identifier)
+                    except ObjectNotFound:
+                        raise ObjectNotFound(
+                            "Identifier '%s' does not match any service, node or nodecluster" % identifier)
 
-            if obj_type == 'Service':
-                tutum.Service.fetch(obj.uuid).tag.add(tag)
-            elif obj_type == 'Node':
-                tutum.Node.fetch(obj.uuid).tag.add(tag)
-            elif obj_type == 'NodeCluster':
-                tutum.NodeCluster.fetch(obj.uuid).tag.add(tag)
-            else:
-                raise ObjectNotFound("Identifier '%s' does not match any service, node or nodecluster" % identifier)
+            tag = tutum.Tag.fetch(obj)
+            tag.add(tags)
+            tag.save()
             print(obj.uuid)
-
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -913,14 +932,14 @@ def tag_list(identifiers, quiet):
     tags_list = []
     for identifier in identifiers:
         try:
-            obj_type = None
             obj = utils.fetch_remote_service(identifier, raise_exceptions=False)
-            if isinstance(obj, Exception):
+            if isinstance(obj, ObjectNotFound):
                 obj = utils.fetch_remote_nodecluster(identifier, raise_exceptions=False)
-                if isinstance(obj, Exception):
+                if isinstance(obj, ObjectNotFound):
                     obj = utils.fetch_remote_node(identifier, raise_exceptions=False)
-                    if isinstance(obj, Exception):
-                        pass
+                    if isinstance(obj, ObjectNotFound):
+                        raise ObjectNotFound(
+                            "Identifier '%s' does not match any service, node or nodecluster" % identifier)
                     else:
                         obj_type = 'Node'
                 else:
@@ -928,18 +947,8 @@ def tag_list(identifiers, quiet):
             else:
                 obj_type = 'Service'
 
-            tags_obj = ""
-            if obj_type == 'Service':
-                tags_obj = tutum.Service.fetch(obj.uuid).tag.list()
-            elif obj_type == 'Node':
-                tags_obj = tutum.Node.fetch(obj.uuid).tag.list()
-            elif obj_type == 'NodeCluster':
-                tags_obj = tutum.NodeCluster.fetch(obj.uuid).tag.list()
-            else:
-                raise ObjectNotFound("Identifier '%s' does not match any service, node or nodecluster" % identifier)
-
             tagnames = []
-            for tags in tags_obj:
+            for tags in tutum.Tag.fetch(obj).list():
                 tagname = tags.get('name', '')
                 if tagname:
                     tagnames.append(tagname)
@@ -952,6 +961,7 @@ def tag_list(identifiers, quiet):
             else:
                 data_list.append([identifier, '', ''])
             tags_list.append('')
+            print(e, file=sys.stderr)
             has_exception = True
     if quiet:
         for tags in tags_list:
@@ -962,52 +972,127 @@ def tag_list(identifiers, quiet):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def tag_rm(identifiers, tag):
+def tag_rm(identifiers, tags):
     has_exception = False
     for identifier in identifiers:
         try:
-            obj_type = None
-            obj = utils.fetch_remote_service(identifier, raise_exceptions=False)
-            if isinstance(obj, Exception):
-                obj = utils.fetch_remote_nodecluster(identifier, raise_exceptions=False)
-                if isinstance(obj, Exception):
-                    obj = utils.fetch_remote_node(identifier, raise_exceptions=False)
-                    if isinstance(obj, Exception):
-                        pass
-                    else:
-                        obj_type = 'Node'
-                else:
-                    obj_type = 'NodeCluster'
-            else:
-                obj_type = 'Service'
+            try:
+                obj = utils.fetch_remote_service(identifier)
+            except ObjectNotFound:
+                try:
+                    obj = utils.fetch_remote_nodecluster(identifier)
+                except ObjectNotFound:
+                    try:
+                        obj = utils.fetch_remote_node(identifier)
+                    except ObjectNotFound:
+                        raise ObjectNotFound(
+                            "Identifier '%s' does not match any service, node or nodecluster" % identifier)
 
-            if obj_type == 'Service':
-                for t in tag:
-                    try:
-                        tutum.Service.fetch(obj.uuid).tag.delete(t)
-                    except Exception as e:
-                        print(e, file=sys.stderr)
-                        has_exception = True
-            elif obj_type == 'Node':
-                for t in tag:
-                    try:
-                        tutum.Node.fetch(obj.uuid).tag.delete(t)
-                    except Exception as e:
-                        print(e, file=sys.stderr)
-                        has_exception = True
-            elif obj_type == 'NodeCluster':
-                for t in tag:
-                    try:
-                        tutum.NodeCluster.fetch(obj.uuid).tag.delete(t)
-                    except Exception as e:
-                        print(e, file=sys.stderr)
-                        has_exception = True
-            else:
-                raise ObjectNotFound("Identifier '%s' does not match any service, node or nodecluster" % identifier)
+            tag = tutum.Tag.fetch(obj)
+            for t in tags:
+                try:
+                    tag.delete(t)
+                except Exception as e:
+                    print(e, file=sys.stderr)
+                    has_exception = True
             print(obj.uuid)
-
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def tag_set(identifiers, tags):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            try:
+                obj = utils.fetch_remote_service(identifier)
+            except ObjectNotFound:
+                try:
+                    obj = utils.fetch_remote_nodecluster(identifier)
+                except ObjectNotFound:
+                    try:
+                        obj = utils.fetch_remote_node(identifier)
+                    except ObjectNotFound:
+                        raise ObjectNotFound(
+                            "Identifier '%s' does not match any service, node or nodecluster" % identifier)
+
+            obj.tags = []
+            for t in tags:
+                new_tag = {"name": t}
+                if new_tag not in obj.tags:
+                    obj.tags.append(new_tag)
+            obj.save()
+
+            print(obj.uuid)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def webhookhandler_create(identifiers, names):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            service = utils.fetch_remote_service(identifier)
+            webhookhandler = tutum.WebhookHandler.fetch(service)
+            webhookhandler.add(names)
+            webhookhandler.save()
+            print(service.uuid)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def webhookhandler_list(identifiers, quiet):
+    has_exception = False
+
+    headers = ["IDENTIFIER", "NAME", "UUID"]
+    data_list = []
+    uuid_list = []
+    for identifier in identifiers:
+        try:
+            service = utils.fetch_remote_service(identifier)
+            webhookhandler = tutum.WebhookHandler.fetch(service)
+            handlers = webhookhandler.list()
+            for handler in handlers:
+                data_list.append([identifier, handler.get('name', ''), handler.get('uuid', '')])
+                uuid_list.append(handler.get('uuid', ''))
+        except Exception as e:
+            print(e, file=sys.stderr)
+            data_list.append([identifier, '', ''])
+            uuid_list.append('')
+            has_exception = True
+    if quiet:
+        for uuid in uuid_list:
+            print(uuid)
+    else:
+        utils.tabulate_result(data_list, headers)
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def webhookhandler_rm(identifier, webhook_identifiers):
+    has_exception = False
+    try:
+        service = utils.fetch_remote_service(identifier)
+        webhookhandler = tutum.WebhookHandler.fetch(service)
+        uuid_list = utils.get_uuids_of_webhookhandler(webhookhandler, webhook_identifiers)
+        try:
+            for uuid in uuid_list:
+                webhookhandler.delete(uuid)
+                print(uuid)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    except Exception as e:
+        print(e, file=sys.stderr)
+        has_exception = True
     if has_exception:
         sys.exit(EXCEPTION_EXIT_CODE)

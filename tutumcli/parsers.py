@@ -54,9 +54,6 @@ def add_service_parser(subparsers):
                                help="Add link to another service (name:alias) or (uuid:alias)", action='append')
     create_parser.add_argument('--autorestart', help='whether the containers should be restarted if they stop '
                                                      '(default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
-    create_parser.add_argument('--autoreplace', help='whether the containers should be replaced with a new one if '
-                                                     'they stop (default: OFF)',
-                               choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     create_parser.add_argument('--autodestroy', help='whether the containers should be terminated if '
                                                      'they stop (default: OFF)',
                                choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
@@ -121,8 +118,6 @@ def add_service_parser(subparsers):
                             help="Add link to another service (name:alias) or (uuid:alias)", action='append')
     run_parser.add_argument('--autorestart', help='whether the containers should be restarted if they stop '
                                                   '(default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
-    run_parser.add_argument('--autoreplace', help='whether the containers should be replaced with a new one if '
-                                                  'they stop (default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     run_parser.add_argument('--autodestroy', help='whether the containers should be terminated if '
                                                   'they stop (default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     run_parser.add_argument('--role', help='Tutum API roles to grant the service, '
@@ -137,16 +132,11 @@ def add_service_parser(subparsers):
     scale_parser.add_argument("target_num_containers", metavar="target-num-containers",
                               help="target number of containers to scale this service to", type=int)
     # tutum service set
-    set_parser = service_subparser.add_parser('set',
-                                              help='Enable or disable Crash Recovery and Autodestroy features to '
-                                                   'an existing service',
-                                              description='Enable or disable Crash Recovery and Autodestroy features to'
-                                                          ' an existing service')
+    set_parser = service_subparser.add_parser('set', help='Change service properties',
+                                              description='Change service properties')
     set_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
     set_parser.add_argument('--autorestart', help="whether the containers should be restarted if they stop "
                                                   "(default: OFF)", choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
-    set_parser.add_argument('--autoreplace', help="whether the containers should be replaced with a new one if "
-                                                  "they stop (default: OFF)", choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     set_parser.add_argument('--autodestroy',
                             help="whether the containers should be terminated if they stop (default: OFF)",
                             choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
@@ -256,6 +246,10 @@ def add_node_parser(subparsers):
     node_parser = subparsers.add_parser('node', help='Node-related operations', description='Node-related operations')
     node_subparser = node_parser.add_subparsers(title='tutum node commands', dest='subcmd')
 
+    # tutum byo
+    node_subparser.add_parser('byo', help='Instructions on how to Bring Your Own server to Tutum',
+                              description='Instructions on how to Bring Your Own server to Tutum')
+
     # tutum node inspect
     inspect_parser = node_subparser.add_parser('inspect', help='Inspect a node', description='Inspect a node')
     inspect_parser.add_argument('identifier', help="node's UUID (either long or short)", nargs='+')
@@ -267,6 +261,11 @@ def add_node_parser(subparsers):
     # tutum node rm
     rm_parser = node_subparser.add_parser('rm', help='Remove a node', description='Remove a container')
     rm_parser.add_argument('identifier', help="node's UUID (either long or short)", nargs='+')
+
+    # tutum node upgrade
+    upgrade_parser = node_subparser.add_parser('upgrade', help='Upgrade docker daemon on the node',
+                                               description='Upgrade docker daemon to the latest version on the node')
+    upgrade_parser.add_argument('identifier', help="node's UUID (either long or short)", nargs='+')
 
 
 def add_nodecluster_parser(subparsers):
@@ -327,19 +326,52 @@ def add_tag_parser(subparsers):
     tag_subparser = tag_parser.add_subparsers(title='tutum tag commands', dest='subcmd')
 
     # tutum tag add
-    add_parser = tag_subparser.add_parser('add', help='Add tags to a service, node or nodecluster',
-                                          description='Add tags to a service, node or nodecluster')
+    add_parser = tag_subparser.add_parser('add', help='Add tags to services, nodes or nodeclusters',
+                                          description='Add tags to services, nodes or nodeclusters')
     add_parser.add_argument('-t', '--tag', help="name of the tag", action='append', required=True)
-    add_parser.add_argument('identifier', help="UUID or name of a service, node or nodecluster", action='append')
-
-    # tutum tag delete
-    list_parser = tag_subparser.add_parser('list', help='List all tags associated with a service, node or nodecluster',
-                                           description='List all tags associated with a service, node or nodecluster')
-    list_parser.add_argument('identifier', help="UUID or name of a service, node or nodecluster", nargs='+')
-    list_parser.add_argument('-q', '--quiet', help='print only tag names', action='store_true')
+    add_parser.add_argument('identifier', help="UUID or name of services, nodes or nodeclusters", nargs='+')
 
     # tutum tag list
-    rm_parser = tag_subparser.add_parser('rm', help='Remove tags from a service, node or nodecluster',
-                                         description='Remove tags from a service, node or nodecluster')
+    list_parser = tag_subparser.add_parser('list', help='List all tags associated with services, nodes or nodeclusters',
+                                           description='List all tags associated with services, nodes or nodeclusters')
+    list_parser.add_argument('identifier', help="UUID or name of services, nodes or nodeclusters", nargs='+')
+    list_parser.add_argument('-q', '--quiet', help='print only tag names', action='store_true')
+
+    # tutum tag rm
+    rm_parser = tag_subparser.add_parser('rm', help='Remove tags from services, nodes or nodeclusters',
+                                         description='Remove tags from services, nodes or nodeclusters')
     rm_parser.add_argument('-t', '--tag', help="name of the tag", action='append', required=True)
-    rm_parser.add_argument('identifier', help="UUID or name of a service, node or nodecluster", nargs='+')
+    rm_parser.add_argument('identifier', help="UUID or name of services, nodes or nodeclusters", nargs='+')
+
+    # tutum tag set
+    set_parser = tag_subparser.add_parser('set', help='Set tags from services, nodes or nodeclusters',
+                                          description='Set tags from services, nodes or nodeclusters. '
+                                                      'This will remove all the existing tags')
+    set_parser.add_argument('-t', '--tag', help="name of the tag", action='append', required=True)
+    set_parser.add_argument('identifier', help="UUID or name of services, nodes or nodeclusters", nargs='+')
+
+
+def add_webhookhandler_parser(subparsers):
+    # tutum webhook-handler
+    webhookhandler_parser = subparsers.add_parser('webhook-handler', help='Webhook-handler-related operations',
+                                                  description='Webhook-handler-related operations')
+    webhookhandler_subparser = webhookhandler_parser.add_subparsers(title='tutum webhook-handler commands',
+                                                                    dest='subcmd')
+
+    # tutum webhook-handler create
+    create_parser = webhookhandler_subparser.add_parser('create', help='create webhook handler to services',
+                                                        description='create webhook handler to services')
+    create_parser.add_argument('-n', '--name', help="name of the webhook handler (optional)", action='append')
+    create_parser.add_argument('identifier', help="UUID or name of services", nargs='+')
+
+    # tutum twebhook-handler list
+    list_parser = webhookhandler_subparser.add_parser('list', help='List all webhook handler associated with services',
+                                                      description='List all webhook handler associated with services')
+    list_parser.add_argument('identifier', help="UUID or name of services", nargs='+')
+    list_parser.add_argument('-q', '--quiet', help='print only webhook andler uuid', action='store_true')
+
+    # tutum webhook-handler delete
+    rm_parser = webhookhandler_subparser.add_parser('rm', help='Remove webhook handler to a service',
+                                                    description='create webhook handler to a service')
+    rm_parser.add_argument('identifier', help="UUID or name of services")
+    rm_parser.add_argument('webhookhandler', help="UUID or name of the webhook handler", nargs='+')

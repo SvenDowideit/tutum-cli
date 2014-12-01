@@ -12,7 +12,6 @@ from dateutil import tz
 import ago
 import docker
 import requests
-
 from tutumcli.exceptions import NonUniqueIdentifier, ObjectNotFound, BadParameter, DockerNotFound
 from exceptions import StreamOutputError
 from . import __version__
@@ -59,6 +58,8 @@ def add_unicode_symbol_to_state(state):
         return u"\u0021 " + state
     elif state == "Terminated":
         return u"\u2718 " + state
+    elif state == "Unreachable":
+        return u"\u2753 " + state
     return state
 
 
@@ -265,6 +266,23 @@ def fetch_remote_nodecluster(identifier, raise_exceptions=True):
         if not raise_exceptions:
             return e
         raise e
+
+
+def get_uuids_of_webhookhandler(webhookhandler, identifiers):
+    uuid_list = []
+    for identifier in identifiers:
+        if is_uuid4(identifier):
+            uuid_list.append(identifier)
+        else:
+            handlers = webhookhandler.list(uuid__startswith=identifier) or \
+                       webhookhandler.list(name=identifier)
+            for handler in handlers:
+                uuid = handler.get('uuid', "")
+                if uuid:
+                    uuid_list.append(uuid)
+    if not uuid_list:
+        raise ObjectNotFound("Cannot find a webhook handler with the identifier '%s'" % identifier)
+    return uuid_list
 
 
 def parse_links(links, target):
