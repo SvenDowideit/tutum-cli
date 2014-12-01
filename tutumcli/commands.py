@@ -711,21 +711,20 @@ def node_upgrade(identifiers):
 
 
 def node_byo():
-    print("Tutum lets you use your own servers as nodes to run containers. For this you have to install our agent.")
-    print("Run the following command on your server:")
-    print()
-    print("\tcurl -Ls https://files.tutum.co/scripts/install-agent.sh | sudo sh -s 951b36d559864c01a0a990a0a7f19243")
-    print()
-    print("Here is the Tutum Token that you need to setup in our agent:")
+    token = ""
     try:
         json = tutum.api.http.send_request("POST", "token")
         if json:
-            print()
-            print("\t%s" % json.get("token", ""))
-            print()
+            token = json.get("token", "")
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
+
+    print("Tutum lets you use your own servers as nodes to run containers. For this you have to install our agent.")
+    print("Run the following command on your server:")
+    print()
+    print("\tcurl -Ls https://files.tutum.co/scripts/install-agent.sh | sudo sh -s", token)
+    print()
 
 
 def nodecluster_list(quiet):
