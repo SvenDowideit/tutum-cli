@@ -1,11 +1,11 @@
 from __future__ import print_function
-import re
 import datetime
 import json
-import os
 import urlparse
 import ssl
 
+import re
+import os
 from tabulate import tabulate
 import tutum
 from dateutil import tz
@@ -343,19 +343,21 @@ def parse_exposed_ports(port_list):
 
 
 def parse_envvars(envvar_list):
-    def _is_envvar(_envvar):
-        envvar_regexp = re.compile('^[a-zA-Z_]+[a-zA-Z0-9_]*=[^?!=]+$')
-        match = envvar_regexp.match(_envvar)
-        if bool(match):
-            _envvar = _envvar.split("=", 1)
+    def _get_envvar(_envvar):
+        _envvar = _envvar.split("=", 1)
+        length = len(_envvar)
+        if length == 1:
+            return {'key': _envvar[0], 'value': ''}
+        elif length == 2:
             return {'key': _envvar[0], 'value': _envvar[1]}
-        raise BadParameter("Environment Variable argument %s does not match with 'KEY=VALUE'."
-                           " Example: ENVVAR=foo" % _envvar)
+        else:
+            raise BadParameter("Environment Variable argument %s does not match with 'KEY=VALUE'."
+                               " Example: ENVVAR=foo" % _envvar)
 
     parsed_envvars = []
     if envvar_list is not None:
         for envvar in envvar_list:
-            parsed_envvars.append(_is_envvar(envvar))
+            parsed_envvars.append(_get_envvar(envvar))
     return parsed_envvars
 
 

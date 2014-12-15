@@ -358,14 +358,8 @@ class ParseEnvironmentVariablesTestCase(unittest.TestCase):
         output = [{'key': 'MYSQL_USER', 'value': 'admin'}, {'key': 'MYSQL_PASS', 'value': 'mypass'}]
         self.assertEqual(output, parse_envvars(['MYSQL_USER=admin', 'MYSQL_PASS=mypass']))
 
-    def test_parse_envvars(self):
-        self.assertRaises(BadParameter, parse_envvars, ['MYSQL_ADMIN'])
-        self.assertRaises(BadParameter, parse_envvars, ['1MYSQL_ADMIN=mypass'])
-        self.assertRaises(BadParameter, parse_envvars, ['MYSQL_ADMIN==mypass'])
-        self.assertRaises(BadParameter, parse_envvars, ['MYSQL_ADMIN=m!ypass'])
-        self.assertRaises(BadParameter, parse_envvars, ['MYSQL_ADMIN=my?pass'])
-        self.assertRaises(BadParameter, parse_envvars, ['MYSQL_ADMIN=mypass=113'])
-        self.assertRaises(BadParameter, parse_envvars, ['MYSQL_ADMIN='])
+        output = [{'key': 'MYSQL_USER', 'value': ''}, {'key': 'MYSQL_PASS', 'value': 'mypass=!,'}]
+        self.assertEqual(output, parse_envvars(['MYSQL_USER', 'MYSQL_PASS=mypass=!,']))
 
 
 class TryRegisterTestCase(unittest.TestCase):
