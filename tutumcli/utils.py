@@ -1,11 +1,11 @@
 from __future__ import print_function
-import re
 import datetime
 import json
-import os
 import urlparse
 import ssl
 
+import re
+import os
 from tabulate import tabulate
 import tutum
 from dateutil import tz

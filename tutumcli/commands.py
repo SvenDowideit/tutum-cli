@@ -3,10 +3,10 @@ import getpass
 import ConfigParser
 import json
 import sys
+
 import re
 import os
 from os.path import join, expanduser, abspath, isfile
-
 import yaml
 import tutum
 import docker
@@ -57,6 +57,43 @@ def login():
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def verify_auth(args):
+    def _login():
+        username = raw_input("Username: ")
+        password = getpass.getpass()
+        try:
+            user, api_key = auth.get_auth(username, password)
+            if api_key is not None:
+                config = ConfigParser.ConfigParser()
+                config.add_section(AUTH_SECTION)
+                config.set(AUTH_SECTION, USER_OPTION, user)
+                config.set(AUTH_SECTION, APIKEY_OPTION, api_key)
+                with open(join(expanduser('~'), TUTUM_FILE), 'w') as cfgfile:
+                    config.write(cfgfile)
+                return True
+        except tutum.TutumAuthError:
+            return False
+        except Exception as e:
+            print(e, file=sys.stderr)
+            sys.exit(EXCEPTION_EXIT_CODE)
+
+    if args.cmd != 'login':
+        try:
+            tutum.api.http.send_request("GET", "/auth")
+        except tutum.TutumAuthError:
+            print("Not Authorized, Please login:", file=sys.stderr)
+            while True:
+                success = _login()
+                if success:
+                    print("Login succeeded!")
+                    # Update user and apikey for SDK
+                    tutum.user = auth.load_from_file()[0] or os.environ.get('TUTUM_USER', None)
+                    tutum.apikey = auth.load_from_file()[1] or os.environ.get('TUTUM_APIKEY', None)
+                    break
+                else:
+                    print("Not Authorized, Please login:", file=sys.stderr)
 
 
 def build(tag, working_directory, quiet, no_cache):
