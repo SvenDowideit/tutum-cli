@@ -593,7 +593,7 @@ def image_push(name, public):
             print('Tagging %s as %s ...' % (name, repository))
 
         try:
-            docker_client.tag(name, repository, tag=tag)
+            docker_client.tag(name, repository, tag=tag, force=True)
         except Exception as e:
             print(e, file=sys.stderr)
             sys.exit(EXCEPTION_EXIT_CODE)
