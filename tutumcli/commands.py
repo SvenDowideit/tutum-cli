@@ -177,7 +177,7 @@ def service_ps(quiet=False, status=None):
         data_list = []
         long_uuid_list = []
         for service in service_list:
-            data_list.append([service.unique_name, service.uuid[:8],
+            data_list.append([service.name, service.uuid[:8],
                               utils.add_unicode_symbol_to_state(service.state),
                               service.image_name,
                               utils.get_humanize_local_datetime_from_utc_datetime_string(service.deployed_datetime)])
@@ -396,7 +396,7 @@ def container_ps(identifier, quiet=False, status=None):
         elif utils.is_uuid4(identifier):
             containers = tutum.Container.list(uuid=identifier, state=status)
         else:
-            containers = tutum.Container.list(unique_name=identifier, state=status) + \
+            containers = tutum.Container.list(name=identifier, state=status) + \
                          tutum.Container.list(uuid__startswith=identifier, state=status)
 
         data_list = []
@@ -412,7 +412,7 @@ def container_ps(identifier, quiet=False, status=None):
                 ports.append(ports_string)
 
             ports_string = ", ".join(ports)
-            data_list.append([container.unique_name,
+            data_list.append([container.name,
                               container.uuid[:8],
                               utils.add_unicode_symbol_to_state(container.state),
                               container.image_name,

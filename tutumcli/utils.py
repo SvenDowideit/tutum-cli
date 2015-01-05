@@ -190,7 +190,7 @@ def fetch_remote_container(identifier, raise_exceptions=True):
                 raise ObjectNotFound("Cannot find a container with the identifier '%s'" % identifier)
         else:
             objects_same_identifier = tutum.Container.list(uuid__startswith=identifier) or \
-                                      tutum.Container.list(unique_name=identifier)
+                                      tutum.Container.list(name=identifier)
             if len(objects_same_identifier) == 1:
                 return objects_same_identifier[0]
             elif len(objects_same_identifier) == 0:
@@ -212,7 +212,7 @@ def fetch_remote_service(identifier, raise_exceptions=True):
                 raise ObjectNotFound("Cannot find a service with the identifier '%s'" % identifier)
         else:
             objects_same_identifier = tutum.Service.list(uuid__startswith=identifier) or \
-                                      tutum.Service.list(unique_name=identifier)
+                                      tutum.Service.list(name=identifier)
 
             if len(objects_same_identifier) == 1:
                 return objects_same_identifier[0]
