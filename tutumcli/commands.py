@@ -172,18 +172,19 @@ def service_logs(identifiers):
 
 def service_ps(quiet=False, status=None):
     try:
-        headers = ["NAME", "UUID", "STATUS", "IMAGE", "DEPLOYED"]
+        headers = ["NAME", "UUID", "STATUS", "#CONTAINERS", "IMAGE", "DEPLOYED", ]
         service_list = tutum.Service.list(state=status)
         data_list = []
         long_uuid_list = []
         for service in service_list:
             data_list.append([service.unique_name, service.uuid[:8],
                               utils.add_unicode_symbol_to_state(service.state),
+                              service.current_num_containers,
                               service.image_name,
                               utils.get_humanize_local_datetime_from_utc_datetime_string(service.deployed_datetime)])
             long_uuid_list.append(service.uuid)
         if len(data_list) == 0:
-            data_list.append(["", "", "", "", ""])
+            data_list.append(["", "", "", "", "", ""])
 
         if quiet:
             for uuid in long_uuid_list:
