@@ -342,16 +342,16 @@ class ServicePsTestCase(unittest.TestCase):
         sys.stdout = self.buf = StringIO.StringIO()
 
         service1 = tutumcli.commands.tutum.Service()
-        service1.unique_name = 'SERVICE1'
         service1.current_num_containers = 3
+        service1.name = 'SERVICE1'
         service1.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
         service1.image_name = 'test/service1'
         service1.web_public_dns = 'service1.io'
         service1.state = 'Running'
         service1.deployed_datetime = ''
         service2 = tutumcli.commands.tutum.Service()
-        service2.unique_name = 'SERVICE2'
         service2.current_num_containers = 2
+        service2.name = 'SERVICE2'
         service2.uuid = '8B4CFE51-03BB-42D6-825E-3B533888D8CD'
         service2.image_name = 'test/service2'
         service2.web_public_dns = 'service2.io'
@@ -697,7 +697,7 @@ class ContainerPsTestCase(unittest.TestCase):
         sys.stdout = self.buf = StringIO.StringIO()
 
         container1 = tutumcli.commands.tutum.Container()
-        container1.unique_name = 'CONTAINER1'
+        container1.name = 'CONTAINER1'
         container1.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
         container1.image_name = 'test/container1'
         container1.public_dns = 'container1.io'
@@ -707,7 +707,7 @@ class ContainerPsTestCase(unittest.TestCase):
         container1.container_ports = [{'protocol': 'tcp', 'inner_port': 8080, 'outer_port': 8080}]
         container1.exit_code = 1
         container2 = tutumcli.commands.tutum.Container()
-        container2.unique_name = 'CONTAINER2'
+        container2.name = 'CONTAINER2'
         container2.uuid = '8B4CFE51-03BB-42D6-825E-3B533888D8CD'
         container2.image_name = 'test/container2'
         container2.public_dns = 'container2.io'
