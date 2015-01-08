@@ -145,8 +145,8 @@ optional arguments:
 tutum service commands:
   {create,inspect,logs,ps,redeploy,run,scale,set,start,stop,terminate}
     create              Create a new service
-    inspect             Get all details from an service
-    logs                Get logs from an service
+    inspect             Get all details from a service
+    logs                Get logs from a service
     ps                  List services
     redeploy            Redeploy a running service with a new version/tag
     run                 Create and run a new service
@@ -154,13 +154,13 @@ tutum service commands:
     set                 Change service properties
     start               Start a stopped service
     stop                Stop a running service
-    terminate           Terminate an service'''
+    terminate           Terminate a service'''
 
 # ##################################################
 
 TUTUM_SERVICE_CREATE = '''usage: tutum service inspect [-h] identifier [identifier ...]
 
-Get all details from an service
+Get all details from a service
 
 positional arguments:
   identifier  service's UUID (either long or short) or name
@@ -172,7 +172,7 @@ optional arguments:
 
 TUTUM_SERVICE_INSPECT = '''usage: tutum service inspect [-h] identifier [identifier ...]
 
-Get all details from an service
+Get all details from a service
 
 positional arguments:
   identifier  service's UUID (either long or short) or name
@@ -184,7 +184,7 @@ optional arguments:
 
 TUTUM_SERVICE_LOGS = '''usage: tutum service logs [-h] identifier [identifier ...]
 
-Get logs from an service
+Get logs from a service
 
 positional arguments:
   identifier  service's UUID (either long or short) or name
@@ -340,7 +340,7 @@ optional arguments:
 
 TUTUM_SERVICE_TERMINATE = '''usage: tutum service terminate [-h] identifier [identifier ...]
 
-Terminate an service
+Terminate a service
 
 positional arguments:
   identifier  service's UUID (either long or short) or name

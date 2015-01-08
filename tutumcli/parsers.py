@@ -64,13 +64,13 @@ def add_service_parser(subparsers):
                                action='store_true')
 
     # tutum service inspect
-    inspect_parser = service_subparser.add_parser('inspect', help="Get all details from an service",
-                                                  description="Get all details from an service")
+    inspect_parser = service_subparser.add_parser('inspect', help="Get all details from a service",
+                                                  description="Get all details from a service")
     inspect_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
 
     # tutum service logs
-    logs_parser = service_subparser.add_parser('logs', help='Get logs from an service',
-                                               description='Get logs from an service')
+    logs_parser = service_subparser.add_parser('logs', help='Get logs from a service',
+                                               description='Get logs from a service')
     logs_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
 
     # tutum service ps
@@ -152,8 +152,8 @@ def add_service_parser(subparsers):
     stop_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
 
     # tutum service terminate
-    terminate_parser = service_subparser.add_parser('terminate', help='Terminate an service',
-                                                    description='Terminate an service')
+    terminate_parser = service_subparser.add_parser('terminate', help='Terminate a service',
+                                                    description='Terminate a service')
     terminate_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
 
 
