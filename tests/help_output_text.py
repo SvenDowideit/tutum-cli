@@ -83,7 +83,7 @@ optional arguments:
 # ##################################################
 
 TUTUM_CONTAINER_PS = '''usage: tutum container ps [-h] [-i IDENTIFIER] [-q]
-                          [-s {Running,Stopped,Start failed,Stopped with errors}]
+                          [-s {Init,Stopped,Starting,Running,Stopping,Terminating,Terminated}]
 
 List containers
 
@@ -92,7 +92,7 @@ optional arguments:
   -i IDENTIFIER, --identifier IDENTIFIER
                         container's UUID (either long or short) or name
   -q, --quiet           print only long UUIDs
-  -s {Running,Stopped,Start failed,Stopped with errors}, --status {Running,Stopped,Start failed,Stopped with errors}
+  -s {Init,Stopped,Starting,Running,Stopping,Terminating,Terminated}, --status {Init,Stopped,Starting,Running,Stopping,Terminating,Terminated}
                         filter containers by status'''
 
 # ##################################################
@@ -196,14 +196,14 @@ optional arguments:
 # ##################################################
 
 TUTUM_SERVICE_PS = '''usage: tutum service ps [-h] [-q]
-                        [-s {Running,Partly running,Stopped,Start failed,Stopped with errors}]
+                        [-s {Init,Stopped,Starting,Running,Stopping,Terminating,Terminated,Scaling,Partly running,Not running,Redeploying}]
 
 List services
 
 optional arguments:
   -h, --help            show this help message and exit
   -q, --quiet           print only long UUIDs
-  -s {Running,Partly running,Stopped,Start failed,Stopped with errors}, --status {Running,Partly running,Stopped,Start failed,Stopped with errors}
+  -s {Init,Stopped,Starting,Running,Stopping,Terminating,Terminated,Scaling,Partly running,Not running,Redeploying}, --status {Init,Stopped,Starting,Running,Stopping,Terminating,Terminated,Scaling,Partly running,Not running,Redeploying}
                         filter services by status'''
 
 # ##################################################

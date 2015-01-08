@@ -77,7 +77,8 @@ def add_service_parser(subparsers):
     ps_parser = service_subparser.add_parser('ps', help='List services', description='List services')
     ps_parser.add_argument('-q', '--quiet', help='print only long UUIDs', action='store_true')
     ps_parser.add_argument('-s', '--status', help='filter services by status',
-                           choices=['Running', 'Partly running', 'Stopped', 'Start failed', 'Stopped with errors'])
+                           choices=['Init', 'Stopped', 'Starting', 'Running', 'Stopping', 'Terminating', 'Terminated',
+                                    'Scaling', 'Partly running', 'Not running', 'Redeploying'])
 
     # tutum service redeploy
     redeploy_parser = service_subparser.add_parser('redeploy', help='Redeploy a running service with a '
@@ -178,7 +179,7 @@ def add_container_parser(subparsers):
     ps_parser.add_argument('-i', '--identifier', help="container's UUID (either long or short) or name")
     ps_parser.add_argument('-q', '--quiet', help='print only long UUIDs', action='store_true')
     ps_parser.add_argument('-s', '--status', help='filter containers by status',
-                           choices=['Running', 'Stopped', 'Start failed', 'Stopped with errors'])
+                           choices=['Init', 'Stopped', 'Starting', 'Running', 'Stopping', 'Terminating', 'Terminated'])
 
     # tutum container start
     start_parser = container_subparser.add_parser('start', help='Start a container', description='Start a container')
