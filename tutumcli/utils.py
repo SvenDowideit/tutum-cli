@@ -192,7 +192,8 @@ def fetch_remote_container(identifier, raise_exceptions=True):
             objects_same_identifier = tutum.Container.list(uuid__startswith=identifier) or \
                                       tutum.Container.list(name=identifier)
             if len(objects_same_identifier) == 1:
-                return objects_same_identifier[0]
+                uuid = objects_same_identifier[0].uuid
+                return tutum.Container.fetch(uuid)
             elif len(objects_same_identifier) == 0:
                 raise ObjectNotFound("Cannot find a container with the identifier '%s'" % identifier)
             raise NonUniqueIdentifier("More than one container has the same identifier, please use the long uuid")
@@ -215,7 +216,8 @@ def fetch_remote_service(identifier, raise_exceptions=True):
                                       tutum.Service.list(name=identifier)
 
             if len(objects_same_identifier) == 1:
-                return objects_same_identifier[0]
+                uuid = objects_same_identifier[0].uuid
+                return tutum.Service.fetch(uuid)
             elif len(objects_same_identifier) == 0:
                 raise ObjectNotFound("Cannot find a service with the identifier '%s'" % identifier)
             raise NonUniqueIdentifier("More than one service has the same identifier, please use the long uuid")
@@ -235,7 +237,8 @@ def fetch_remote_node(identifier, raise_exceptions=True):
         else:
             objects_same_identifier = tutum.Node.list(uuid__startswith=identifier)
             if len(objects_same_identifier) == 1:
-                return objects_same_identifier[0]
+                uuid = objects_same_identifier[0].uuid
+                return tutum.Node.fetch(uuid)
             elif len(objects_same_identifier) == 0:
                 raise ObjectNotFound("Cannot find a node with the identifier '%s'" % identifier)
             raise NonUniqueIdentifier("More than one node has the same identifier, please use the long uuid")
@@ -257,7 +260,8 @@ def fetch_remote_nodecluster(identifier, raise_exceptions=True):
             objects_same_identifier = tutum.NodeCluster.list(uuid__startswith=identifier) or \
                                       tutum.NodeCluster.list(name=identifier)
             if len(objects_same_identifier) == 1:
-                return objects_same_identifier[0]
+                uuid = objects_same_identifier[0].uuid
+                return tutum.NodeCluster.fetch(uuid)
             elif len(objects_same_identifier) == 0:
                 raise ObjectNotFound("Cannot find a node cluster with the identifier '%s'" % identifier)
             raise NonUniqueIdentifier("More than one node cluster has the same identifier, please use the long uuid")

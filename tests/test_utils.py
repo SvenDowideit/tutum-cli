@@ -149,16 +149,22 @@ class FetchRemoteObjectTestCase(unittest.TestCase):
         self.assertIsInstance(fetch_remote_container('7A4CFE51-03BB-42D6-825E-3B533888D8CD', False), ObjectNotFound)
 
         # test unique container found queried with short uuid
-        mock_list.side_effect = [['container'], []]
-        self.assertEquals(fetch_remote_container('shortuuid', True), 'container')
-        mock_list.side_effect = [['container'], []]
-        self.assertEquals(fetch_remote_container('shortuuid', False), 'container')
+        container = tutum.Container.create()
+        container.uuid = 'uuid'
+        mock_list.side_effect = [[container], []]
+        mock_fetch.side_effect = [container]
+        self.assertEquals(fetch_remote_container('shortuuid', True), container)
+        mock_list.side_effect = [[container], []]
+        mock_fetch.side_effect = [container]
+        self.assertEquals(fetch_remote_container('shortuuid', False), container)
 
         # test unique container found queried with name
-        mock_list.side_effect = [[], ['container']]
-        self.assertEquals(fetch_remote_container('name', True), 'container')
-        mock_list.side_effect = [[], ['container']]
-        self.assertEquals(fetch_remote_container('name', False), 'container')
+        mock_list.side_effect = [[], [container]]
+        mock_fetch.side_effect = [container]
+        self.assertEquals(fetch_remote_container('name', True), container)
+        mock_list.side_effect = [[], [container]]
+        mock_fetch.side_effect = [container]
+        self.assertEquals(fetch_remote_container('name', False), container)
 
         # test no container found
         mock_list.side_effect = [[], []]
@@ -195,16 +201,22 @@ class FetchRemoteObjectTestCase(unittest.TestCase):
         self.assertIsInstance(fetch_remote_service('7A4CFE51-03BB-42D6-825E-3B533888D8CD', False), ObjectNotFound)
 
         # test unique cluster found queried with short uuid
-        mock_list.side_effect = [['cluster'], []]
-        self.assertEquals(fetch_remote_service('shortuuid', True), 'cluster')
-        mock_list.side_effect = [['cluster'], []]
-        self.assertEquals(fetch_remote_service('shortuuid', False), 'cluster')
+        service = tutum.Service.create()
+        service.uuid = 'uuid'
+        mock_list.side_effect = [[service], []]
+        mock_fetch.side_effect = [service]
+        self.assertEquals(fetch_remote_service('shortuuid', True), service)
+        mock_list.side_effect = [[service], []]
+        mock_fetch.side_effect = [service]
+        self.assertEquals(fetch_remote_service('shortuuid', False), service)
 
         # test unique cluster found queried with name
-        mock_list.side_effect = [[], ['cluster']]
-        self.assertEquals(fetch_remote_service('name', True), 'cluster')
-        mock_list.side_effect = [[], ['cluster']]
-        self.assertEquals(fetch_remote_service('name', False), 'cluster')
+        mock_list.side_effect = [[], [service]]
+        mock_fetch.side_effect = [service]
+        self.assertEquals(fetch_remote_service('name', True), service)
+        mock_list.side_effect = [[], [service]]
+        mock_fetch.side_effect = [service]
+        self.assertEquals(fetch_remote_service('name', False), service)
 
         # test no cluster found
         mock_list.side_effect = [[], []]
@@ -242,10 +254,14 @@ class FetchRemoteObjectTestCase(unittest.TestCase):
 
 
         # test unique node found queried with short uuid
-        mock_list.side_effect = [['node']]
-        self.assertEquals(fetch_remote_node('uuid', True), 'node')
-        mock_list.side_effect = [['node']]
-        self.assertEquals(fetch_remote_node('uuid', False), 'node')
+        node = tutum.Node.create()
+        node.uuid = 'uuid'
+        mock_list.side_effect = [[node]]
+        mock_fetch.side_effect = [node]
+        self.assertEquals(fetch_remote_node('uuid', True), node)
+        mock_list.side_effect = [[node]]
+        mock_fetch.side_effect = [node]
+        self.assertEquals(fetch_remote_node('uuid', False), node)
 
         # test no node found
         mock_list.side_effect = [[]]
@@ -278,16 +294,22 @@ class FetchRemoteObjectTestCase(unittest.TestCase):
         self.assertIsInstance(fetch_remote_nodecluster('7A4CFE51-03BB-42D6-825E-3B533888D8CD', False), ObjectNotFound)
 
         # test unique nodecluster found queried with short uuid
-        mock_list.side_effect = [['nodecluster'], []]
-        self.assertEquals(fetch_remote_nodecluster('shortuuid', True), 'nodecluster')
-        mock_list.side_effect = [['nodecluster'], []]
-        self.assertEquals(fetch_remote_nodecluster('shortuuid', False), 'nodecluster')
+        nodecluster = tutum.NodeCluster.create()
+        nodecluster.uuid = 'uuid'
+        mock_list.side_effect = [[nodecluster], []]
+        mock_fetch.side_effect = [nodecluster]
+        self.assertEquals(fetch_remote_nodecluster('shortuuid', True), nodecluster)
+        mock_list.side_effect = [[nodecluster], []]
+        mock_fetch.side_effect = [nodecluster]
+        self.assertEquals(fetch_remote_nodecluster('shortuuid', False), nodecluster)
 
         # test unique nodecluster found queried with name
-        mock_list.side_effect = [[], ['nodecluster']]
-        self.assertEquals(fetch_remote_nodecluster('name', True), 'nodecluster')
-        mock_list.side_effect = [[], ['nodecluster']]
-        self.assertEquals(fetch_remote_nodecluster('name', False), 'nodecluster')
+        mock_list.side_effect = [[], [nodecluster]]
+        mock_fetch.side_effect = [nodecluster]
+        self.assertEquals(fetch_remote_nodecluster('name', True), nodecluster)
+        mock_list.side_effect = [[], [nodecluster]]
+        mock_fetch.side_effect = [nodecluster]
+        self.assertEquals(fetch_remote_nodecluster('name', False), nodecluster)
 
         # test no nodecluster found
         mock_list.side_effect = [[], []]
