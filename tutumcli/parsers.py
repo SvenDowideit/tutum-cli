@@ -64,20 +64,21 @@ def add_service_parser(subparsers):
                                action='store_true')
 
     # tutum service inspect
-    inspect_parser = service_subparser.add_parser('inspect', help="Get all details from an service",
-                                                  description="Get all details from an service")
+    inspect_parser = service_subparser.add_parser('inspect', help="Get all details from a service",
+                                                  description="Get all details from a service")
     inspect_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
 
     # tutum service logs
-    logs_parser = service_subparser.add_parser('logs', help='Get logs from an service',
-                                               description='Get logs from an service')
+    logs_parser = service_subparser.add_parser('logs', help='Get logs from a service',
+                                               description='Get logs from a service')
     logs_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
 
     # tutum service ps
     ps_parser = service_subparser.add_parser('ps', help='List services', description='List services')
     ps_parser.add_argument('-q', '--quiet', help='print only long UUIDs', action='store_true')
     ps_parser.add_argument('-s', '--status', help='filter services by status',
-                           choices=['Running', 'Partly running', 'Stopped', 'Start failed', 'Stopped with errors'])
+                           choices=['Init', 'Stopped', 'Starting', 'Running', 'Stopping', 'Terminating', 'Terminated',
+                                    'Scaling', 'Partly running', 'Not running', 'Redeploying'])
 
     # tutum service redeploy
     redeploy_parser = service_subparser.add_parser('redeploy', help='Redeploy a running service with a '
@@ -152,8 +153,8 @@ def add_service_parser(subparsers):
     stop_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
 
     # tutum service terminate
-    terminate_parser = service_subparser.add_parser('terminate', help='Terminate an service',
-                                                    description='Terminate an service')
+    terminate_parser = service_subparser.add_parser('terminate', help='Terminate a service',
+                                                    description='Terminate a service')
     terminate_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
 
 
@@ -178,7 +179,7 @@ def add_container_parser(subparsers):
     ps_parser.add_argument('-i', '--identifier', help="container's UUID (either long or short) or name")
     ps_parser.add_argument('-q', '--quiet', help='print only long UUIDs', action='store_true')
     ps_parser.add_argument('-s', '--status', help='filter containers by status',
-                           choices=['Running', 'Stopped', 'Start failed', 'Stopped with errors'])
+                           choices=['Init', 'Stopped', 'Starting', 'Running', 'Stopping', 'Terminating', 'Terminated'])
 
     # tutum container start
     start_parser = container_subparser.add_parser('start', help='Start a container', description='Start a container')

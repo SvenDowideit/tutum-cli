@@ -1,9 +1,9 @@
 import argparse
 import logging
-import sys
 import copy
-import codecs
+import sys
 
+import codecs
 from . import __version__
 from tutumcli import parsers
 from tutumcli import commands
@@ -191,6 +191,7 @@ def main():
     parser = initialize_parser()
     argv = patch_help_option(sys.argv)
     args = parser.parse_args(argv)
+    commands.verify_auth(args)
     dispatch_cmds(args)
 
 

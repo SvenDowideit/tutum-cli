@@ -83,7 +83,7 @@ optional arguments:
 # ##################################################
 
 TUTUM_CONTAINER_PS = '''usage: tutum container ps [-h] [-i IDENTIFIER] [-q]
-                          [-s {Running,Stopped,Start failed,Stopped with errors}]
+                          [-s {Init,Stopped,Starting,Running,Stopping,Terminating,Terminated}]
 
 List containers
 
@@ -92,7 +92,7 @@ optional arguments:
   -i IDENTIFIER, --identifier IDENTIFIER
                         container's UUID (either long or short) or name
   -q, --quiet           print only long UUIDs
-  -s {Running,Stopped,Start failed,Stopped with errors}, --status {Running,Stopped,Start failed,Stopped with errors}
+  -s {Init,Stopped,Starting,Running,Stopping,Terminating,Terminated}, --status {Init,Stopped,Starting,Running,Stopping,Terminating,Terminated}
                         filter containers by status'''
 
 # ##################################################
@@ -145,8 +145,8 @@ optional arguments:
 tutum service commands:
   {create,inspect,logs,ps,redeploy,run,scale,set,start,stop,terminate}
     create              Create a new service
-    inspect             Get all details from an service
-    logs                Get logs from an service
+    inspect             Get all details from a service
+    logs                Get logs from a service
     ps                  List services
     redeploy            Redeploy a running service with a new version/tag
     run                 Create and run a new service
@@ -154,13 +154,13 @@ tutum service commands:
     set                 Change service properties
     start               Start a stopped service
     stop                Stop a running service
-    terminate           Terminate an service'''
+    terminate           Terminate a service'''
 
 # ##################################################
 
 TUTUM_SERVICE_CREATE = '''usage: tutum service inspect [-h] identifier [identifier ...]
 
-Get all details from an service
+Get all details from a service
 
 positional arguments:
   identifier  service's UUID (either long or short) or name
@@ -172,7 +172,7 @@ optional arguments:
 
 TUTUM_SERVICE_INSPECT = '''usage: tutum service inspect [-h] identifier [identifier ...]
 
-Get all details from an service
+Get all details from a service
 
 positional arguments:
   identifier  service's UUID (either long or short) or name
@@ -184,7 +184,7 @@ optional arguments:
 
 TUTUM_SERVICE_LOGS = '''usage: tutum service logs [-h] identifier [identifier ...]
 
-Get logs from an service
+Get logs from a service
 
 positional arguments:
   identifier  service's UUID (either long or short) or name
@@ -196,14 +196,14 @@ optional arguments:
 # ##################################################
 
 TUTUM_SERVICE_PS = '''usage: tutum service ps [-h] [-q]
-                        [-s {Running,Partly running,Stopped,Start failed,Stopped with errors}]
+                        [-s {Init,Stopped,Starting,Running,Stopping,Terminating,Terminated,Scaling,Partly running,Not running,Redeploying}]
 
 List services
 
 optional arguments:
   -h, --help            show this help message and exit
   -q, --quiet           print only long UUIDs
-  -s {Running,Partly running,Stopped,Start failed,Stopped with errors}, --status {Running,Partly running,Stopped,Start failed,Stopped with errors}
+  -s {Init,Stopped,Starting,Running,Stopping,Terminating,Terminated,Scaling,Partly running,Not running,Redeploying}, --status {Init,Stopped,Starting,Running,Stopping,Terminating,Terminated,Scaling,Partly running,Not running,Redeploying}
                         filter services by status'''
 
 # ##################################################
@@ -340,7 +340,7 @@ optional arguments:
 
 TUTUM_SERVICE_TERMINATE = '''usage: tutum service terminate [-h] identifier [identifier ...]
 
-Terminate an service
+Terminate a service
 
 positional arguments:
   identifier  service's UUID (either long or short) or name
