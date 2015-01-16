@@ -2,8 +2,8 @@ import argparse
 import logging
 import copy
 import sys
-
 import codecs
+
 from . import __version__
 from tutumcli import parsers
 from tutumcli import commands
@@ -108,7 +108,13 @@ def dispatch_cmds(args):
         elif args.subcmd == 'scale':
             commands.service_scale(args.identifier, args.target_num_containers)
         elif args.subcmd == 'set':
-            commands.service_set(args.autorestart, args.autodestroy, args.identifier)
+            commands.service_set(args.identifier, image=args.image, cpu_shares=args.cpushares,
+                                 memory=args.memory, privileged=args.privileged,
+                                 target_num_containers=args.target_num_containers, run_command=args.run_command,
+                                 entrypoint=args.entrypoint, expose=args.expose, publish=args.publish, envvars=args.env,
+                                 tag=args.tag, linked_to_service=args.link_service,
+                                 autorestart=args.autorestart, autodestroy=args.autodestroy, roles=args.role,
+                                 sequential=args.sequential)
         elif args.subcmd == 'start':
             commands.service_start(args.identifier)
         elif args.subcmd == 'stop':

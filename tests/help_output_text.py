@@ -294,8 +294,15 @@ optional arguments:
 
 # ##################################################
 
-TUTUM_SERVICE_SET = '''usage: tutum service set [-h] [--autorestart {OFF,ON_FAILURE,ALWAYS}]
-                         [--autodestroy {OFF,ON_FAILURE,ALWAYS}]
+TUTUM_SERVICE_SET = '''usage: tutum service set [-h] [--image IMAGE] [--cpushares CPUSHARES]
+                         [--memory MEMORY] [--privileged PRIVILEGED]
+                         [-t TARGET_NUM_CONTAINERS] [-r RUN_COMMAND]
+                         [--entrypoint ENTRYPOINT] [-p PUBLISH]
+                         [--expose EXPOSE] [-e ENV] [--tag TAG]
+                         [--link-service LINK_SERVICE]
+                         [--autorestart {OFF,ON_FAILURE,ALWAYS}]
+                         [--autodestroy {OFF,ON_FAILURE,ALWAYS}] [--role ROLE]
+                         [--sequential SEQUENTIAL]
                          identifier [identifier ...]
 
 Change service properties
@@ -305,12 +312,44 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
+  --image IMAGE         the name of the image used to deploy this service
+  --cpushares CPUSHARES
+                        Relative weight for CPU Shares
+  --memory MEMORY       RAM memory hard limit in MB
+  --privileged PRIVILEGED
+                        Give extended privileges to this container
+                        <true/false>
+  -t TARGET_NUM_CONTAINERS, --target-num-containers TARGET_NUM_CONTAINERS
+                        the number of containers to run for this service
+  -r RUN_COMMAND, --run-command RUN_COMMAND
+                        the command used to start the service containers
+                        (default: as defined in the image)
+  --entrypoint ENTRYPOINT
+                        the command prefix used to start the service
+                        containers (default: as defined in the image)
+  -p PUBLISH, --publish PUBLISH
+                        Publish a container's port to the host. Format:
+                        [hostPort:]containerPort[/protocol], i.e. "80:80/tcp"
+  --expose EXPOSE       Expose a port from the container without publishing it
+                        to your host
+  -e ENV, --env ENV     set environment variables i.e. "ENVVAR=foo" (default:
+                        as defined in the image, plus any link- or role-
+                        generated variables)
+  --tag TAG             the tag name being added to the service
+  --link-service LINK_SERVICE
+                        Add link to another service (name:alias) or
+                        (uuid:alias)
   --autorestart {OFF,ON_FAILURE,ALWAYS}
                         whether the containers should be restarted if they
                         stop (default: OFF)
   --autodestroy {OFF,ON_FAILURE,ALWAYS}
                         whether the containers should be terminated if they
-                        stop (default: OFF)'''
+                        stop (default: OFF)
+  --role ROLE           Tutum API roles to grant the service, i.e. "global"
+                        (default: none, possible values: "global")
+  --sequential SEQUENTIAL
+                        whether the containers should be launched and scaled
+                        sequentially<true/false>'''
 
 # ##################################################
 

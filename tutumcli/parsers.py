@@ -17,6 +17,9 @@ def add_build_parser(subparsers):
 
 
 def add_service_parser(subparsers):
+    def str2bool(v):
+        return v.lower() in ("yes", "true", "t", "1", "y")
+
     # tutum service
     service_parser = subparsers.add_parser('service', help='Service-related operations',
                                            description='Service-related operations')
@@ -135,12 +138,40 @@ def add_service_parser(subparsers):
     # tutum service set
     set_parser = service_subparser.add_parser('set', help='Change service properties',
                                               description='Change service properties')
+    set_parser.register('type', 'bool', str2bool)
     set_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
-    set_parser.add_argument('--autorestart', help="whether the containers should be restarted if they stop "
-                                                  "(default: OFF)", choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
-    set_parser.add_argument('--autodestroy',
-                            help="whether the containers should be terminated if they stop (default: OFF)",
-                            choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
+    set_parser.add_argument('--image', help='the name of the image used to deploy this service')
+    set_parser.add_argument('--cpushares', help='Relative weight for CPU Shares', type=int)
+    set_parser.add_argument('--memory', help='RAM memory hard limit in MB', type=int)
+    set_parser.add_argument('--privileged', help='Give extended privileges to this container <true/false>', type='bool')
+    set_parser.add_argument('-t', '--target-num-containers',
+                            help='the number of containers to run for this service', type=int)
+    set_parser.add_argument('-r', '--run-command',
+                            help='the command used to start the service containers '
+                                 '(default: as defined in the image)')
+    set_parser.add_argument('--entrypoint',
+                            help='the command prefix used to start the service containers '
+                                 '(default: as defined in the image)')
+    set_parser.add_argument('-p', '--publish', help="Publish a container's port to the host. "
+                                                    "Format: [hostPort:]containerPort[/protocol], i.e. \"80:80/tcp\"",
+                            action='append')
+    set_parser.add_argument('--expose', help='Expose a port from the container without publishing it to your host',
+                            action='append', type=int)
+    set_parser.add_argument('-e', '--env',
+                            help='set environment variables i.e. "ENVVAR=foo" '
+                                 '(default: as defined in the image, plus any link- or role-generated variables)',
+                            action='append')
+    set_parser.add_argument('--tag', help="the tag name being added to the service", action='append')
+    set_parser.add_argument('--link-service',
+                            help="Add link to another service (name:alias) or (uuid:alias)", action='append')
+    set_parser.add_argument('--autorestart', help='whether the containers should be restarted if they stop '
+                                                  '(default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
+    set_parser.add_argument('--autodestroy', help='whether the containers should be terminated if '
+                                                  'they stop (default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
+    set_parser.add_argument('--role', help='Tutum API roles to grant the service, '
+                                           'i.e. "global" (default: none, possible values: "global")', action='append')
+    set_parser.add_argument('--sequential', help='whether the containers should be launched and scaled sequentially<true/false>',
+                            type='bool')
 
     # tutum service start
     start_parser = service_subparser.add_parser('start', help='Start a stopped service',

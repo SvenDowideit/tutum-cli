@@ -518,20 +518,52 @@ class ServiceSetTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.utils.fetch_remote_service')
     def test_service_set(self, mock_fetch_remote_service, mock_save):
         service = tutumcli.commands.tutum.Service()
+        exposed_ports = [80]
+        published_ports = ['800:80/tcp']
+        ports = [{'inner_port': '80', 'outer_port': '800', 'protocol': 'tcp', 'published': True}]
+        container_envvars = ['MYSQL_ADMIN=admin', 'MYSQL_PASS=password']
+        linked_to_service = ['mysql:mysql', 'redis:redis']
         service.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
+
         mock_fetch_remote_service.return_value = service
-        service_set('ALWAYS', 'ON_FAILURE',['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+        service_set([service.uuid], 'imagename', 1, '256M', True, 3, '-d', '/bin/mysql',
+                    exposed_ports, published_ports, container_envvars, '', linked_to_service,
+                    'OFF', 'OFF', 'poweruser', True)
 
         mock_save.assert_called()
-        self.assertEqual('ALWAYS', service.autorestart)
-        self.assertEqual('ON_FAILURE', service.autodestroy)
-        self.assertEqual(service.uuid, self.buf.getvalue().strip())
+        self.assertEqual('7A4CFE51-03BB-42D6-825E-3B533888D8CD\n'
+                         'Service must be redeployed to have its configuration changes applied.\n'
+                         'To redeploy execute: $ tutum service redeploy 7A4CFE51-03BB-42D6-825E-3B533888D8CD',
+                         self.buf.getvalue().strip())
+        self.assertEqual(1, service.cpu_shares)
+        self.assertEqual('256M', service.memory)
+        self.assertEqual(True, service.privileged)
+        self.assertEqual(3, service.target_num_containers)
+        self.assertEqual('-d', service.run_command)
+        self.assertEqual('/bin/mysql', service.entrypoint)
+        self.assertEqual(ports, service.container_ports)
+        self.assertEqual(utils.parse_envvars(container_envvars), service.container_envvars)
+        self.assertEqual(utils.parse_links(linked_to_service, 'to_service'), service.linked_to_service)
+        self.assertEqual('OFF', service.autorestart)
+        self.assertEqual('OFF', service.autodestroy)
+        self.assertEqual('poweruser', service.roles)
+        self.assertEqual(True, service.sequential_deployment)
+
         self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.utils.fetch_remote_service', side_effect=TutumApiError)
     def test_service_set_with_exception(self, mock_fetch_remote_service, mock_exit):
-        service_set('OFF', 'OFF', ['test_id'])
+        service = tutumcli.commands.tutum.Service()
+        exposed_ports = [80]
+        published_ports = ['800:80/tcp']
+        container_envvars = ['MYSQL_ADMIN=admin', 'MYSQL_PASS=password']
+        linked_to_service = ['mysql:mysql', 'redis:redis']
+
+        mock_fetch_remote_service.return_value = service
+        service_set(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], 'imagename', 1, '256M', True, 3, '-d', '/bin/mysql',
+                    exposed_ports, published_ports, container_envvars, '', linked_to_service,
+                    'OFF', 'OFF', 'poweruser', True)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 

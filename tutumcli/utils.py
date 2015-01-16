@@ -3,15 +3,16 @@ import datetime
 import json
 import urlparse
 import ssl
-
 import re
 import os
+
 from tabulate import tabulate
 import tutum
 from dateutil import tz
 import ago
 import docker
 import requests
+
 from tutumcli.exceptions import NonUniqueIdentifier, ObjectNotFound, BadParameter, DockerNotFound
 from exceptions import StreamOutputError
 from . import __version__

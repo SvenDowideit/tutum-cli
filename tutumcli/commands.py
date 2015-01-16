@@ -3,15 +3,16 @@ import getpass
 import ConfigParser
 import json
 import sys
-
 import re
 import os
 from os.path import join, expanduser, abspath, isfile
+
 import yaml
 import tutum
 import docker
 from tutum.api import auth
 from tutum.api import exceptions
+
 from exceptions import StreamOutputError, ObjectNotFound
 from tutumcli import utils
 
@@ -299,17 +300,75 @@ def service_scale(identifiers, target_num_containers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def service_set(autorestart, autodestroy, identifiers):
+def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
+                expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, roles, sequential):
     has_exception = False
     for identifier in identifiers:
         try:
-            service_details = utils.fetch_remote_service(identifier, raise_exceptions=True)
-            if service_details is not None:
-                service_details.autorestart = autorestart
-                service_details.autodestroy = autodestroy
-                result = service_details.save()
+            service = utils.fetch_remote_service(identifier, raise_exceptions=True)
+            if service is not None:
+                if image:
+                    service.image = image
+                if cpu_shares:
+                    service.cpu_shares = cpu_shares
+                if memory:
+                    service.memory = memory
+                if privileged:
+                    service.privileged = privileged
+                if target_num_containers:
+                    service.target_num_containers = target_num_containers
+                if run_command:
+                    service.run_command = run_command
+                if entrypoint:
+                    service.entrypoint = entrypoint
+
+                ports = utils.parse_published_ports(publish)
+                # Add exposed_port to ports, excluding whose inner_port that has been defined in published ports
+                exposed_ports = utils.parse_exposed_ports(expose)
+                for exposed_port in exposed_ports:
+                    existed = False
+                    for port in ports:
+                        if exposed_port.get('inner_port', '') == port.get('inner_port', ''):
+                            existed = True
+                            break
+                    if not existed:
+                        ports.append(exposed_port)
+                if ports:
+                    service.container_ports = ports
+
+                envvars = utils.parse_envvars(envvars)
+                if envvars:
+                    service.container_envvars = envvars
+
+                if tag:
+                    service.tags = []
+                    for t in tag:
+                        new_tag = {"name": t}
+                        if new_tag not in service.tags:
+                            service.tags.append(new_tag)
+                    service.__addchanges__("tags")
+
+                links_service = utils.parse_links(linked_to_service, 'to_service')
+                if linked_to_service:
+                    service.linked_to_service = links_service
+
+                if autorestart:
+                    service.autorestart = autorestart
+
+                if autodestroy:
+                    service.autodestroy = autodestroy
+
+                if roles:
+                    service.roles = roles
+
+                if sequential:
+                    service.sequential_deployment = sequential
+
+                result = service.save()
                 if result:
-                    print(service_details.uuid)
+                    print(service.uuid)
+                    print("Service must be redeployed to have its configuration changes applied.")
+                    print("To redeploy execute: $ tutum service redeploy", identifier)
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -1062,6 +1121,7 @@ def tag_set(identifiers, tags):
                 new_tag = {"name": t}
                 if new_tag not in obj.tags:
                     obj.tags.append(new_tag)
+            obj.__addchanges__("tags")
             obj.save()
 
             print(obj.uuid)
