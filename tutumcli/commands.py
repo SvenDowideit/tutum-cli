@@ -177,9 +177,14 @@ def service_ps(quiet=False, status=None):
         service_list = tutum.Service.list(state=status)
         data_list = []
         long_uuid_list = []
+        has_unsynchronized_service = False
         for service in service_list:
+            service_state = utils.add_unicode_symbol_to_state(service.state)
+            if not service.synchronized:
+                service_state += "(*)"
+                has_unsynchronized_service = True
             data_list.append([service.name, service.uuid[:8],
-                              utils.add_unicode_symbol_to_state(service.state),
+                              service_state,
                               service.current_num_containers,
                               service.image_name,
                               utils.get_humanize_local_datetime_from_utc_datetime_string(service.deployed_datetime)])
@@ -192,6 +197,9 @@ def service_ps(quiet=False, status=None):
                 print(uuid)
         else:
             utils.tabulate_result(data_list, headers)
+            if has_unsynchronized_service:
+                print(
+                    "\n(*) Please note that this service needs to be redeployed to have its configuration changes applied")
 
     except Exception as e:
         print(e, file=sys.stderr)

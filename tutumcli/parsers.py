@@ -169,7 +169,8 @@ def add_service_parser(subparsers):
                                                   'they stop (default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     set_parser.add_argument('--role', help='Tutum API roles to grant the service, '
                                            'i.e. "global" (default: none, possible values: "global")', action='append')
-    set_parser.add_argument('--sequential', help='whether the containers should be launched and scaled sequentially<true/false>',
+    set_parser.add_argument('--sequential',
+                            help='whether the containers should be launched and scaled sequentially<true/false>',
                             type='bool')
 
     # tutum service start

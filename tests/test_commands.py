@@ -349,6 +349,7 @@ class ServicePsTestCase(unittest.TestCase):
         service1.web_public_dns = 'service1.io'
         service1.state = 'Running'
         service1.deployed_datetime = ''
+        service1.synchronized = True
         service2 = tutumcli.commands.tutum.Service()
         service2.current_num_containers = 2
         service2.name = 'SERVICE2'
@@ -357,6 +358,7 @@ class ServicePsTestCase(unittest.TestCase):
         service2.web_public_dns = 'service2.io'
         service2.state = 'Stopped'
         service2.deployed_datetime = ''
+        service2.synchronized = True
         self.servicelist = [service1, service2]
 
     def tearDown(self):
@@ -390,6 +392,21 @@ SERVICE2  8B4CFE51  ◼ Stopped              2  test/service2'''
         service_ps()
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+    @mock.patch('tutumcli.commands.tutum.Service.list')
+    def test_service_ps_unsync(self, mock_list):
+        output = u'''NAME      UUID      STATUS          #CONTAINERS  IMAGE          DEPLOYED
+SERVICE1  7A4CFE51  ▶ Running(*)              3  test/service1
+SERVICE2  8B4CFE51  ◼ Stopped                 2  test/service2
+
+(*) Please note that this service needs to be redeployed to have its configuration changes applied'''
+        self.servicelist[0].synchronized = False
+        mock_list.return_value = self.servicelist
+        service_ps(status='Running')
+
+        mock_list.assert_called_with(state='Running')
+        self.assertEqual(output, self.buf.getvalue().strip())
+        self.buf.truncate(0)
 
 
 class ServiceRunTestCase(unittest.TestCase):
