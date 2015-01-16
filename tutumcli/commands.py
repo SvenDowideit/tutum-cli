@@ -198,12 +198,12 @@ def service_ps(quiet=False, status=None):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def service_redeploy(identifiers, tag):
+def service_redeploy(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
             service = utils.fetch_remote_service(identifier)
-            result = service.redeploy(tag)
+            result = service.redeploy()
             if result:
                 print(service.uuid)
         except Exception as e:

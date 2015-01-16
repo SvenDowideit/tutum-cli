@@ -208,16 +208,16 @@ optional arguments:
 
 # ##################################################
 
-TUTUM_SERVICE_REDEPLOY = '''usage: tutum service redeploy [-h] [-t TAG] identifier [identifier ...]
+TUTUM_SERVICE_REDEPLOY = '''usage: tutum service redeploy [-h] identifier [identifier ...]
 
 Redeploy a running service with a new version/tag
 
 positional arguments:
-  identifier         service's UUID (either long or short) or name
+  identifier  service's UUID (either long or short) or name
 
 optional arguments:
-  -h, --help         show this help message and exit
-  -t TAG, --tag TAG  tag of the image to redeploy'''
+  -h, --help  show this help message and exit
+'''
 
 # ##################################################
 

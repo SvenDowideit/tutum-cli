@@ -96,7 +96,7 @@ def dispatch_cmds(args):
         elif args.subcmd == 'ps':
             commands.service_ps(args.quiet, args.status)
         elif args.subcmd == 'redeploy':
-            commands.service_redeploy(args.identifier, args.tag)
+            commands.service_redeploy(args.identifier)
         elif args.subcmd == 'run':
             commands.service_run(image=args.image, name=args.name, cpu_shares=args.cpushares,
                                  memory=args.memory, privileged=args.privileged,

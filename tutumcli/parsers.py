@@ -88,7 +88,6 @@ def add_service_parser(subparsers):
                                                                     'new version/tag',
                                                    description='Redeploy a running service with a new version/tag')
     redeploy_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
-    redeploy_parser.add_argument('-t', '--tag', help='tag of the image to redeploy')
 
     # tutum service run
     run_parser = service_subparser.add_parser('run', help='Create and run a new service',
