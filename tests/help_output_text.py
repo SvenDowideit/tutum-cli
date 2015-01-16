@@ -302,7 +302,7 @@ TUTUM_SERVICE_SET = '''usage: tutum service set [-h] [--image IMAGE] [--cpushare
                          [--link-service LINK_SERVICE]
                          [--autorestart {OFF,ON_FAILURE,ALWAYS}]
                          [--autodestroy {OFF,ON_FAILURE,ALWAYS}] [--role ROLE]
-                         [--sequential SEQUENTIAL]
+                         [--sequential SEQUENTIAL] [--redeploy]
                          identifier [identifier ...]
 
 Change service properties
@@ -349,7 +349,9 @@ optional arguments:
                         (default: none, possible values: "global")
   --sequential SEQUENTIAL
                         whether the containers should be launched and scaled
-                        sequentially<true/false>'''
+                        sequentially<true/false>
+  --redeploy            redeploy service with new configuration after set
+                        command'''
 
 # ##################################################
 

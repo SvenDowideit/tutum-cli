@@ -545,7 +545,7 @@ class ServiceSetTestCase(unittest.TestCase):
         mock_fetch_remote_service.return_value = service
         service_set([service.uuid], 'imagename', 1, '256M', True, 3, '-d', '/bin/mysql',
                     exposed_ports, published_ports, container_envvars, '', linked_to_service,
-                    'OFF', 'OFF', 'poweruser', True)
+                    'OFF', 'OFF', 'poweruser', True, False)
 
         mock_save.assert_called()
         self.assertEqual('7A4CFE51-03BB-42D6-825E-3B533888D8CD\n'
@@ -580,7 +580,7 @@ class ServiceSetTestCase(unittest.TestCase):
         mock_fetch_remote_service.return_value = service
         service_set(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], 'imagename', 1, '256M', True, 3, '-d', '/bin/mysql',
                     exposed_ports, published_ports, container_envvars, '', linked_to_service,
-                    'OFF', 'OFF', 'poweruser', True)
+                    'OFF', 'OFF', 'poweruser', True, False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 

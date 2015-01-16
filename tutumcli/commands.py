@@ -309,7 +309,7 @@ def service_scale(identifiers, target_num_containers):
 
 
 def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
-                expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, roles, sequential):
+                expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, roles, sequential, redeploy):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -374,9 +374,15 @@ def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_c
 
                 result = service.save()
                 if result:
-                    print(service.uuid)
-                    print("Service must be redeployed to have its configuration changes applied.")
-                    print("To redeploy execute: $ tutum service redeploy", identifier)
+                    if redeploy:
+                        print("Redeploying Service ...")
+                        result2 = service.redeploy()
+                        if result2:
+                            print(service.uuid)
+                    else:
+                        print(service.uuid)
+                        print("Service must be redeployed to have its configuration changes applied.")
+                        print("To redeploy execute: $ tutum service redeploy", identifier)
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True

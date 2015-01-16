@@ -174,7 +174,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                  tag=args.tag, linked_to_service=args.link_service,
                                                  autorestart=args.autorestart, autodestroy=args.autodestroy,
                                                  roles=args.role,
-                                                 sequential=args.sequential)
+                                                 sequential=args.sequential, redeploy=args.redeploy)
 
         args = self.parser.parse_args(['service', 'start', 'id'])
         dispatch_cmds(args)

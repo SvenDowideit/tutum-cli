@@ -172,6 +172,8 @@ def add_service_parser(subparsers):
     set_parser.add_argument('--sequential',
                             help='whether the containers should be launched and scaled sequentially<true/false>',
                             type='bool')
+    set_parser.add_argument('--redeploy', help="redeploy service with new configuration after set command",
+                            action='store_true')
 
     # tutum service start
     start_parser = service_subparser.add_parser('start', help='Start a stopped service',
