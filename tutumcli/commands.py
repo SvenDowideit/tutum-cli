@@ -834,7 +834,7 @@ def node_byo():
     print("Tutum lets you use your own servers as nodes to run containers. For this you have to install our agent.")
     print("Run the following command on your server:")
     print()
-    print("\tcurl -Ls https://files.tutum.co/scripts/install-agent.sh | sudo sh -s", token)
+    print("\tcurl -Ls https://files.tutum.co/scripts/install-agent.sh | sudo -H sh -s", token)
     print()
 
 
