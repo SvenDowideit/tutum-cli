@@ -142,9 +142,9 @@ class CommandsDispatchTestCase(unittest.TestCase):
         dispatch_cmds(args)
         mock_cmds.service_ps.assert_called_with(args.quiet, args.status)
 
-        args = self.parser.parse_args(['service', 'redeploy', '-t', 'latest', 'mysql'])
+        args = self.parser.parse_args(['service', 'redeploy', 'mysql'])
         dispatch_cmds(args)
-        mock_cmds.service_redeploy.assert_called_with(args.identifier, args.tag)
+        mock_cmds.service_redeploy.assert_called_with(args.identifier)
 
         args = self.parser.parse_args(['service', 'run', 'mysql'])
         dispatch_cmds(args)
@@ -165,7 +165,16 @@ class CommandsDispatchTestCase(unittest.TestCase):
 
         args = self.parser.parse_args(['service', 'set', 'id'])
         dispatch_cmds(args)
-        mock_cmds.service_set.assert_called_with(args.autorestart, args.autodestroy, args.identifier)
+        mock_cmds.service_set.assert_called_with(args.identifier, image=args.image, cpu_shares=args.cpushares,
+                                                 memory=args.memory, privileged=args.privileged,
+                                                 target_num_containers=args.target_num_containers,
+                                                 run_command=args.run_command,
+                                                 entrypoint=args.entrypoint, expose=args.expose, publish=args.publish,
+                                                 envvars=args.env,
+                                                 tag=args.tag, linked_to_service=args.link_service,
+                                                 autorestart=args.autorestart, autodestroy=args.autodestroy,
+                                                 roles=args.role,
+                                                 sequential=args.sequential, redeploy=args.redeploy)
 
         args = self.parser.parse_args(['service', 'start', 'id'])
         dispatch_cmds(args)
