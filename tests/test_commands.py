@@ -350,6 +350,7 @@ class ServicePsTestCase(unittest.TestCase):
         service1.state = 'Running'
         service1.deployed_datetime = ''
         service1.synchronized = True
+        service1.public_dns = "www.myhello1service.com"
         service2 = tutumcli.commands.tutum.Service()
         service2.current_num_containers = 2
         service2.name = 'SERVICE2'
@@ -359,6 +360,7 @@ class ServicePsTestCase(unittest.TestCase):
         service2.state = 'Stopped'
         service2.deployed_datetime = ''
         service2.synchronized = True
+        service2.public_dns = "www.myhello2service.com"
         self.servicelist = [service1, service2]
 
     def tearDown(self):
@@ -366,9 +368,9 @@ class ServicePsTestCase(unittest.TestCase):
 
     @mock.patch('tutumcli.commands.tutum.Service.list')
     def test_service_ps(self, mock_list):
-        output = u'''NAME      UUID      STATUS       #CONTAINERS  IMAGE          DEPLOYED
-SERVICE1  7A4CFE51  ▶ Running              3  test/service1
-SERVICE2  8B4CFE51  ◼ Stopped              2  test/service2'''
+        output = u'''NAME      UUID      STATUS       #CONTAINERS  IMAGE          DEPLOYED    PUBLICDNS
+SERVICE1  7A4CFE51  ▶ Running              3  test/service1              www.myhello1service.com
+SERVICE2  8B4CFE51  ◼ Stopped              2  test/service2              www.myhello2service.com'''
         mock_list.return_value = self.servicelist
         service_ps(status='Running')
 
@@ -395,9 +397,9 @@ SERVICE2  8B4CFE51  ◼ Stopped              2  test/service2'''
 
     @mock.patch('tutumcli.commands.tutum.Service.list')
     def test_service_ps_unsync(self, mock_list):
-        output = u'''NAME      UUID      STATUS          #CONTAINERS  IMAGE          DEPLOYED
-SERVICE1  7A4CFE51  ▶ Running(*)              3  test/service1
-SERVICE2  8B4CFE51  ◼ Stopped                 2  test/service2
+        output = u'''NAME      UUID      STATUS          #CONTAINERS  IMAGE          DEPLOYED    PUBLICDNS
+SERVICE1  7A4CFE51  ▶ Running(*)              3  test/service1              www.myhello1service.com
+SERVICE2  8B4CFE51  ◼ Stopped                 2  test/service2              www.myhello2service.com
 
 (*) Please note that this service needs to be redeployed to have its configuration changes applied'''
         self.servicelist[0].synchronized = False
