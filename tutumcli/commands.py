@@ -309,7 +309,8 @@ def service_scale(identifiers, target_num_containers):
 
 
 def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
-                expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, roles, sequential, redeploy):
+                expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, roles, sequential,
+                redeploy):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -461,7 +462,7 @@ def container_logs(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def container_ps(identifier, quiet=False, status=None):
+def container_ps(identifier, quiet, status, service):
     try:
         headers = ["NAME", "UUID", "STATUS", "IMAGE", "RUN COMMAND", "EXIT CODE", "DEPLOYED", "PORTS"]
 
@@ -476,7 +477,16 @@ def container_ps(identifier, quiet=False, status=None):
         data_list = []
         long_uuid_list = []
 
+        if service:
+            service_obj = utils.fetch_remote_service(service, raise_exceptions=False)
+            if isinstance(service_obj, ObjectNotFound):
+                raise ObjectNotFound("Identifier '%s' does not match any service" % service)
+
         for container in containers:
+            if service:
+                if container.service != service_obj.resource_uri:
+                    continue
+
             ports = []
             for index, port in enumerate(container.container_ports):
                 ports_string = ""

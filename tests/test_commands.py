@@ -805,7 +805,7 @@ class ContainerPsTestCase(unittest.TestCase):
 CONTAINER1  7A4CFE51  ▶ Running  test/container1  /bin/bash                1              container1.io:8080->8080/tcp
 CONTAINER2  8B4CFE51  ◼ Stopped  test/container2  /bin/sh                  0              container2.io:3307->3306/tcp'''
         mock_list.return_value = self.containerlist
-        container_ps(None, status='Running')
+        container_ps(None, False, 'Running', None)
 
         mock_list.assert_called_with(state='Running')
         self.assertEqual(output, self.buf.getvalue().strip())
@@ -816,7 +816,7 @@ CONTAINER2  8B4CFE51  ◼ Stopped  test/container2  /bin/sh                  0  
         output = '''7A4CFE51-03BB-42D6-825E-3B533888D8CD
 8B4CFE51-03BB-42D6-825E-3B533888D8CD'''
         mock_list.return_value = self.containerlist
-        container_ps(None, quiet=True)
+        container_ps(None, True, None, None)
 
         self.assertEqual(output, self.buf.getvalue().strip())
         self.buf.truncate(0)
@@ -825,7 +825,7 @@ CONTAINER2  8B4CFE51  ◼ Stopped  test/container2  /bin/sh                  0  
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.tutum.Container.list', side_effect=TutumApiError)
     def test_container_ps_with_exception(self, mock_list, mock_exit):
-        container_ps(None)
+        container_ps(None, None, None, None)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
