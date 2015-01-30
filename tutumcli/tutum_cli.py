@@ -127,7 +127,7 @@ def dispatch_cmds(args):
         elif args.subcmd == 'logs':
             commands.container_logs(args.identifier)
         elif args.subcmd == 'ps':
-            commands.container_ps(args.identifier, args.quiet, args.status)
+            commands.container_ps(args.identifier, args.quiet, args.status, args.service)
         elif args.subcmd == 'start':
             commands.container_start(args.identifier)
         elif args.subcmd == 'stop':

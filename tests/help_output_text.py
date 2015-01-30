@@ -84,6 +84,7 @@ optional arguments:
 
 TUTUM_CONTAINER_PS = '''usage: tutum container ps [-h] [-i IDENTIFIER] [-q]
                           [-s {Init,Stopped,Starting,Running,Stopping,Terminating,Terminated}]
+                          [--service SERVICE]
 
 List containers
 
@@ -93,7 +94,9 @@ optional arguments:
                         container's UUID (either long or short) or name
   -q, --quiet           print only long UUIDs
   -s {Init,Stopped,Starting,Running,Stopping,Terminating,Terminated}, --status {Init,Stopped,Starting,Running,Stopping,Terminating,Terminated}
-                        filter containers by status'''
+                        filter containers by status
+  --service SERVICE     filter containers by service (UUID either long or
+                        short, or name)'''
 
 # ##################################################
 

@@ -173,7 +173,7 @@ def service_logs(identifiers):
 
 def service_ps(quiet=False, status=None):
     try:
-        headers = ["NAME", "UUID", "STATUS", "#CONTAINERS", "IMAGE", "DEPLOYED", ]
+        headers = ["NAME", "UUID", "STATUS", "#CONTAINERS", "IMAGE", "DEPLOYED", "PUBLICDNS"]
         service_list = tutum.Service.list(state=status)
         data_list = []
         long_uuid_list = []
@@ -187,7 +187,8 @@ def service_ps(quiet=False, status=None):
                               service_state,
                               service.current_num_containers,
                               service.image_name,
-                              utils.get_humanize_local_datetime_from_utc_datetime_string(service.deployed_datetime)])
+                              utils.get_humanize_local_datetime_from_utc_datetime_string(service.deployed_datetime),
+                              service.public_dns])
             long_uuid_list.append(service.uuid)
         if len(data_list) == 0:
             data_list.append(["", "", "", "", "", ""])
@@ -239,16 +240,23 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
 
         envvars = utils.parse_envvars(envvars)
         links_service = utils.parse_links(linked_to_service, 'to_service')
+
+        tags = []
+        if tag:
+            if isinstance(tag, list):
+                for t in tag:
+                    tags.append({"name": t})
+            else:
+                tags.append({"name": tag})
+
         service = tutum.Service.create(image=image, name=name, cpu_shares=cpu_shares,
                                        memory=memory, privileged=privileged,
                                        target_num_containers=target_num_containers, run_command=run_command,
                                        entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
                                        linked_to_service=links_service,
                                        autorestart=autorestart, autodestroy=autodestroy,
-                                       roles=roles, sequential_deployment=sequential)
+                                       roles=roles, sequential_deployment=sequential, tags=tags)
         result = service.save()
-        if tag:
-            result = service.tag.add(tag)
         if result:
             print(service.uuid)
     except Exception as e:
@@ -274,16 +282,23 @@ def service_run(image, name, cpu_shares, memory, privileged, target_num_containe
 
         envvars = utils.parse_envvars(envvars)
         links_service = utils.parse_links(linked_to_service, 'to_service')
+
+        tags = []
+        if tag:
+            if isinstance(tag, list):
+                for t in tag:
+                    tags.append({"name": t})
+            else:
+                tags.append({"name": tag})
+
         service = tutum.Service.create(image=image, name=name, cpu_shares=cpu_shares,
                                        memory=memory, privileged=privileged,
                                        target_num_containers=target_num_containers, run_command=run_command,
                                        entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
                                        linked_to_service=links_service,
                                        autorestart=autorestart, autodestroy=autodestroy,
-                                       roles=roles, sequential_deployment=sequential)
+                                       roles=roles, sequential_deployment=sequential, tags=tags)
         service.save()
-        if tag:
-            service.tag.add(tag)
         result = service.start()
         if result:
             print(service.uuid)
@@ -309,7 +324,8 @@ def service_scale(identifiers, target_num_containers):
 
 
 def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
-                expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, roles, sequential, redeploy):
+                expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, roles, sequential,
+                redeploy):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -461,7 +477,7 @@ def container_logs(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def container_ps(identifier, quiet=False, status=None):
+def container_ps(identifier, quiet, status, service):
     try:
         headers = ["NAME", "UUID", "STATUS", "IMAGE", "RUN COMMAND", "EXIT CODE", "DEPLOYED", "PORTS"]
 
@@ -476,7 +492,16 @@ def container_ps(identifier, quiet=False, status=None):
         data_list = []
         long_uuid_list = []
 
+        if service:
+            service_obj = utils.fetch_remote_service(service, raise_exceptions=False)
+            if isinstance(service_obj, ObjectNotFound):
+                raise ObjectNotFound("Identifier '%s' does not match any service" % service)
+
         for container in containers:
+            if service:
+                if container.service != service_obj.resource_uri:
+                    continue
+
             ports = []
             for index, port in enumerate(container.container_ports):
                 ports_string = ""
