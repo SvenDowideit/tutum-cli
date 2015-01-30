@@ -173,7 +173,7 @@ def service_logs(identifiers):
 
 def service_ps(quiet=False, status=None):
     try:
-        headers = ["NAME", "UUID", "STATUS", "#CONTAINERS", "IMAGE", "DEPLOYED", "PUBLICDNS" ]
+        headers = ["NAME", "UUID", "STATUS", "#CONTAINERS", "IMAGE", "DEPLOYED", "PUBLICDNS"]
         service_list = tutum.Service.list(state=status)
         data_list = []
         long_uuid_list = []
@@ -240,16 +240,23 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
 
         envvars = utils.parse_envvars(envvars)
         links_service = utils.parse_links(linked_to_service, 'to_service')
+
+        tags = []
+        if tag:
+            if isinstance(tag, list):
+                for t in tag:
+                    tags.append({"name": t})
+            else:
+                tags.append({"name": tag})
+
         service = tutum.Service.create(image=image, name=name, cpu_shares=cpu_shares,
                                        memory=memory, privileged=privileged,
                                        target_num_containers=target_num_containers, run_command=run_command,
                                        entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
                                        linked_to_service=links_service,
                                        autorestart=autorestart, autodestroy=autodestroy,
-                                       roles=roles, sequential_deployment=sequential)
+                                       roles=roles, sequential_deployment=sequential, tags=tags)
         result = service.save()
-        if tag:
-            result = service.tag.add(tag)
         if result:
             print(service.uuid)
     except Exception as e:
@@ -275,16 +282,23 @@ def service_run(image, name, cpu_shares, memory, privileged, target_num_containe
 
         envvars = utils.parse_envvars(envvars)
         links_service = utils.parse_links(linked_to_service, 'to_service')
+
+        tags = []
+        if tag:
+            if isinstance(tag, list):
+                for t in tag:
+                    tags.append({"name": t})
+            else:
+                tags.append({"name": tag})
+
         service = tutum.Service.create(image=image, name=name, cpu_shares=cpu_shares,
                                        memory=memory, privileged=privileged,
                                        target_num_containers=target_num_containers, run_command=run_command,
                                        entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
                                        linked_to_service=links_service,
                                        autorestart=autorestart, autodestroy=autodestroy,
-                                       roles=roles, sequential_deployment=sequential)
+                                       roles=roles, sequential_deployment=sequential, tags=tags)
         service.save()
-        if tag:
-            service.tag.add(tag)
         result = service.start()
         if result:
             print(service.uuid)

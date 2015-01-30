@@ -216,7 +216,7 @@ class ServiceCreateTestCase(unittest.TestCase):
                                        container_envvars=utils.parse_envvars(container_envvars),
                                        linked_to_service=utils.parse_links(linked_to_service, 'to_service'),
                                        autorestart='OFF', autodestroy='OFF',
-                                       roles='poweruser', sequential_deployment=True)
+                                       roles='poweruser', sequential_deployment=True, tags=[])
         mock_save.assert_called()
         mock_start.assert_not_called()
         self.assertEqual(service.uuid, self.buf.getvalue().strip())
@@ -245,7 +245,7 @@ class ServiceCreateTestCase(unittest.TestCase):
                                        container_envvars=utils.parse_envvars(container_envvars),
                                        linked_to_service=utils.parse_links(linked_to_service, 'to_service'),
                                        autorestart='OFF', autodestroy='OFF',
-                                       roles='poweruser', sequential_deployment=True)
+                                       roles='poweruser', sequential_deployment=True, tags=[])
         mock_save.assert_called()
         mock_start.assert_not_called()
         self.assertEqual(service.uuid, self.buf.getvalue().strip())
@@ -445,7 +445,7 @@ class ServiceRunTestCase(unittest.TestCase):
                                        container_envvars=utils.parse_envvars(container_envvars),
                                        linked_to_service=utils.parse_links(linked_to_service, 'to_service'),
                                        autorestart='OFF', autodestroy='OFF',
-                                       roles='poweruser', sequential_deployment=True)
+                                       roles='poweruser', sequential_deployment=True, tags=[])
         mock_save.assert_called()
         mock_start.assert_called()
         self.assertEqual(service.uuid, self.buf.getvalue().strip())
@@ -476,7 +476,7 @@ class ServiceRunTestCase(unittest.TestCase):
                                        container_envvars=utils.parse_envvars(container_envvars),
                                        linked_to_service=utils.parse_links(linked_to_service, 'to_service'),
                                        autorestart='OFF', autodestroy='OFF',
-                                       roles='poweruser', sequential_deployment=True)
+                                       roles='poweruser', sequential_deployment=True, tags=[])
         mock_save.assert_called()
         mock_start.assert_called()
         self.assertEqual(service.uuid, self.buf.getvalue().strip())
