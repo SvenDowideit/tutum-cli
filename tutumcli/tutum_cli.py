@@ -95,7 +95,7 @@ def dispatch_cmds(args):
                                     envvars=args.env,
                                     tag=args.tag, linked_to_service=args.link_service,
                                     autorestart=args.autorestart, autodestroy=args.autodestroy, roles=args.role,
-                                    sequential=args.sequential)
+                                    sequential=args.sequential, volume=args.volume, volumes_from=args.volumes_from)
         elif args.subcmd == 'inspect':
             commands.service_inspect(args.identifier)
         elif args.subcmd == 'logs':
@@ -111,7 +111,7 @@ def dispatch_cmds(args):
                                  entrypoint=args.entrypoint, expose=args.expose, publish=args.publish, envvars=args.env,
                                  tag=args.tag, linked_to_service=args.link_service,
                                  autorestart=args.autorestart, autodestroy=args.autodestroy, roles=args.role,
-                                 sequential=args.sequential)
+                                 sequential=args.sequential, volume=args.volume, volumes_from=args.volumes_from)
         elif args.subcmd == 'scale':
             commands.service_scale(args.identifier, args.target_num_containers)
         elif args.subcmd == 'set':
@@ -121,7 +121,8 @@ def dispatch_cmds(args):
                                  entrypoint=args.entrypoint, expose=args.expose, publish=args.publish, envvars=args.env,
                                  tag=args.tag, linked_to_service=args.link_service,
                                  autorestart=args.autorestart, autodestroy=args.autodestroy, roles=args.role,
-                                 sequential=args.sequential, redeploy=args.redeploy)
+                                 sequential=args.sequential, redeploy=args.redeploy,
+                                 volume=args.volume, volumes_from=args.volumes_from)
         elif args.subcmd == 'start':
             commands.service_start(args.identifier)
         elif args.subcmd == 'stop':

@@ -436,3 +436,39 @@ def try_register(username, password):
     except Exception:
         return False, r.text
 
+
+def parse_volume(volume):
+    bindings = []
+    if not volume:
+        return bindings
+
+    for vol in volume:
+        binding = {}
+        terms = vol.split(":")
+        if len(terms) == 1:
+            binding["container_path"] = terms[0]
+        elif len(terms) == 2:
+            binding["host_path"] = terms[0]
+            binding["container_path"] = terms[1]
+        elif len(terms) == 3:
+            binding["host_path"] = terms[0]
+            binding["container_path"] = terms[1]
+            if terms[2].lower() == 'ro':
+                binding["rewritable"] = False
+        else:
+            raise BadParameter('Bad volume argument %s. Format: "[host_path:]/container_path[:permission]"' % vol)
+        bindings.append(binding)
+    return bindings
+
+
+def parse_volumes_from(volumes_from):
+    bindings = []
+    if not volumes_from:
+        return bindings
+
+    for identifier in volumes_from:
+        binding = {}
+        service = fetch_remote_service(identifier)
+        binding["volumes_from"] = service.resource_uri
+        bindings.append(binding)
+    return bindings

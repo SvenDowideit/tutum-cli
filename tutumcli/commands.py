@@ -223,7 +223,8 @@ def service_redeploy(identifiers):
 
 
 def service_create(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
-                   expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, roles, sequential):
+                   expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, roles, sequential,
+                   volume, volumes_from):
     try:
         ports = utils.parse_published_ports(publish)
 
@@ -249,13 +250,16 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
             else:
                 tags.append({"name": tag})
 
+        bindings = utils.parse_volume(volume)
+        bindings.extend(utils.parse_volumes_from(volumes_from))
+
         service = tutum.Service.create(image=image, name=name, cpu_shares=cpu_shares,
                                        memory=memory, privileged=privileged,
                                        target_num_containers=target_num_containers, run_command=run_command,
                                        entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
                                        linked_to_service=links_service,
                                        autorestart=autorestart, autodestroy=autodestroy,
-                                       roles=roles, sequential_deployment=sequential, tags=tags)
+                                       roles=roles, sequential_deployment=sequential, tags=tags, bindings=bindings)
         result = service.save()
         if result:
             print(service.uuid)
@@ -265,7 +269,8 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
 
 
 def service_run(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
-                expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, roles, sequential):
+                expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, roles, sequential,
+                volume, volumes_from):
     try:
         ports = utils.parse_published_ports(publish)
 
@@ -291,13 +296,16 @@ def service_run(image, name, cpu_shares, memory, privileged, target_num_containe
             else:
                 tags.append({"name": tag})
 
+        bindings = utils.parse_volume(volume)
+        bindings.extend(utils.parse_volumes_from(volumes_from))
+
         service = tutum.Service.create(image=image, name=name, cpu_shares=cpu_shares,
                                        memory=memory, privileged=privileged,
                                        target_num_containers=target_num_containers, run_command=run_command,
                                        entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
                                        linked_to_service=links_service,
                                        autorestart=autorestart, autodestroy=autodestroy,
-                                       roles=roles, sequential_deployment=sequential, tags=tags)
+                                       roles=roles, sequential_deployment=sequential, tags=tags, bindings=bindings)
         service.save()
         result = service.start()
         if result:
@@ -325,7 +333,7 @@ def service_scale(identifiers, target_num_containers):
 
 def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
                 expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, roles, sequential,
-                redeploy):
+                redeploy, volume, volumes_from):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -387,6 +395,11 @@ def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_c
 
                 if sequential:
                     service.sequential_deployment = sequential
+
+                bindings = utils.parse_volume(volume)
+                bindings.extend(utils.parse_volumes_from(volumes_from))
+                if bindings:
+                    service.bindings = bindings
 
                 result = service.save()
                 if result:

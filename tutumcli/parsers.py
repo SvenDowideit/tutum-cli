@@ -65,6 +65,9 @@ def add_service_parser(subparsers):
                                action='append')
     create_parser.add_argument('--sequential', help='whether the containers should be launched and scaled sequentially',
                                action='store_true')
+    create_parser.add_argument('-v', '--volume', help='Bind mount a volume (e.g., from the host: -v /host:/container, '
+                                                      'from Docker: -v /container)', action='append')
+    create_parser.add_argument('--volumes-from', help='Mount volumes from the specified service(s)', action='append')
 
     # tutum service inspect
     inspect_parser = service_subparser.add_parser('inspect', help="Get all details from a service",
@@ -127,6 +130,9 @@ def add_service_parser(subparsers):
                                            'i.e. "global" (default: none, possible values: "global")', action='append')
     run_parser.add_argument('--sequential', help='whether the containers should be launched and scaled sequentially',
                             action='store_true')
+    run_parser.add_argument('-v', '--volume', help='Bind mount a volume (e.g., from the host: -v /host:/container, '
+                                                      'from Docker: -v /container)', action='append')
+    run_parser.add_argument('--volumes-from', help='Mount volumes from the specified service(s)', action='append')
 
     # tutum service scale
     scale_parser = service_subparser.add_parser('scale', help='Scale a running service',
@@ -174,6 +180,9 @@ def add_service_parser(subparsers):
                             type='bool')
     set_parser.add_argument('--redeploy', help="redeploy service with new configuration after set command",
                             action='store_true')
+    set_parser.add_argument('-v', '--volume', help='Bind mount a volume (e.g., from the host: -v /host:/container, '
+                                                      'from Docker: -v /container)', action='append')
+    set_parser.add_argument('--volumes-from', help='Mount volumes from the specified service(s)', action='append')
 
     # tutum service start
     start_parser = service_subparser.add_parser('start', help='Start a stopped service',
