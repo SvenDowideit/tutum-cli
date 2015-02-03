@@ -6,6 +6,7 @@ import uuid
 
 import mock
 from tutum.api.exceptions import *
+
 from tutumcli.commands import *
 import tutumcli
 
@@ -274,9 +275,8 @@ class ServiceInspectTestCase(unittest.TestCase):
         sys.stdout = self.stdout
 
     @mock.patch('tutumcli.commands.tutum.Service.get_all_attributes')
-    @mock.patch('tutumcli.commands.tutum.Service.fetch')
     @mock.patch('tutumcli.commands.utils.fetch_remote_service')
-    def test_service_inspect(self, mock_fetch_remote_service, mock_fetch, mock_get_all_attributes):
+    def test_service_inspect(self, mock_fetch_remote_service, mock_get_all_attributes):
         output = '''{
   "key": [
     {
@@ -288,12 +288,10 @@ class ServiceInspectTestCase(unittest.TestCase):
         uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
         service = tutumcli.commands.tutum.Service()
         service.uuid = uuid
-        mock_fetch.return_value = service
         mock_fetch_remote_service.return_value = service
         mock_get_all_attributes.return_value = {'key': [{'name': 'test', 'id': '1'}]}
         service_inspect(['test_id'])
 
-        mock_fetch.assert_called_with(uuid)
         self.assertEqual(' '.join(output.split()), ' '.join(self.buf.getvalue().strip().split()))
         self.buf.truncate(0)
 
@@ -708,9 +706,8 @@ class ContainerInspectTestCase(unittest.TestCase):
         sys.stdout = self.stdout
 
     @mock.patch('tutumcli.commands.tutum.Container.get_all_attributes')
-    @mock.patch('tutumcli.commands.tutum.Container.fetch')
     @mock.patch('tutumcli.commands.utils.fetch_remote_container')
-    def test_container_inspect(self, mock_fetch_remote_container, mock_fetch, mock_get_all_attributes):
+    def test_container_inspect(self, mock_fetch_remote_container, mock_get_all_attributes):
         output = '''{
   "key": [
     {
@@ -722,12 +719,10 @@ class ContainerInspectTestCase(unittest.TestCase):
         uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
         container = tutumcli.commands.tutum.Container()
         container.uuid = uuid
-        mock_fetch.return_value = container
         mock_fetch_remote_container.return_value = container
         mock_get_all_attributes.return_value = {'key': [{'name': 'test', 'id': '1'}]}
         container_inspect(['test_id'])
 
-        mock_fetch.assert_called_with(uuid)
         self.assertEqual(' '.join(output.split()), ' '.join(self.buf.getvalue().strip().split()))
         self.buf.truncate(0)
 

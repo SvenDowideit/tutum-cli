@@ -150,7 +150,7 @@ def service_inspect(identifiers):
     for identifier in identifiers:
         try:
             service = utils.fetch_remote_service(identifier)
-            print(json.dumps(tutum.Service.fetch(service.uuid).get_all_attributes(), indent=2))
+            print(json.dumps(service.get_all_attributes(), indent=2))
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -456,7 +456,7 @@ def container_inspect(identifiers):
     for identifier in identifiers:
         try:
             container = utils.fetch_remote_container(identifier)
-            print(json.dumps(tutum.Container.fetch(container.uuid).get_all_attributes(), indent=2))
+            print(json.dumps(container.get_all_attributes(), indent=2))
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -1168,6 +1168,86 @@ def tag_set(identifiers, tags):
             print(e, file=sys.stderr)
             has_exception = True
     if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def volume_list(quiet):
+    try:
+        headers = ["UUID", "STATE", "NODE", "VOLUMEGROUP"]
+        data_list = []
+        uuid_list = []
+        volume_list = tutum.Volume.list()
+        for volume in volume_list:
+            if quiet:
+                uuid_list.append(volume.uuid)
+                continue
+
+            data_list.append([volume.uuid, volume.state,
+                              volume.node.strip("/").split("/")[-1],
+                              volume.volume_group.strip("/").split("/")[-1]])
+
+        if len(data_list) == 0:
+            data_list.append(["", "", "", ""])
+        if quiet:
+            for uuid in uuid_list:
+                print(uuid)
+        else:
+            utils.tabulate_result(data_list, headers)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def volume_inspect(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            volume = utils.fetch_remote_volume(identifier)
+            print(json.dumps(volume.get_all_attributes(), indent=2))
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def volumegroup_list(quiet):
+    try:
+        headers = ["NAME", "UUID", "STATE"]
+        data_list = []
+        uuid_list = []
+        volumegroup_list = tutum.VolumeGroup.list()
+        for volumegroup in volumegroup_list:
+            if quiet:
+                uuid_list.append(volumegroup.uuid)
+                continue
+
+            data_list.append([volumegroup.name, volumegroup.uuid, volumegroup.state])
+
+        if len(data_list) == 0:
+            data_list.append(["", "", ""])
+        if quiet:
+            for uuid in uuid_list:
+                print(uuid)
+        else:
+            utils.tabulate_result(data_list, headers)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def volumegroup_inspect(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            volumegroup = utils.fetch_remote_volumegroup(identifier)
+            print(json.dumps(volumegroup.get_all_attributes(), indent=2))
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
 
 

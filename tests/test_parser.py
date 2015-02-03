@@ -4,6 +4,7 @@ import StringIO
 import sys
 
 import mock
+
 from tutumcli.tutum_cli import patch_help_option, dispatch_cmds, initialize_parser
 from tutumcli.exceptions import InternalError
 import tutumcli
@@ -386,3 +387,9 @@ class ParserTestCase(unittest.TestCase):
         self.compare_output(TUTUM_TAG_LIST, args=['tutum', 'tag', 'list', '-h'])
         self.compare_output(TUTUM_TAG_RM, args=['tutum', 'tag', 'rm', '-h'])
         self.compare_output(TUTUM_TAG_SET, args=['tutum', 'tag', 'set', '-h'])
+        self.compare_output(TUTUM_VOLUME, args=['tutum', 'volume', '-h'])
+        self.compare_output(TUTUM_VOLUME_LIST, args=['tutum', 'volume', 'list', '-h'])
+        self.compare_output(TUTUM_VOLUME_INSPECT, args=['tutum', 'volume', 'inspect', '-h'])
+        self.compare_output(TUTUM_VOLUMEGROUP, args=['tutum', 'volumegroup', '-h'])
+        self.compare_output(TUTUM_VOLUMEGROUP_LIST, args=['tutum', 'volumegroup', 'list', '-h'])
+        self.compare_output(TUTUM_VOLUMEGROUP_INSPECT, args=['tutum', 'volumegroup', 'inspect', '-h'])

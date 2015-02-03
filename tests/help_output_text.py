@@ -1,5 +1,5 @@
 TUTUM = '''usage: tutum [-h] [-v]
-             {build,container,image,login,node,nodecluster,service,tag,webhook-handler}
+             {build,container,image,login,node,nodecluster,service,tag,volume,volumegroup,webhook-handler}
              ...
 
 Tutum's CLI
@@ -9,7 +9,7 @@ optional arguments:
   -v, --version         show program's version number and exit
 
 Tutum's CLI commands:
-  {build,container,image,login,node,nodecluster,service,tag,webhook-handler}
+  {build,container,image,login,node,nodecluster,service,tag,volume,volumegroup,webhook-handler}
     build               Build an image using an existing Dockerfile, or create
                         one using buildstep
     container           Container-related operations
@@ -19,6 +19,8 @@ Tutum's CLI commands:
     nodecluster         NodeCluster-related operations
     service             Service-related operations
     tag                 Tag-related operations
+    volume              Volume-related operations
+    volumegroup         VolumeGroup-related operations
     webhook-handler     Webhook-handler-related operations'''
 
 # ##################################################
@@ -754,3 +756,76 @@ positional arguments:
 optional arguments:
   -h, --help         show this help message and exit
   -t TAG, --tag TAG  name of the tag'''
+
+# ##################################################
+
+TUTUM_VOLUME = '''usage: tutum volume [-h] {inspect,list} ...
+
+Volume-related operations
+
+optional arguments:
+  -h, --help      show this help message and exit
+
+tutum volume commands:
+  {inspect,list}
+    inspect       Inspect a volume
+    list          List volumes'''
+
+# ##################################################
+
+TUTUM_VOLUME_LIST = '''usage: tutum volume list [-h] [-q]
+
+List volumes
+
+optional arguments:
+  -h, --help   show this help message and exit
+  -q, --quiet  print only long UUIDs'''
+
+# ##################################################
+
+TUTUM_VOLUME_INSPECT = '''usage: tutum volume inspect [-h] identifier [identifier ...]
+
+Inspect a volume
+
+positional arguments:
+  identifier  volume's UUID (either long or short)
+
+optional arguments:
+  -h, --help  show this help message and exit'''
+
+# ##################################################
+
+TUTUM_VOLUMEGROUP = '''usage: tutum volumegroup [-h] {inspect,list} ...
+
+VolumeGroup-related operations
+
+optional arguments:
+  -h, --help      show this help message and exit
+
+tutum volumegroup commands:
+  {inspect,list}
+    inspect       Inspect a volume group
+    list          List volume groups'''
+
+# ##################################################
+
+TUTUM_VOLUMEGROUP_LIST = '''usage: tutum volumegroup list [-h] [-q]
+
+List volume groups
+
+optional arguments:
+  -h, --help   show this help message and exit
+  -q, --quiet  print only long UUIDs'''
+
+# ##################################################
+
+TUTUM_VOLUMEGROUP_INSPECT = '''usage: tutum volumegroup inspect [-h] identifier [identifier ...]
+
+Inspect a volume group
+
+positional arguments:
+  identifier  volume group's UUID (either long or short) or name
+
+optional arguments:
+  -h, --help  show this help message and exit
+'''

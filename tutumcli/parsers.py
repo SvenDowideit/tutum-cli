@@ -386,6 +386,37 @@ def add_tag_parser(subparsers):
     set_parser.add_argument('identifier', help="UUID or name of services, nodes or nodeclusters", nargs='+')
 
 
+def add_volume_parser(subparsers):
+    # tutum volume
+    volume_parser = subparsers.add_parser('volume', help='Volume-related operations',
+                                          description='Volume-related operations')
+    volume_subparser = volume_parser.add_subparsers(title='tutum volume commands', dest='subcmd')
+
+    # tutum volume inspect
+    inspect_parser = volume_subparser.add_parser('inspect', help='Inspect a volume', description='Inspect a volume')
+    inspect_parser.add_argument('identifier', help="volume's UUID (either long or short)", nargs='+')
+
+    # tutum volume list
+    list_parser = volume_subparser.add_parser('list', help='List volumes', description='List volumes')
+    list_parser.add_argument('-q', '--quiet', help='print only long UUIDs', action='store_true')
+
+
+def add_volumegroup_parser(subparsers):
+    # tutum volumegroup
+    volumegroup_parser = subparsers.add_parser('volumegroup', help='VolumeGroup-related operations',
+                                               description='VolumeGroup-related operations')
+    volumegroup_subparser = volumegroup_parser.add_subparsers(title='tutum volumegroup commands', dest='subcmd')
+
+    # tutum volumegroup inspect
+    inspect_parser = volumegroup_subparser.add_parser('inspect', help='Inspect a volume group',
+                                                      description='Inspect a volume group')
+    inspect_parser.add_argument('identifier', help="volume group's UUID (either long or short) or name", nargs='+')
+
+    # tutum volumegroup list
+    list_parser = volumegroup_subparser.add_parser('list', help='List volume groups', description='List volume groups')
+    list_parser.add_argument('-q', '--quiet', help='print only long UUIDs', action='store_true')
+
+
 def add_webhookhandler_parser(subparsers):
     # tutum webhook-handler
     webhookhandler_parser = subparsers.add_parser('webhook-handler', help='Webhook-handler-related operations',
