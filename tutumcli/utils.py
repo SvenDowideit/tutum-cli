@@ -228,6 +228,51 @@ def fetch_remote_service(identifier, raise_exceptions=True):
         raise e
 
 
+def fetch_remote_volume(identifier, raise_exceptions=True):
+    try:
+        if is_uuid4(identifier):
+            try:
+                return tutum.Volume.fetch(identifier)
+            except Exception:
+                raise ObjectNotFound("Cannot find a volume with the identifier '%s'" % identifier)
+        else:
+            objects_same_identifier = tutum.Volume.list(uuid__startswith=identifier)
+            if len(objects_same_identifier) == 1:
+                uuid = objects_same_identifier[0].uuid
+                return tutum.Volume.fetch(uuid)
+            elif len(objects_same_identifier) == 0:
+                raise ObjectNotFound("Cannot find a volume with the identifier '%s'" % identifier)
+            raise NonUniqueIdentifier("More than one volume has the same identifier, please use the long uuid")
+
+    except (NonUniqueIdentifier, ObjectNotFound) as e:
+        if not raise_exceptions:
+            return e
+        raise e
+
+
+def fetch_remote_volumegroup(identifier, raise_exceptions=True):
+    try:
+        if is_uuid4(identifier):
+            try:
+                return tutum.VolumeGroup.fetch(identifier)
+            except Exception:
+                raise ObjectNotFound("Cannot find a volume with the identifier '%s'" % identifier)
+        else:
+            objects_same_identifier = tutum.VolumeGroup.list(uuid__startswith=identifier) or \
+                                      tutum.VolumeGroup.list(name=identifier)
+            if len(objects_same_identifier) == 1:
+                uuid = objects_same_identifier[0].uuid
+                return tutum.VolumeGroup.fetch(uuid)
+            elif len(objects_same_identifier) == 0:
+                raise ObjectNotFound("Cannot find a volume with the identifier '%s'" % identifier)
+            raise NonUniqueIdentifier("More than one volume has the same identifier, please use the long uuid")
+
+    except (NonUniqueIdentifier, ObjectNotFound) as e:
+        if not raise_exceptions:
+            return e
+        raise e
+
+
 def fetch_remote_node(identifier, raise_exceptions=True):
     try:
         if is_uuid4(identifier):
@@ -391,3 +436,39 @@ def try_register(username, password):
     except Exception:
         return False, r.text
 
+
+def parse_volume(volume):
+    bindings = []
+    if not volume:
+        return bindings
+
+    for vol in volume:
+        binding = {}
+        terms = vol.split(":")
+        if len(terms) == 1:
+            binding["container_path"] = terms[0]
+        elif len(terms) == 2:
+            binding["host_path"] = terms[0]
+            binding["container_path"] = terms[1]
+        elif len(terms) == 3:
+            binding["host_path"] = terms[0]
+            binding["container_path"] = terms[1]
+            if terms[2].lower() == 'ro':
+                binding["rewritable"] = False
+        else:
+            raise BadParameter('Bad volume argument %s. Format: "[host_path:]/container_path[:permission]"' % vol)
+        bindings.append(binding)
+    return bindings
+
+
+def parse_volumes_from(volumes_from):
+    bindings = []
+    if not volumes_from:
+        return bindings
+
+    for identifier in volumes_from:
+        binding = {}
+        service = fetch_remote_service(identifier)
+        binding["volumes_from"] = service.resource_uri
+        bindings.append(binding)
+    return bindings

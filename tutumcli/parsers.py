@@ -65,6 +65,9 @@ def add_service_parser(subparsers):
                                action='append')
     create_parser.add_argument('--sequential', help='whether the containers should be launched and scaled sequentially',
                                action='store_true')
+    create_parser.add_argument('-v', '--volume', help='Bind mount a volume (e.g., from the host: -v /host:/container, '
+                                                      'from Docker: -v /container)', action='append')
+    create_parser.add_argument('--volumes-from', help='Mount volumes from the specified service(s)', action='append')
 
     # tutum service inspect
     inspect_parser = service_subparser.add_parser('inspect', help="Get all details from a service",
@@ -127,6 +130,9 @@ def add_service_parser(subparsers):
                                            'i.e. "global" (default: none, possible values: "global")', action='append')
     run_parser.add_argument('--sequential', help='whether the containers should be launched and scaled sequentially',
                             action='store_true')
+    run_parser.add_argument('-v', '--volume', help='Bind mount a volume (e.g., from the host: -v /host:/container, '
+                                                      'from Docker: -v /container)', action='append')
+    run_parser.add_argument('--volumes-from', help='Mount volumes from the specified service(s)', action='append')
 
     # tutum service scale
     scale_parser = service_subparser.add_parser('scale', help='Scale a running service',
@@ -174,6 +180,9 @@ def add_service_parser(subparsers):
                             type='bool')
     set_parser.add_argument('--redeploy', help="redeploy service with new configuration after set command",
                             action='store_true')
+    set_parser.add_argument('-v', '--volume', help='Bind mount a volume (e.g., from the host: -v /host:/container, '
+                                                      'from Docker: -v /container)', action='append')
+    set_parser.add_argument('--volumes-from', help='Mount volumes from the specified service(s)', action='append')
 
     # tutum service start
     start_parser = service_subparser.add_parser('start', help='Start a stopped service',
@@ -384,6 +393,37 @@ def add_tag_parser(subparsers):
                                                       'This will remove all the existing tags')
     set_parser.add_argument('-t', '--tag', help="name of the tag", action='append', required=True)
     set_parser.add_argument('identifier', help="UUID or name of services, nodes or nodeclusters", nargs='+')
+
+
+def add_volume_parser(subparsers):
+    # tutum volume
+    volume_parser = subparsers.add_parser('volume', help='Volume-related operations',
+                                          description='Volume-related operations')
+    volume_subparser = volume_parser.add_subparsers(title='tutum volume commands', dest='subcmd')
+
+    # tutum volume inspect
+    inspect_parser = volume_subparser.add_parser('inspect', help='Inspect a volume', description='Inspect a volume')
+    inspect_parser.add_argument('identifier', help="volume's UUID (either long or short)", nargs='+')
+
+    # tutum volume list
+    list_parser = volume_subparser.add_parser('list', help='List volumes', description='List volumes')
+    list_parser.add_argument('-q', '--quiet', help='print only long UUIDs', action='store_true')
+
+
+def add_volumegroup_parser(subparsers):
+    # tutum volumegroup
+    volumegroup_parser = subparsers.add_parser('volumegroup', help='VolumeGroup-related operations',
+                                               description='VolumeGroup-related operations')
+    volumegroup_subparser = volumegroup_parser.add_subparsers(title='tutum volumegroup commands', dest='subcmd')
+
+    # tutum volumegroup inspect
+    inspect_parser = volumegroup_subparser.add_parser('inspect', help='Inspect a volume group',
+                                                      description='Inspect a volume group')
+    inspect_parser.add_argument('identifier', help="volume group's UUID (either long or short) or name", nargs='+')
+
+    # tutum volumegroup list
+    list_parser = volumegroup_subparser.add_parser('list', help='List volume groups', description='List volume groups')
+    list_parser.add_argument('-q', '--quiet', help='print only long UUIDs', action='store_true')
 
 
 def add_webhookhandler_parser(subparsers):

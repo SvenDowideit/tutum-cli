@@ -4,6 +4,7 @@ import StringIO
 import sys
 
 import mock
+
 from tutumcli.tutum_cli import patch_help_option, dispatch_cmds, initialize_parser
 from tutumcli.exceptions import InternalError
 import tutumcli
@@ -128,7 +129,8 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                     linked_to_service=args.link_service,
                                                     autorestart=args.autorestart, autodestroy=args.autodestroy,
                                                     roles=args.role,
-                                                    sequential=args.sequential)
+                                                    sequential=args.sequential,
+                                                    volume=args.volume, volumes_from=args.volumes_from)
 
         args = self.parser.parse_args(['service', 'inspect', 'id'])
         dispatch_cmds(args)
@@ -157,7 +159,8 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                  linked_to_service=args.link_service,
                                                  autorestart=args.autorestart, autodestroy=args.autodestroy,
                                                  roles=args.role,
-                                                 sequential=args.sequential)
+                                                 sequential=args.sequential,
+                                                 volume=args.volume, volumes_from=args.volumes_from)
 
         args = self.parser.parse_args(['service', 'scale', 'id', '3'])
         dispatch_cmds(args)
@@ -174,7 +177,8 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                  tag=args.tag, linked_to_service=args.link_service,
                                                  autorestart=args.autorestart, autodestroy=args.autodestroy,
                                                  roles=args.role,
-                                                 sequential=args.sequential, redeploy=args.redeploy)
+                                                 sequential=args.sequential, redeploy=args.redeploy,
+                                                 volume=args.volume, volumes_from=args.volumes_from)
 
         args = self.parser.parse_args(['service', 'start', 'id'])
         dispatch_cmds(args)
@@ -351,6 +355,7 @@ class ParserTestCase(unittest.TestCase):
         self.compare_output(TUTUM_SERVICE, args=['tutum', 'service', '-h'])
         self.compare_output(TUTUM_SERVICE_INSPECT, args=['tutum', 'service', 'inspect', '-h'])
         self.compare_output(TUTUM_SERVICE_LOGS, args=['tutum', 'service', 'logs', '-h'])
+        self.compare_output(TUTUM_SERVICE_CREATE, args=['tutum', 'service', 'create', '-h'])
         self.compare_output(TUTUM_SERVICE_PS, args=['tutum', 'service', 'ps', '-h'])
         self.compare_output(TUTUM_SERVICE_REDEPLOY, args=['tutum', 'service', 'redeploy', '-h'])
         self.compare_output(TUTUM_SERVICE_RUN, args=['tutum', 'service', 'run', '-h'])
@@ -386,3 +391,9 @@ class ParserTestCase(unittest.TestCase):
         self.compare_output(TUTUM_TAG_LIST, args=['tutum', 'tag', 'list', '-h'])
         self.compare_output(TUTUM_TAG_RM, args=['tutum', 'tag', 'rm', '-h'])
         self.compare_output(TUTUM_TAG_SET, args=['tutum', 'tag', 'set', '-h'])
+        self.compare_output(TUTUM_VOLUME, args=['tutum', 'volume', '-h'])
+        self.compare_output(TUTUM_VOLUME_LIST, args=['tutum', 'volume', 'list', '-h'])
+        self.compare_output(TUTUM_VOLUME_INSPECT, args=['tutum', 'volume', 'inspect', '-h'])
+        self.compare_output(TUTUM_VOLUMEGROUP, args=['tutum', 'volumegroup', '-h'])
+        self.compare_output(TUTUM_VOLUMEGROUP_LIST, args=['tutum', 'volumegroup', 'list', '-h'])
+        self.compare_output(TUTUM_VOLUMEGROUP_INSPECT, args=['tutum', 'volumegroup', 'inspect', '-h'])

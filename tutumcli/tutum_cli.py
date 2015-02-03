@@ -30,6 +30,8 @@ def initialize_parser():
     parsers.add_nodecluster_parser(subparsers)
     parsers.add_service_parser(subparsers)
     parsers.add_tag_parser(subparsers)
+    parsers.add_volume_parser(subparsers)
+    parsers.add_volumegroup_parser(subparsers)
     parsers.add_webhookhandler_parser(subparsers)
     return parser
 
@@ -47,7 +49,7 @@ def patch_help_option(argv=sys.argv):
     if len(args) == 1:
         args.append('-h')
     elif len(args) == 2 and args[1] in ['service', 'build', 'container', 'image', 'node', 'nodecluster', 'tag',
-                                        'webhook-handler']:
+                                        'volume', 'volumegroup', 'webhook-handler']:
         args.append('-h')
     elif len(args) == 3:
         if args[1] == 'service' and args[2] in ['create', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
@@ -66,6 +68,11 @@ def patch_help_option(argv=sys.argv):
             args.append('-h')
         elif args[1] == 'webhook-handler' and args[2] in ['create', 'list', 'rm']:
             args.append('-h')
+        elif args[1] == 'volume' and args[2] in ['inspect']:
+            args.append('-h')
+        elif args[1] == 'volumegroup' and args[2] in ['inspect']:
+            args.append('-h')
+
     if debug:
         args.insert(1, '--debug')
     return args[1:]
@@ -88,7 +95,7 @@ def dispatch_cmds(args):
                                     envvars=args.env,
                                     tag=args.tag, linked_to_service=args.link_service,
                                     autorestart=args.autorestart, autodestroy=args.autodestroy, roles=args.role,
-                                    sequential=args.sequential)
+                                    sequential=args.sequential, volume=args.volume, volumes_from=args.volumes_from)
         elif args.subcmd == 'inspect':
             commands.service_inspect(args.identifier)
         elif args.subcmd == 'logs':
@@ -104,7 +111,7 @@ def dispatch_cmds(args):
                                  entrypoint=args.entrypoint, expose=args.expose, publish=args.publish, envvars=args.env,
                                  tag=args.tag, linked_to_service=args.link_service,
                                  autorestart=args.autorestart, autodestroy=args.autodestroy, roles=args.role,
-                                 sequential=args.sequential)
+                                 sequential=args.sequential, volume=args.volume, volumes_from=args.volumes_from)
         elif args.subcmd == 'scale':
             commands.service_scale(args.identifier, args.target_num_containers)
         elif args.subcmd == 'set':
@@ -114,7 +121,8 @@ def dispatch_cmds(args):
                                  entrypoint=args.entrypoint, expose=args.expose, publish=args.publish, envvars=args.env,
                                  tag=args.tag, linked_to_service=args.link_service,
                                  autorestart=args.autorestart, autodestroy=args.autodestroy, roles=args.role,
-                                 sequential=args.sequential, redeploy=args.redeploy)
+                                 sequential=args.sequential, redeploy=args.redeploy,
+                                 volume=args.volume, volumes_from=args.volumes_from)
         elif args.subcmd == 'start':
             commands.service_start(args.identifier)
         elif args.subcmd == 'stop':
@@ -184,6 +192,16 @@ def dispatch_cmds(args):
             commands.tag_rm(args.identifier, args.tag)
         elif args.subcmd == 'set':
             commands.tag_set(args.identifier, args.tag)
+    elif args.cmd == 'volume':
+        if args.subcmd == 'list':
+            commands.volume_list(args.quiet)
+        if args.subcmd == 'inspect':
+            commands.volume_inspect(args.identifier)
+    elif args.cmd == 'volumegroup':
+        if args.subcmd == 'list':
+            commands.volumegroup_list(args.quiet)
+        if args.subcmd == 'inspect':
+            commands.volumegroup_inspect(args.identifier)
     elif args.cmd == 'webhook-handler':
         if args.subcmd == 'create':
             commands.webhookhandler_create(args.identifier, args.name)

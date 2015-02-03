@@ -1,5 +1,5 @@
 TUTUM = '''usage: tutum [-h] [-v]
-             {build,container,image,login,node,nodecluster,service,tag,webhook-handler}
+             {build,container,image,login,node,nodecluster,service,tag,volume,volumegroup,webhook-handler}
              ...
 
 Tutum's CLI
@@ -9,7 +9,7 @@ optional arguments:
   -v, --version         show program's version number and exit
 
 Tutum's CLI commands:
-  {build,container,image,login,node,nodecluster,service,tag,webhook-handler}
+  {build,container,image,login,node,nodecluster,service,tag,volume,volumegroup,webhook-handler}
     build               Build an image using an existing Dockerfile, or create
                         one using buildstep
     container           Container-related operations
@@ -19,6 +19,8 @@ Tutum's CLI commands:
     nodecluster         NodeCluster-related operations
     service             Service-related operations
     tag                 Tag-related operations
+    volume              Volume-related operations
+    volumegroup         VolumeGroup-related operations
     webhook-handler     Webhook-handler-related operations'''
 
 # ##################################################
@@ -161,15 +163,67 @@ tutum service commands:
 
 # ##################################################
 
-TUTUM_SERVICE_CREATE = '''usage: tutum service inspect [-h] identifier [identifier ...]
+TUTUM_SERVICE_CREATE = '''usage: tutum service create [-h] [-n NAME] [--cpushares CPUSHARES]
+                            [--memory MEMORY] [--privileged]
+                            [-t TARGET_NUM_CONTAINERS] [-r RUN_COMMAND]
+                            [--entrypoint ENTRYPOINT] [-p PUBLISH]
+                            [--expose EXPOSE] [-e ENV] [--tag TAG]
+                            [--link-service LINK_SERVICE]
+                            [--autorestart {OFF,ON_FAILURE,ALWAYS}]
+                            [--autodestroy {OFF,ON_FAILURE,ALWAYS}]
+                            [--role ROLE] [--sequential] [-v VOLUME]
+                            [--volumes-from VOLUMES_FROM]
+                            image
 
-Get all details from a service
+Create a new service
 
 positional arguments:
-  identifier  service's UUID (either long or short) or name
+  image                 the name of the image used to deploy this service
 
 optional arguments:
-  -h, --help  show this help message and exit'''
+  -h, --help            show this help message and exit
+  -n NAME, --name NAME  a human-readable name for the service (default:
+                        image_tag without namespace)
+  --cpushares CPUSHARES
+                        Relative weight for CPU Shares
+  --memory MEMORY       RAM memory hard limit in MB
+  --privileged          Give extended privileges to this container
+  -t TARGET_NUM_CONTAINERS, --target-num-containers TARGET_NUM_CONTAINERS
+                        the number of containers to run for this service
+                        (default: 1)
+  -r RUN_COMMAND, --run-command RUN_COMMAND
+                        the command used to start the service containers
+                        (default: as defined in the image)
+  --entrypoint ENTRYPOINT
+                        the command prefix used to start the service
+                        containers (default: as defined in the image)
+  -p PUBLISH, --publish PUBLISH
+                        Publish a container's port to the host. Format:
+                        [hostPort:]containerPort[/protocol], i.e. "80:80/tcp"
+  --expose EXPOSE       Expose a port from the container without publishing it
+                        to your host
+  -e ENV, --env ENV     set environment variables i.e. "ENVVAR=foo" (default:
+                        as defined in the image, plus any link- or role-
+                        generated variables)
+  --tag TAG             the tag name being added to the service
+  --link-service LINK_SERVICE
+                        Add link to another service (name:alias) or
+                        (uuid:alias)
+  --autorestart {OFF,ON_FAILURE,ALWAYS}
+                        whether the containers should be restarted if they
+                        stop (default: OFF)
+  --autodestroy {OFF,ON_FAILURE,ALWAYS}
+                        whether the containers should be terminated if they
+                        stop (default: OFF)
+  --role ROLE           Tutum API roles to grant the service, i.e. "global"
+                        (default: none, possible values: "global")
+  --sequential          whether the containers should be launched and scaled
+                        sequentially
+  -v VOLUME, --volume VOLUME
+                        Bind mount a volume (e.g., from the host: -v
+                        /host:/container, from Docker: -v /container)
+  --volumes-from VOLUMES_FROM
+                        Mount volumes from the specified service(s)'''
 
 # ##################################################
 
@@ -232,7 +286,8 @@ TUTUM_SERVICE_RUN = '''usage: tutum service run [-h] [-n NAME] [--cpushares CPUS
                          [--link-service LINK_SERVICE]
                          [--autorestart {OFF,ON_FAILURE,ALWAYS}]
                          [--autodestroy {OFF,ON_FAILURE,ALWAYS}] [--role ROLE]
-                         [--sequential]
+                         [--sequential] [-v VOLUME]
+                         [--volumes-from VOLUMES_FROM]
                          image
 
 Create and run a new service
@@ -278,7 +333,12 @@ optional arguments:
   --role ROLE           Tutum API roles to grant the service, i.e. "global"
                         (default: none, possible values: "global")
   --sequential          whether the containers should be launched and scaled
-                        sequentially'''
+                        sequentially
+  -v VOLUME, --volume VOLUME
+                        Bind mount a volume (e.g., from the host: -v
+                        /host:/container, from Docker: -v /container)
+  --volumes-from VOLUMES_FROM
+                        Mount volumes from the specified service(s)'''
 
 # ##################################################
 
@@ -305,7 +365,8 @@ TUTUM_SERVICE_SET = '''usage: tutum service set [-h] [--image IMAGE] [--cpushare
                          [--link-service LINK_SERVICE]
                          [--autorestart {OFF,ON_FAILURE,ALWAYS}]
                          [--autodestroy {OFF,ON_FAILURE,ALWAYS}] [--role ROLE]
-                         [--sequential SEQUENTIAL] [--redeploy]
+                         [--sequential SEQUENTIAL] [--redeploy] [-v VOLUME]
+                         [--volumes-from VOLUMES_FROM]
                          identifier [identifier ...]
 
 Change service properties
@@ -354,7 +415,12 @@ optional arguments:
                         whether the containers should be launched and scaled
                         sequentially<true/false>
   --redeploy            redeploy service with new configuration after set
-                        command'''
+                        command
+  -v VOLUME, --volume VOLUME
+                        Bind mount a volume (e.g., from the host: -v
+                        /host:/container, from Docker: -v /container)
+  --volumes-from VOLUMES_FROM
+                        Mount volumes from the specified service(s)'''
 
 # ##################################################
 
@@ -754,3 +820,76 @@ positional arguments:
 optional arguments:
   -h, --help         show this help message and exit
   -t TAG, --tag TAG  name of the tag'''
+
+# ##################################################
+
+TUTUM_VOLUME = '''usage: tutum volume [-h] {inspect,list} ...
+
+Volume-related operations
+
+optional arguments:
+  -h, --help      show this help message and exit
+
+tutum volume commands:
+  {inspect,list}
+    inspect       Inspect a volume
+    list          List volumes'''
+
+# ##################################################
+
+TUTUM_VOLUME_LIST = '''usage: tutum volume list [-h] [-q]
+
+List volumes
+
+optional arguments:
+  -h, --help   show this help message and exit
+  -q, --quiet  print only long UUIDs'''
+
+# ##################################################
+
+TUTUM_VOLUME_INSPECT = '''usage: tutum volume inspect [-h] identifier [identifier ...]
+
+Inspect a volume
+
+positional arguments:
+  identifier  volume's UUID (either long or short)
+
+optional arguments:
+  -h, --help  show this help message and exit'''
+
+# ##################################################
+
+TUTUM_VOLUMEGROUP = '''usage: tutum volumegroup [-h] {inspect,list} ...
+
+VolumeGroup-related operations
+
+optional arguments:
+  -h, --help      show this help message and exit
+
+tutum volumegroup commands:
+  {inspect,list}
+    inspect       Inspect a volume group
+    list          List volume groups'''
+
+# ##################################################
+
+TUTUM_VOLUMEGROUP_LIST = '''usage: tutum volumegroup list [-h] [-q]
+
+List volume groups
+
+optional arguments:
+  -h, --help   show this help message and exit
+  -q, --quiet  print only long UUIDs'''
+
+# ##################################################
+
+TUTUM_VOLUMEGROUP_INSPECT = '''usage: tutum volumegroup inspect [-h] identifier [identifier ...]
+
+Inspect a volume group
+
+positional arguments:
+  identifier  volume group's UUID (either long or short) or name
+
+optional arguments:
+  -h, --help  show this help message and exit
+'''
