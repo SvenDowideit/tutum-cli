@@ -130,7 +130,8 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                     autorestart=args.autorestart, autodestroy=args.autodestroy,
                                                     roles=args.role,
                                                     sequential=args.sequential,
-                                                    volume=args.volume, volumes_from=args.volumes_from)
+                                                    volume=args.volume, volumes_from=args.volumes_from,
+                                                    deployment_strategy=args.deployment_strategy)
 
         args = self.parser.parse_args(['service', 'inspect', 'id'])
         dispatch_cmds(args)
@@ -160,7 +161,8 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                  autorestart=args.autorestart, autodestroy=args.autodestroy,
                                                  roles=args.role,
                                                  sequential=args.sequential,
-                                                 volume=args.volume, volumes_from=args.volumes_from)
+                                                 volume=args.volume, volumes_from=args.volumes_from,
+                                                 deployment_strategy=args.deployment_strategy)
 
         args = self.parser.parse_args(['service', 'scale', 'id', '3'])
         dispatch_cmds(args)
@@ -178,7 +180,8 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                  autorestart=args.autorestart, autodestroy=args.autodestroy,
                                                  roles=args.role,
                                                  sequential=args.sequential, redeploy=args.redeploy,
-                                                 volume=args.volume, volumes_from=args.volumes_from)
+                                                 volume=args.volume, volumes_from=args.volumes_from,
+                                                 deployment_strategy=args.deployment_strategy)
 
         args = self.parser.parse_args(['service', 'start', 'id'])
         dispatch_cmds(args)
