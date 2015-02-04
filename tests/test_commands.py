@@ -368,7 +368,7 @@ class ServicePsTestCase(unittest.TestCase):
 
     @mock.patch('tutumcli.commands.tutum.Service.list')
     def test_service_ps(self, mock_list):
-        output = u'''NAME      UUID      STATUS       #CONTAINERS  IMAGE          DEPLOYED    PUBLICDNS
+        output = u'''NAME      UUID      STATUS       #CONTAINERS  IMAGE          DEPLOYED    PUBLIC DNS
 SERVICE1  7A4CFE51  ▶ Running              3  test/service1              www.myhello1service.com
 SERVICE2  8B4CFE51  ◼ Stopped              2  test/service2              www.myhello2service.com'''
         mock_list.return_value = self.servicelist
@@ -397,7 +397,7 @@ SERVICE2  8B4CFE51  ◼ Stopped              2  test/service2              www.m
 
     @mock.patch('tutumcli.commands.tutum.Service.list')
     def test_service_ps_unsync(self, mock_list):
-        output = u'''NAME      UUID      STATUS          #CONTAINERS  IMAGE          DEPLOYED    PUBLICDNS
+        output = u'''NAME      UUID      STATUS          #CONTAINERS  IMAGE          DEPLOYED    PUBLIC DNS
 SERVICE1  7A4CFE51  ▶ Running(*)              3  test/service1              www.myhello1service.com
 SERVICE2  8B4CFE51  ◼ Stopped                 2  test/service2              www.myhello2service.com
 
