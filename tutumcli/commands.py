@@ -1226,7 +1226,6 @@ def volume_inspect(identifiers):
             print(e, file=sys.stderr)
             has_exception = True
     if has_exception:
-        print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
@@ -1265,7 +1264,6 @@ def volumegroup_inspect(identifiers):
             print(e, file=sys.stderr)
             has_exception = True
     if has_exception:
-        print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
