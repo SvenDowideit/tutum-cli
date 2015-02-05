@@ -173,7 +173,7 @@ def service_logs(identifiers):
 
 def service_ps(quiet=False, status=None):
     try:
-        headers = ["NAME", "UUID", "STATUS", "#CONTAINERS", "IMAGE", "DEPLOYED", "PUBLICDNS"]
+        headers = ["NAME", "UUID", "STATUS", "#CONTAINERS", "IMAGE", "DEPLOYED", "PUBLIC DNS"]
         service_list = tutum.Service.list(state=status)
         data_list = []
         long_uuid_list = []
@@ -224,7 +224,7 @@ def service_redeploy(identifiers):
 
 def service_create(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
                    expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, roles, sequential,
-                   volume, volumes_from):
+                   volume, volumes_from, deployment_strategy):
     try:
         ports = utils.parse_published_ports(publish)
 
@@ -259,7 +259,8 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
                                        entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
                                        linked_to_service=links_service,
                                        autorestart=autorestart, autodestroy=autodestroy,
-                                       roles=roles, sequential_deployment=sequential, tags=tags, bindings=bindings)
+                                       roles=roles, sequential_deployment=sequential, tags=tags, bindings=bindings,
+                                       deployment_strategy=deployment_strategy)
         result = service.save()
         if result:
             print(service.uuid)
@@ -270,7 +271,7 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
 
 def service_run(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
                 expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, roles, sequential,
-                volume, volumes_from):
+                volume, volumes_from, deployment_strategy):
     try:
         ports = utils.parse_published_ports(publish)
 
@@ -305,7 +306,8 @@ def service_run(image, name, cpu_shares, memory, privileged, target_num_containe
                                        entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
                                        linked_to_service=links_service,
                                        autorestart=autorestart, autodestroy=autodestroy,
-                                       roles=roles, sequential_deployment=sequential, tags=tags, bindings=bindings)
+                                       roles=roles, sequential_deployment=sequential, tags=tags, bindings=bindings,
+                                       deployment_strategy=deployment_strategy)
         service.save()
         result = service.start()
         if result:
@@ -333,7 +335,7 @@ def service_scale(identifiers, target_num_containers):
 
 def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
                 expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, roles, sequential,
-                redeploy, volume, volumes_from):
+                redeploy, volume, volumes_from, deployment_strategy):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -400,6 +402,9 @@ def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_c
                 bindings.extend(utils.parse_volumes_from(volumes_from))
                 if bindings:
                     service.bindings = bindings
+
+                if deployment_strategy:
+                    service.deployment_strategy = deployment_strategy
 
                 result = service.save()
                 if result:
@@ -1221,7 +1226,6 @@ def volume_inspect(identifiers):
             print(e, file=sys.stderr)
             has_exception = True
     if has_exception:
-        print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
@@ -1260,7 +1264,6 @@ def volumegroup_inspect(identifiers):
             print(e, file=sys.stderr)
             has_exception = True
     if has_exception:
-        print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
 
 

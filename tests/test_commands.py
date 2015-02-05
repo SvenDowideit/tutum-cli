@@ -208,7 +208,7 @@ class ServiceCreateTestCase(unittest.TestCase):
         mock_create.return_value = service
         service_create('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
                        exposed_ports, published_ports, container_envvars, '', linked_to_service,
-                       'OFF', 'OFF', 'poweruser', True, None, None)
+                       'OFF', 'OFF', 'poweruser', True, None, None, None)
 
         mock_create.assert_called_with(image='imagename', name='containername', cpu_shares=1,
                                        memory='256M', privileged=True,
@@ -217,7 +217,8 @@ class ServiceCreateTestCase(unittest.TestCase):
                                        container_envvars=utils.parse_envvars(container_envvars),
                                        linked_to_service=utils.parse_links(linked_to_service, 'to_service'),
                                        autorestart='OFF', autodestroy='OFF',
-                                       roles='poweruser', sequential_deployment=True, tags=[], bindings=[])
+                                       roles='poweruser', sequential_deployment=True, tags=[], bindings=[],
+                                       deployment_strategy=None)
         mock_save.assert_called()
         mock_start.assert_not_called()
         self.assertEqual(service.uuid, self.buf.getvalue().strip())
@@ -237,7 +238,7 @@ class ServiceCreateTestCase(unittest.TestCase):
         mock_create.return_value = service
         service_run('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
                     exposed_ports, published_ports, container_envvars, '', linked_to_service,
-                    'OFF', 'OFF', 'poweruser', True, None, None)
+                    'OFF', 'OFF', 'poweruser', True, None, None, None)
 
         mock_create.assert_called_with(image='imagename', name='containername', cpu_shares=1,
                                        memory='256M', privileged=True,
@@ -246,7 +247,8 @@ class ServiceCreateTestCase(unittest.TestCase):
                                        container_envvars=utils.parse_envvars(container_envvars),
                                        linked_to_service=utils.parse_links(linked_to_service, 'to_service'),
                                        autorestart='OFF', autodestroy='OFF',
-                                       roles='poweruser', sequential_deployment=True, tags=[], bindings=[])
+                                       roles='poweruser', sequential_deployment=True, tags=[], bindings=[],
+                                       deployment_strategy=None)
         mock_save.assert_called()
         mock_start.assert_not_called()
         self.assertEqual(service.uuid, self.buf.getvalue().strip())
@@ -261,7 +263,7 @@ class ServiceCreateTestCase(unittest.TestCase):
         linked_to_service = ['mysql:mysql', 'redis:redis']
         service_create('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
                        exposed_ports, published_ports, container_envvars, '', linked_to_service,
-                       'OFF', 'OFF', 'poweruser', True, None, None)
+                       'OFF', 'OFF', 'poweruser', True, None, None, None)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
@@ -366,7 +368,7 @@ class ServicePsTestCase(unittest.TestCase):
 
     @mock.patch('tutumcli.commands.tutum.Service.list')
     def test_service_ps(self, mock_list):
-        output = u'''NAME      UUID      STATUS       #CONTAINERS  IMAGE          DEPLOYED    PUBLICDNS
+        output = u'''NAME      UUID      STATUS       #CONTAINERS  IMAGE          DEPLOYED    PUBLIC DNS
 SERVICE1  7A4CFE51  ▶ Running              3  test/service1              www.myhello1service.com
 SERVICE2  8B4CFE51  ◼ Stopped              2  test/service2              www.myhello2service.com'''
         mock_list.return_value = self.servicelist
@@ -395,7 +397,7 @@ SERVICE2  8B4CFE51  ◼ Stopped              2  test/service2              www.m
 
     @mock.patch('tutumcli.commands.tutum.Service.list')
     def test_service_ps_unsync(self, mock_list):
-        output = u'''NAME      UUID      STATUS          #CONTAINERS  IMAGE          DEPLOYED    PUBLICDNS
+        output = u'''NAME      UUID      STATUS          #CONTAINERS  IMAGE          DEPLOYED    PUBLIC DNS
 SERVICE1  7A4CFE51  ▶ Running(*)              3  test/service1              www.myhello1service.com
 SERVICE2  8B4CFE51  ◼ Stopped                 2  test/service2              www.myhello2service.com
 
@@ -434,7 +436,7 @@ class ServiceRunTestCase(unittest.TestCase):
         mock_start.return_value = True
         service_run('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
                     exposed_ports, published_ports, container_envvars, '', linked_to_service,
-                    'OFF', 'OFF', 'poweruser', True, None, None)
+                    'OFF', 'OFF', 'poweruser', True, None, None, None)
 
         mock_create.assert_called_with(image='imagename', name='containername', cpu_shares=1,
                                        memory='256M', privileged=True,
@@ -443,7 +445,8 @@ class ServiceRunTestCase(unittest.TestCase):
                                        container_envvars=utils.parse_envvars(container_envvars),
                                        linked_to_service=utils.parse_links(linked_to_service, 'to_service'),
                                        autorestart='OFF', autodestroy='OFF',
-                                       roles='poweruser', sequential_deployment=True, tags=[], bindings=[])
+                                       roles='poweruser', sequential_deployment=True, tags=[], bindings=[],
+                                       deployment_strategy=None)
         mock_save.assert_called()
         mock_start.assert_called()
         self.assertEqual(service.uuid, self.buf.getvalue().strip())
@@ -465,7 +468,7 @@ class ServiceRunTestCase(unittest.TestCase):
         mock_start.return_value = True
         service_run('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
                     exposed_ports, published_ports, container_envvars, '', linked_to_service,
-                    'OFF', 'OFF', 'poweruser', True, None, None)
+                    'OFF', 'OFF', 'poweruser', True, None, None, None)
 
         mock_create.assert_called_with(image='imagename', name='containername', cpu_shares=1,
                                        memory='256M', privileged=True,
@@ -474,7 +477,8 @@ class ServiceRunTestCase(unittest.TestCase):
                                        container_envvars=utils.parse_envvars(container_envvars),
                                        linked_to_service=utils.parse_links(linked_to_service, 'to_service'),
                                        autorestart='OFF', autodestroy='OFF',
-                                       roles='poweruser', sequential_deployment=True, tags=[], bindings=[])
+                                       roles='poweruser', sequential_deployment=True, tags=[], bindings=[],
+                                       deployment_strategy=None)
         mock_save.assert_called()
         mock_start.assert_called()
         self.assertEqual(service.uuid, self.buf.getvalue().strip())
@@ -489,7 +493,7 @@ class ServiceRunTestCase(unittest.TestCase):
         linked_to_service = ['mysql:mysql', 'redis:redis']
         service_run('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
                     exposed_ports, published_ports, container_envvars, '', linked_to_service,
-                    'OFF', 'OFF', 'poweruser', True, None, None)
+                    'OFF', 'OFF', 'poweruser', True, None, None, None)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
@@ -545,7 +549,7 @@ class ServiceSetTestCase(unittest.TestCase):
         mock_fetch_remote_service.return_value = service
         service_set([service.uuid], 'imagename', 1, '256M', True, 3, '-d', '/bin/mysql',
                     exposed_ports, published_ports, container_envvars, '', linked_to_service,
-                    'OFF', 'OFF', 'poweruser', True, False, None, None)
+                    'OFF', 'OFF', 'poweruser', True, False, None, None, None)
 
         mock_save.assert_called()
         self.assertEqual('7A4CFE51-03BB-42D6-825E-3B533888D8CD\n'
@@ -565,7 +569,6 @@ class ServiceSetTestCase(unittest.TestCase):
         self.assertEqual('OFF', service.autodestroy)
         self.assertEqual('poweruser', service.roles)
         self.assertEqual(True, service.sequential_deployment)
-
         self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.sys.exit')
@@ -580,7 +583,7 @@ class ServiceSetTestCase(unittest.TestCase):
         mock_fetch_remote_service.return_value = service
         service_set(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], 'imagename', 1, '256M', True, 3, '-d', '/bin/mysql',
                     exposed_ports, published_ports, container_envvars, '', linked_to_service,
-                    'OFF', 'OFF', 'poweruser', True, False, None, None)
+                    'OFF', 'OFF', 'poweruser', True, False, None, None, None)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 

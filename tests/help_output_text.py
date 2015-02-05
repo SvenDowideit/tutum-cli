@@ -173,6 +173,7 @@ TUTUM_SERVICE_CREATE = '''usage: tutum service create [-h] [-n NAME] [--cpushare
                             [--autodestroy {OFF,ON_FAILURE,ALWAYS}]
                             [--role ROLE] [--sequential] [-v VOLUME]
                             [--volumes-from VOLUMES_FROM]
+                            [--deployment-strategy {EMPTIEST_NODE,HIGH_AVAILABILITY,EVERY_NODE }]
                             image
 
 Create a new service
@@ -223,7 +224,9 @@ optional arguments:
                         Bind mount a volume (e.g., from the host: -v
                         /host:/container, from Docker: -v /container)
   --volumes-from VOLUMES_FROM
-                        Mount volumes from the specified service(s)'''
+                        Mount volumes from the specified service(s)
+  --deployment-strategy {EMPTIEST_NODE,HIGH_AVAILABILITY,EVERY_NODE }
+                        Container distribution strategy among nodes'''
 
 # ##################################################
 
@@ -288,6 +291,7 @@ TUTUM_SERVICE_RUN = '''usage: tutum service run [-h] [-n NAME] [--cpushares CPUS
                          [--autodestroy {OFF,ON_FAILURE,ALWAYS}] [--role ROLE]
                          [--sequential] [-v VOLUME]
                          [--volumes-from VOLUMES_FROM]
+                         [--deployment-strategy {EMPTIEST_NODE,HIGH_AVAILABILITY,EVERY_NODE }]
                          image
 
 Create and run a new service
@@ -338,7 +342,9 @@ optional arguments:
                         Bind mount a volume (e.g., from the host: -v
                         /host:/container, from Docker: -v /container)
   --volumes-from VOLUMES_FROM
-                        Mount volumes from the specified service(s)'''
+                        Mount volumes from the specified service(s)
+  --deployment-strategy {EMPTIEST_NODE,HIGH_AVAILABILITY,EVERY_NODE }
+                        Container distribution strategy among nodes'''
 
 # ##################################################
 
@@ -367,6 +373,7 @@ TUTUM_SERVICE_SET = '''usage: tutum service set [-h] [--image IMAGE] [--cpushare
                          [--autodestroy {OFF,ON_FAILURE,ALWAYS}] [--role ROLE]
                          [--sequential SEQUENTIAL] [--redeploy] [-v VOLUME]
                          [--volumes-from VOLUMES_FROM]
+                         [--deployment-strategy {EMPTIEST_NODE,HIGH_AVAILABILITY,EVERY_NODE }]
                          identifier [identifier ...]
 
 Change service properties
@@ -420,7 +427,9 @@ optional arguments:
                         Bind mount a volume (e.g., from the host: -v
                         /host:/container, from Docker: -v /container)
   --volumes-from VOLUMES_FROM
-                        Mount volumes from the specified service(s)'''
+                        Mount volumes from the specified service(s)
+  --deployment-strategy {EMPTIEST_NODE,HIGH_AVAILABILITY,EVERY_NODE }
+                        Container distribution strategy among nodes'''
 
 # ##################################################
 
