@@ -82,10 +82,12 @@ def dispatch_cmds(args):
     if args.debug:
         requests_log = logging.getLogger("python-tutum")
         requests_log.setLevel(logging.INFO)
+        cli_log = logging.getLogger("cli")
+        cli_log.setLevel(logging.DEBUG)
     if args.cmd == 'login':
         commands.login()
     elif args.cmd == 'build':
-        commands.build(args.tag, args.directory, args.quiet, args.no_cache)
+        commands.build(args.tag, args.directory)
     elif args.cmd == 'service':
         if args.subcmd == 'create':
             commands.service_create(image=args.image, name=args.name, cpu_shares=args.cpushares,

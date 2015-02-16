@@ -3,11 +3,11 @@ import getpass
 import ConfigParser
 import json
 import sys
-import re
 import os
-from os.path import join, expanduser, abspath, isfile
+import distutils
+import logging
+from os.path import join, expanduser, abspath
 
-import yaml
 import tutum
 import docker
 from tutum.api import auth
@@ -26,6 +26,8 @@ NO_ERROR = 'no_error'
 
 TUTUM_AUTH_ERROR_EXIT_CODE = 2
 EXCEPTION_EXIT_CODE = 3
+
+cli_log = logging.getLogger("cli")
 
 
 def login():
@@ -97,52 +99,51 @@ def verify_auth(args):
                     print("Not Authorized, Please login:", file=sys.stderr)
 
 
-def build(tag, working_directory, quiet, no_cache):
+def build(tag, working_directory):
+    directory = abspath(working_directory)
     try:
-        directory = abspath(working_directory)
-        dockerfile_path = join(directory, "Dockerfile")
+        work_dir = abspath(working_directory)
+        dockercfg_dir = expanduser("~/.dockercfg")
+        docker_path = distutils.spawn.find_executable("docker")
 
-        if not isfile(dockerfile_path):
-            procfile_path = join(directory, "Procfile")
-            ports = ""
-            process = ''
-            if isfile(procfile_path):
-                cmd = ['"/start"']
-                with open(procfile_path) as procfile:
-                    datamap = yaml.load(procfile)
-                if len(datamap) > 1:
-                    while not process or (not process in datamap):
-                        process = raw_input("Process type to build, %s: " % datamap.keys())
-                    process = '"%s"' % process
+        if not docker_path:
+            print("Cannot find docker locally", file=sys.stderr)
+            sys.exit(EXCEPTION_EXIT_CODE)
 
-                if (len(datamap) == 1 and 'web' in datamap) or (process == 'web'):
-                    ports = "80"
-                    process = '"web"'
+        if os.path.exists(dockercfg_dir):
+            cmd = "docker run -ti --rm --privileged " \
+                  "-v %s:/app -v" \
+                  "-v %s:/usr/bin/docker:r " \
+                  " %s:/.dockercfg:r " \
+                  "-e IMAGE_NAME=%s " % (work_dir, docker_path, dockercfg_dir, tag)
+        else:
+            cmd = "docker run -ti --rm --privileged " \
+                  "-v %s:/app " \
+                  "-v %s:/usr/bin/docker:r " \
+                  "-e USERNAME=%s " \
+                  "-e PASSWORD=%s " \
+                  "-e IMAGE_NAME=%s " \
+                  % (work_dir, docker_path, tutum.user, tutum.apikey, tag)
 
-                cmd.append(process)
+        if os.path.exists("/var/run/docker.sock"):
+            cmd += "-v /var/run/docker.sock:/var/run/docker.sock:rw "
 
-            else:
-                while not process:
-                    process = raw_input("Run command: ")
-                cmd = process
+        if os.getenv("DOCKER_HOST"):
+            cmd += "-e DOCKER_HOST=%s " % os.getenv("DOCKER_HOST")
 
-            if process != '"web"':
-                port_regexp = re.compile('^\d{1,5}(\s\d{1,5})*$')
-                while not ports or not bool(port_regexp.match(ports)):
-                    ports = raw_input("Exposed Ports (ports separated by whitespace) i.e. 80 8000: ") or ""
+        if os.getenv("DOCKER_CERT_PATH"):
+            cmd += "-e DOCKER_CERT_PATH=%s " % os.getenv("DOCKER_CERT_PATH")
 
-            utils.build_dockerfile(dockerfile_path, ports, cmd)
+        if os.getenv("DOCKER_HOST"):
+            cmd += "-e DOCKER_TLS_VERIFY=%s " % os.getenv("DOCKER_TLS_VERIFY")
 
-        docker_client = utils.get_docker_client()
-        stream = docker_client.build(path=directory, tag=tag, quiet=quiet, nocache=no_cache, rm=True, stream=True)
-        try:
-            utils.stream_output(stream, sys.stdout)
-        except Exception as e:
-            print(e.message, file=sys.stderr)
-        print(tag)
+        cmd += "tutum/builder"
+
+        cli_log.debug("tutum build:%s" % cmd)
+
+        os.system(cmd)
     except Exception as e:
         print(e, file=sys.stderr)
-        sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def service_inspect(identifiers):

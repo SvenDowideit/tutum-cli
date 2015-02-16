@@ -94,20 +94,6 @@ def get_docker_client():
         raise DockerNotFound("Cannot connect to docker (is it running?)")
 
 
-def build_dockerfile(filepath, ports, command):
-    with open(filepath, "w") as dockerfile:
-        base_image = "FROM tutum/buildstep\n\n"
-        expose_ports = " ".join(["EXPOSE", ports]) + "\n\n" if ports else ""
-        if isinstance(command, list):
-            command = ','.join(command)
-            command = '[%s]' % command
-        cmd = " ".join(["CMD", command])
-
-        for line in [base_image, expose_ports, cmd]:
-            if line:
-                dockerfile.write(line)
-
-
 def stream_output(output, stream):
     def print_output_event(event, stream, is_terminal):
         if 'errorDetail' in event:

@@ -6,11 +6,11 @@ def add_login_parser(subparsers):
 def add_build_parser(subparsers):
     # tutum build
     build_parser = subparsers.add_parser('build', help='Build an image using an existing Dockerfile, '
-                                                       'or create one using buildstep',
+                                                       'or create one using buildstep. '
+                                                       'And push the image to a registry afterwards',
                                          description='Build an image using an existing Dockerfile, '
-                                                     'or create one using buildstep')
-    build_parser.add_argument('-q', '--quiet', help='print minimum information', action='store_true')
-    build_parser.add_argument('--no-cache', help='do not use the cache when building the image', action='store_true')
+                                                     'or create one using buildstep. '
+                                                     'And push the image to a registry afterwards')
     build_parser.add_argument('-t', '--tag', help='repository name (and optionally a tag) to be applied '
                                                   'to the resulting image in case of success')
     build_parser.add_argument('directory', help='working directory')
@@ -189,7 +189,7 @@ def add_service_parser(subparsers):
                                                    'from Docker: -v /container)', action='append')
     set_parser.add_argument('--volumes-from', help='Mount volumes from the specified service(s)', action='append')
     set_parser.add_argument('--deployment-strategy', help='Container distribution strategy among nodes',
-                     choices=['EMPTIEST_NODE', 'HIGH_AVAILABILITY', 'EVERY_NODE '])
+                            choices=['EMPTIEST_NODE', 'HIGH_AVAILABILITY', 'EVERY_NODE '])
 
     # tutum service start
     start_parser = service_subparser.add_parser('start', help='Start a stopped service',

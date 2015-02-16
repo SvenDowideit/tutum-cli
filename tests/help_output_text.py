@@ -11,7 +11,8 @@ optional arguments:
 Tutum's CLI commands:
   {build,container,image,login,node,nodecluster,service,tag,volume,volumegroup,webhook-handler}
     build               Build an image using an existing Dockerfile, or create
-                        one using buildstep
+                        one using buildstep. And push the image to a registry
+                        afterwards
     container           Container-related operations
     image               Image-related operations
     login               Login into Tutum
@@ -25,17 +26,16 @@ Tutum's CLI commands:
 
 # ##################################################
 
-TUTUM_BUILD = '''usage: tutum build [-h] [-q] [--no-cache] [-t TAG] directory
+TUTUM_BUILD = '''usage: tutum build [-h] [-t TAG] directory
 
-Build an image using an existing Dockerfile, or create one using buildstep
+Build an image using an existing Dockerfile, or create one using buildstep.
+And push the image to a registry afterwards
 
 positional arguments:
   directory          working directory
 
 optional arguments:
   -h, --help         show this help message and exit
-  -q, --quiet        print minimum information
-  --no-cache         do not use the cache when building the image
   -t TAG, --tag TAG  repository name (and optionally a tag) to be applied to
                      the resulting image in case of success'''
 
