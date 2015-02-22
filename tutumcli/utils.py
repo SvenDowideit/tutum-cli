@@ -489,7 +489,11 @@ def loadStackFile(stackfile, stack=None):
         stack = tutum.Stack.create()
     with open(stackfile, 'r') as f:
         content = f.read()
-        data = yaml.load(content)
+        service = []
+        for k, v in yaml.load(content).items():
+            v.update({"name": k})
+            service.append(v)
+        data = {'name': os.path.basename(os.getcwd()), 'services': service}
         for k, v in list(data.items()):
             setattr(stack, k, v)
     return stack
