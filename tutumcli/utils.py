@@ -6,6 +6,7 @@ import ssl
 import re
 import os
 
+import yaml
 from tabulate import tabulate
 import tutum
 from dateutil import tz
@@ -208,6 +209,29 @@ def fetch_remote_service(identifier, raise_exceptions=True):
             elif len(objects_same_identifier) == 0:
                 raise ObjectNotFound("Cannot find a service with the identifier '%s'" % identifier)
             raise NonUniqueIdentifier("More than one service has the same identifier, please use the long uuid")
+    except (NonUniqueIdentifier, ObjectNotFound) as e:
+        if not raise_exceptions:
+            return e
+        raise e
+
+
+def fetch_remote_stack(identifier, raise_exceptions=True):
+    try:
+        if is_uuid4(identifier):
+            try:
+                return tutum.Stack.fetch(identifier)
+            except Exception:
+                raise ObjectNotFound("Cannot find a stack with the identifier '%s'" % identifier)
+        else:
+            objects_same_identifier = tutum.Stack.list(uuid__startswith=identifier) or \
+                                      tutum.Stack.list(name=identifier)
+            if len(objects_same_identifier) == 1:
+                uuid = objects_same_identifier[0].uuid
+                return tutum.Stack.fetch(uuid)
+            elif len(objects_same_identifier) == 0:
+                raise ObjectNotFound("Cannot find a stack with the identifier '%s'" % identifier)
+            raise NonUniqueIdentifier("More than one stack has the same identifier, please use the long uuid")
+
     except (NonUniqueIdentifier, ObjectNotFound) as e:
         if not raise_exceptions:
             return e
@@ -458,3 +482,14 @@ def parse_volumes_from(volumes_from):
         binding["volumes_from"] = service.resource_uri
         bindings.append(binding)
     return bindings
+
+
+def loadStackFile(stackfile, stack=None):
+    if not stack:
+        stack = tutum.Stack.create()
+    with open(stackfile, 'r') as f:
+        content = f.read()
+        data = yaml.load(content)
+        for k, v in list(data.items()):
+            setattr(stack, k, v)
+    return stack

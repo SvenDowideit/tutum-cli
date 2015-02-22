@@ -29,6 +29,7 @@ def initialize_parser():
     parsers.add_node_parser(subparsers)
     parsers.add_nodecluster_parser(subparsers)
     parsers.add_service_parser(subparsers)
+    parsers.add_stack_parser(subparsers)
     parsers.add_tag_parser(subparsers)
     parsers.add_volume_parser(subparsers)
     parsers.add_volumegroup_parser(subparsers)
@@ -49,7 +50,7 @@ def patch_help_option(argv=sys.argv):
     if len(args) == 1:
         args.append('-h')
     elif len(args) == 2 and args[1] in ['service', 'build', 'container', 'image', 'node', 'nodecluster', 'tag',
-                                        'volume', 'volumegroup', 'webhook-handler']:
+                                        'volume', 'volumegroup', 'webhook-handler', 'stack']:
         args.append('-h')
     elif len(args) == 3:
         if args[1] == 'service' and args[2] in ['create', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
@@ -71,6 +72,9 @@ def patch_help_option(argv=sys.argv):
         elif args[1] == 'volume' and args[2] in ['inspect']:
             args.append('-h')
         elif args[1] == 'volumegroup' and args[2] in ['inspect']:
+            args.append('-h')
+        elif args[1] == 'stack' and args[2] in ['create', 'inspect', 'redeploy',
+                                                'terminate', 'start', 'stop', 'up', 'update']:
             args.append('-h')
 
     if debug:
@@ -214,6 +218,25 @@ def dispatch_cmds(args):
             commands.webhookhandler_list(args.identifier, args.quiet)
         elif args.subcmd == 'rm':
             commands.webhookhandler_rm(args.identifier, args.webhookhandler)
+    elif args.cmd == 'stack':
+        if args.subcmd == 'create':
+            commands.stack_create(args.identifier)
+        elif args.subcmd == 'inspect':
+            commands.stack_inspect(args.identifier)
+        elif args.subcmd == 'list':
+            commands.stack_list(args.quiet)
+        elif args.subcmd == 'redeploy':
+            commands.stack_redeploy(args.identifier)
+        elif args.subcmd == 'start':
+            commands.stack_start(args.identifier)
+        elif args.subcmd == 'stop':
+            commands.stack_stop(args.identifier)
+        elif args.subcmd == 'terminate':
+            commands.stack_terminate(args.identifier)
+        elif args.subcmd == 'up':
+            commands.stack_up(args.stackfile)
+        elif args.subcmd == 'update':
+            commands.stack_update(args.identifier, args.stackfile)
 
 
 def main():

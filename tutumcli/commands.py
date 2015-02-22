@@ -1330,3 +1330,139 @@ def webhookhandler_rm(identifier, webhook_identifiers):
         has_exception = True
     if has_exception:
         sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def stack_up(stackfiles):
+    try:
+        for stackfile in stackfiles:
+            stack = utils.loadStackFile(stackfile)
+            stack.save()
+            result = stack.start()
+            if result:
+                print(stack.uuid)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def stack_create(stackfiles):
+    try:
+        for stackfile in stackfiles:
+            stack = utils.loadStackFile(stackfile)
+            result = stack.save()
+            if result:
+                print(stack.uuid)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def stack_inspect(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            stack = utils.fetch_remote_stack(identifier)
+            print(json.dumps(stack.get_all_attributes(), indent=2))
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def stack_list(quiet):
+    try:
+        headers = ["NAME", "UUID", "STATUS", "DEPLOYED", "DESTROYED"]
+        stack_list = tutum.Stack.list()
+        data_list = []
+        long_uuid_list = []
+        for stack in stack_list:
+            data_list.append([stack.name,
+                              stack.uuid[:8],
+                              utils.add_unicode_symbol_to_state(stack.state),
+                              utils.get_humanize_local_datetime_from_utc_datetime_string(stack.deployed_datetime),
+                              utils.get_humanize_local_datetime_from_utc_datetime_string(stack.destroyed_datetime)])
+            long_uuid_list.append(stack.uuid)
+
+        if len(data_list) == 0:
+            data_list.append(["", "", "", "", ""])
+
+        if quiet:
+            for uuid in long_uuid_list:
+                print(uuid)
+        else:
+            utils.tabulate_result(data_list, headers)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def stack_redeploy(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            stack = utils.fetch_remote_stack(identifier)
+            result = stack.redeploy()
+            if result:
+                print(stack.uuid)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def stack_start(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            stack = utils.fetch_remote_stack(identifier)
+            result = stack.start()
+            if result:
+                print(stack.uuid)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def stack_stop(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            stack = utils.fetch_remote_stack(identifier)
+            result = stack.stop()
+            if result:
+                print(stack.uuid)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def stack_terminate(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            stack = utils.fetch_remote_stack(identifier)
+            result = stack.delete()
+            if result:
+                print(stack.uuid)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def stack_update(identifier, stackfile):
+    try:
+        stack = utils.loadStackFile(stackfile, utils.fetch_remote_stack(identifier))
+        result = stack.save()
+        if result:
+            print(stack.uuid)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
