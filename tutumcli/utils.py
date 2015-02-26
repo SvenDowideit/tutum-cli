@@ -484,16 +484,41 @@ def parse_volumes_from(volumes_from):
     return bindings
 
 
-def loadStackFile(stackfile, stack=None):
+def loadStackFile(name, stackfile, stack=None):
     if not stack:
         stack = tutum.Stack.create()
+    else:
+        name = stack.name
+
+    if not stackfile:
+        filematch = 0
+        if os.path.exists("tutum.yml"):
+            stackfile = "tutum.yml"
+            filematch += 1
+        if os.path.exists("tutum.yaml"):
+            stackfile = "tutum.yaml"
+            filematch += 1
+        if os.path.exists("tutum.json"):
+            stackfile = "tutum.json"
+            filematch += 1
+        if filematch == 0:
+            raise BadParameter("Cannot find Stackfile. Are you in the right directory?")
+        elif filematch > 1:
+            raise BadParameter("More than one Stackfile was found in the path. "
+                               "Please specify which one you'd like to use with -f <filename>")
     with open(stackfile, 'r') as f:
-        content = f.read()
+        content = yaml.load(f.read())
         service = []
-        for k, v in yaml.load(content).items():
-            v.update({"name": k})
-            service.append(v)
-        data = {'name': os.path.basename(os.getcwd()), 'services': service}
-        for k, v in list(data.items()):
-            setattr(stack, k, v)
+        if content:
+            for k, v in content.items():
+                v.update({"name": k})
+                service.append(v)
+
+            if not name:
+                name = os.path.basename(os.getcwd())
+            data = {'name': name, 'services': service}
+            for k, v in list(data.items()):
+                setattr(stack, k, v)
+        else:
+            raise BadParameter("Bad format of the stackfile: %s" % stackfile)
     return stack

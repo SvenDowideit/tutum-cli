@@ -73,8 +73,7 @@ def patch_help_option(argv=sys.argv):
             args.append('-h')
         elif args[1] == 'volumegroup' and args[2] in ['inspect']:
             args.append('-h')
-        elif args[1] == 'stack' and args[2] in ['create', 'inspect', 'redeploy',
-                                                'terminate', 'start', 'stop', 'up', 'update']:
+        elif args[1] == 'stack' and args[2] in ['inspect', 'redeploy', 'terminate', 'start', 'stop', 'update']:
             args.append('-h')
 
     if debug:
@@ -220,7 +219,7 @@ def dispatch_cmds(args):
             commands.webhookhandler_rm(args.identifier, args.webhookhandler)
     elif args.cmd == 'stack':
         if args.subcmd == 'create':
-            commands.stack_create(args.identifier)
+            commands.stack_create(args.name, args.file)
         elif args.subcmd == 'inspect':
             commands.stack_inspect(args.identifier)
         elif args.subcmd == 'list':
@@ -234,9 +233,9 @@ def dispatch_cmds(args):
         elif args.subcmd == 'terminate':
             commands.stack_terminate(args.identifier)
         elif args.subcmd == 'up':
-            commands.stack_up(args.stackfile)
+            commands.stack_up(args.name, args.file)
         elif args.subcmd == 'update':
-            commands.stack_update(args.identifier, args.stackfile)
+            commands.stack_update(args.identifier, args.file)
 
 
 def main():

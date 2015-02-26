@@ -1332,26 +1332,24 @@ def webhookhandler_rm(identifier, webhook_identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def stack_up(stackfiles):
+def stack_up(name, stackfile):
     try:
-        for stackfile in stackfiles:
-            stack = utils.loadStackFile(stackfile)
-            stack.save()
-            result = stack.start()
-            if result:
-                print(stack.uuid)
+        stack = utils.loadStackFile(name=name, stackfile=stackfile)
+        stack.save()
+        result = stack.start()
+        if result:
+            print(stack.uuid)
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def stack_create(stackfiles):
+def stack_create(name, stackfile):
     try:
-        for stackfile in stackfiles:
-            stack = utils.loadStackFile(stackfile)
-            result = stack.save()
-            if result:
-                print(stack.uuid)
+        stack = utils.loadStackFile(name=name, stackfile=stackfile)
+        result = stack.save()
+        if result:
+            print(stack.uuid)
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
@@ -1459,7 +1457,7 @@ def stack_terminate(identifiers):
 
 def stack_update(identifier, stackfile):
     try:
-        stack = utils.loadStackFile(stackfile, utils.fetch_remote_stack(identifier))
+        stack = utils.loadStackFile(name=None, stackfile=stackfile, stack=utils.fetch_remote_stack(identifier))
         result = stack.save()
         if result:
             print(stack.uuid)

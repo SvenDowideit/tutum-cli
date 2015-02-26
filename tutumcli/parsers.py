@@ -468,7 +468,8 @@ def add_stack_parser(subparsers):
     # tutum stack create
     create_parser = stack_subparser.add_parser('create', help='Create a new stack without deploying',
                                                description='Create a new stack without deploying')
-    create_parser.add_argument('identifier', help="the name of the stack file", nargs='+')
+    create_parser.add_argument('-n', '--name', help='The name of the stack, which wil be shown in tutum')
+    create_parser.add_argument('-f', '--file', help="the name of the Stackfile")
 
     # tutum stack inspect
     inspect_parser = stack_subparser.add_parser('inspect', help='Inspect a stack', description='Inspect a stack')
@@ -499,10 +500,11 @@ def add_stack_parser(subparsers):
     # tutum stack up
     up_parser = stack_subparser.add_parser('up', help='Create and deploy a stack',
                                            description='Create and deploy a stack')
-    up_parser.add_argument('stackfile', help="the name of the stack file", nargs='+')
+    up_parser.add_argument('-n', '--name', help='The name of the stack, which wil be shown in tutum')
+    up_parser.add_argument('-f', '--file', help="the name of the Stackfile")
 
     # tutum stack update
     update_parser = stack_subparser.add_parser('update', help='Update a stack', description='Update a stack')
     update_parser.add_argument('identifier', help="stack's UUID (either long or short) or name")
-    update_parser.add_argument('stackfile', help="the name of the stack file")
+    update_parser.add_argument('-f', '--file', help="the name of the Stackfile")
 
