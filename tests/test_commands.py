@@ -127,63 +127,6 @@ apikey = %s''' % (user, apikey)
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
 
-class BuildTestCase(unittest.TestCase):
-    def setUp(self):
-        self.stdout = sys.stdout
-        sys.stdout = self.buf = StringIO.StringIO()
-
-    def tearDown(self):
-        sys.stdout = self.stdout
-
-    @mock.patch('tutumcli.commands.utils.get_docker_client', return_value=docker.Client())
-    @mock.patch.object(tutumcli.commands.docker.Client, 'build')
-    def test_build_with_dockerfile(self, mock_build, mock_get_docker_client):
-        os.system('touch /tmp/Dockerfile')
-        tag = 'mysql'
-        working_directory = '/tmp'
-        quiet = True
-        no_cache = False
-        build(tag, working_directory, quiet, no_cache)
-        mock_build.assert_called('mysql', join(abspath('/tmp'), "Dockerfile"), True, False)
-        self.assertEqual(tag, self.buf.getvalue().strip())
-        self.buf.truncate(0)
-        try:
-            os.remove('/tmp/Dockerfile')
-        except:
-            pass
-
-    @mock.patch('tutumcli.commands.utils.get_docker_client', return_value=docker.Client())
-    @mock.patch.object(tutumcli.commands.docker.Client, 'build')
-    def test_build_with_procfile(self, mock_build, mock_get_docker_client):
-        try:
-            os.remove('/tmp/Dockerfile')
-        except:
-            pass
-
-        os.system(" echo 'web:     python ranking/manage.py runserver' > /tmp/Procfile")
-        tag = 'mysql'
-        working_directory = '/tmp'
-        quiet = True
-        no_cache = False
-        build(tag, working_directory, quiet, no_cache)
-        mock_build.assert_called('mysql', join(abspath('/tmp'), "Dockerfile"), True, False)
-        self.assertEqual(tag, self.buf.getvalue().strip())
-        self.buf.truncate(0)
-        output = '''FROM tutum/buildstep
-
-EXPOSE 80
-
-CMD ["/start","web"]'''
-        file = open('/tmp/Dockerfile', 'r')
-        try:
-            data = file.read()
-            self.assertEqual(output.strip(), data.strip())
-        finally:
-            file.close()
-            os.remove('/tmp/Dockerfile')
-            os.remove('/tmp/Procfile')
-
-
 class ServiceCreateTestCase(unittest.TestCase):
     def setUp(self):
         self.stdout = sys.stdout

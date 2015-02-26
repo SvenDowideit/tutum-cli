@@ -6,6 +6,7 @@ import ssl
 import re
 import os
 
+import yaml
 from tabulate import tabulate
 import tutum
 from dateutil import tz
@@ -92,20 +93,6 @@ def get_docker_client():
         return docker_client
     except Exception as e:
         raise DockerNotFound("Cannot connect to docker (is it running?)")
-
-
-def build_dockerfile(filepath, ports, command):
-    with open(filepath, "w") as dockerfile:
-        base_image = "FROM tutum/buildstep\n\n"
-        expose_ports = " ".join(["EXPOSE", ports]) + "\n\n" if ports else ""
-        if isinstance(command, list):
-            command = ','.join(command)
-            command = '[%s]' % command
-        cmd = " ".join(["CMD", command])
-
-        for line in [base_image, expose_ports, cmd]:
-            if line:
-                dockerfile.write(line)
 
 
 def stream_output(output, stream):
@@ -222,6 +209,29 @@ def fetch_remote_service(identifier, raise_exceptions=True):
             elif len(objects_same_identifier) == 0:
                 raise ObjectNotFound("Cannot find a service with the identifier '%s'" % identifier)
             raise NonUniqueIdentifier("More than one service has the same identifier, please use the long uuid")
+    except (NonUniqueIdentifier, ObjectNotFound) as e:
+        if not raise_exceptions:
+            return e
+        raise e
+
+
+def fetch_remote_stack(identifier, raise_exceptions=True):
+    try:
+        if is_uuid4(identifier):
+            try:
+                return tutum.Stack.fetch(identifier)
+            except Exception:
+                raise ObjectNotFound("Cannot find a stack with the identifier '%s'" % identifier)
+        else:
+            objects_same_identifier = tutum.Stack.list(uuid__startswith=identifier) or \
+                                      tutum.Stack.list(name=identifier)
+            if len(objects_same_identifier) == 1:
+                uuid = objects_same_identifier[0].uuid
+                return tutum.Stack.fetch(uuid)
+            elif len(objects_same_identifier) == 0:
+                raise ObjectNotFound("Cannot find a stack with the identifier '%s'" % identifier)
+            raise NonUniqueIdentifier("More than one stack has the same identifier, please use the long uuid")
+
     except (NonUniqueIdentifier, ObjectNotFound) as e:
         if not raise_exceptions:
             return e
@@ -472,3 +482,43 @@ def parse_volumes_from(volumes_from):
         binding["volumes_from"] = service.resource_uri
         bindings.append(binding)
     return bindings
+
+
+def loadStackFile(name, stackfile, stack=None):
+    if not stack:
+        stack = tutum.Stack.create()
+    else:
+        name = stack.name
+
+    if not stackfile:
+        filematch = 0
+        if os.path.exists("tutum.yml"):
+            stackfile = "tutum.yml"
+            filematch += 1
+        if os.path.exists("tutum.yaml"):
+            stackfile = "tutum.yaml"
+            filematch += 1
+        if os.path.exists("tutum.json"):
+            stackfile = "tutum.json"
+            filematch += 1
+        if filematch == 0:
+            raise BadParameter("Cannot find Stackfile. Are you in the right directory?")
+        elif filematch > 1:
+            raise BadParameter("More than one Stackfile was found in the path. "
+                               "Please specify which one you'd like to use with -f <filename>")
+    with open(stackfile, 'r') as f:
+        content = yaml.load(f.read())
+        service = []
+        if content:
+            for k, v in content.items():
+                v.update({"name": k})
+                service.append(v)
+
+            if not name:
+                name = os.path.basename(os.getcwd())
+            data = {'name': name, 'services': service}
+            for k, v in list(data.items()):
+                setattr(stack, k, v)
+        else:
+            raise BadParameter("Bad format of the stackfile: %s" % stackfile)
+    return stack

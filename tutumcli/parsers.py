@@ -6,11 +6,11 @@ def add_login_parser(subparsers):
 def add_build_parser(subparsers):
     # tutum build
     build_parser = subparsers.add_parser('build', help='Build an image using an existing Dockerfile, '
-                                                       'or create one using buildstep',
+                                                       'or create one using buildstep. '
+                                                       'And push the image to a registry afterwards',
                                          description='Build an image using an existing Dockerfile, '
-                                                     'or create one using buildstep')
-    build_parser.add_argument('-q', '--quiet', help='print minimum information', action='store_true')
-    build_parser.add_argument('--no-cache', help='do not use the cache when building the image', action='store_true')
+                                                     'or create one using buildstep. '
+                                                     'And push the image to a registry afterwards')
     build_parser.add_argument('-t', '--tag', help='repository name (and optionally a tag) to be applied '
                                                   'to the resulting image in case of success')
     build_parser.add_argument('directory', help='working directory')
@@ -189,7 +189,7 @@ def add_service_parser(subparsers):
                                                    'from Docker: -v /container)', action='append')
     set_parser.add_argument('--volumes-from', help='Mount volumes from the specified service(s)', action='append')
     set_parser.add_argument('--deployment-strategy', help='Container distribution strategy among nodes',
-                     choices=['EMPTIEST_NODE', 'HIGH_AVAILABILITY', 'EVERY_NODE '])
+                            choices=['EMPTIEST_NODE', 'HIGH_AVAILABILITY', 'EVERY_NODE '])
 
     # tutum service start
     start_parser = service_subparser.add_parser('start', help='Start a stopped service',
@@ -441,8 +441,8 @@ def add_webhookhandler_parser(subparsers):
                                                                     dest='subcmd')
 
     # tutum webhook-handler create
-    create_parser = webhookhandler_subparser.add_parser('create', help='create webhook handler to services',
-                                                        description='create webhook handler to services')
+    create_parser = webhookhandler_subparser.add_parser('create', help='Create webhook handler to services',
+                                                        description='Create webhook handler to services')
     create_parser.add_argument('-n', '--name', help="name of the webhook handler (optional)", action='append')
     create_parser.add_argument('identifier', help="UUID or name of services", nargs='+')
 
@@ -454,6 +454,57 @@ def add_webhookhandler_parser(subparsers):
 
     # tutum webhook-handler delete
     rm_parser = webhookhandler_subparser.add_parser('rm', help='Remove webhook handler to a service',
-                                                    description='create webhook handler to a service')
+                                                    description='Remove webhook handler to a service')
     rm_parser.add_argument('identifier', help="UUID or name of services")
     rm_parser.add_argument('webhookhandler', help="UUID or name of the webhook handler", nargs='+')
+
+
+def add_stack_parser(subparsers):
+    # tutum stack
+    stack_parser = subparsers.add_parser('stack', help='Stack-related operations',
+                                         description='Stack-related operations')
+    stack_subparser = stack_parser.add_subparsers(title='tutum stack commands', dest='subcmd')
+
+    # tutum stack create
+    create_parser = stack_subparser.add_parser('create', help='Create a new stack without deploying',
+                                               description='Create a new stack without deploying')
+    create_parser.add_argument('-n', '--name', help='The name of the stack, which wil be shown in tutum')
+    create_parser.add_argument('-f', '--file', help="the name of the Stackfile")
+
+    # tutum stack inspect
+    inspect_parser = stack_subparser.add_parser('inspect', help='Inspect a stack', description='Inspect a stack')
+    inspect_parser.add_argument('identifier', help="stack's UUID (either long or short) or name", nargs='+')
+
+    # tutum stack list
+    list_parser = stack_subparser.add_parser('list', help='List stacks', description='List stacks')
+    list_parser.add_argument('-q', '--quiet', help='print only long UUIDs', action='store_true')
+
+    # tutum stack redeploy
+    redeploy_parser = stack_subparser.add_parser('redeploy', help='Redeploy a running stack',
+                                                 description='Redeploy a running stack')
+    redeploy_parser.add_argument('identifier', help="stack's UUID (either long or short) or name", nargs='+')
+
+    # tutum stack start
+    start_parser = stack_subparser.add_parser('start', help='Start a stack', description='Start a stack')
+    start_parser.add_argument('identifier', help="stack's UUID (either long or short) or name", nargs='+')
+
+    # tutum stack stop
+    stop_parser = stack_subparser.add_parser('stop', help='Stop a stack', description='Stop a stack')
+    stop_parser.add_argument('identifier', help="stack's UUID (either long or short) or name", nargs='+')
+
+    # tutum stack terminate
+    terminate_parser = stack_subparser.add_parser('terminate', help='Terminate a stack',
+                                                  description='Terminate a stack')
+    terminate_parser.add_argument('identifier', help="stack's UUID (either long or short) or name", nargs='+')
+
+    # tutum stack up
+    up_parser = stack_subparser.add_parser('up', help='Create and deploy a stack',
+                                           description='Create and deploy a stack')
+    up_parser.add_argument('-n', '--name', help='The name of the stack, which wil be shown in tutum')
+    up_parser.add_argument('-f', '--file', help="the name of the Stackfile")
+
+    # tutum stack update
+    update_parser = stack_subparser.add_parser('update', help='Update a stack', description='Update a stack')
+    update_parser.add_argument('identifier', help="stack's UUID (either long or short) or name")
+    update_parser.add_argument('-f', '--file', help="the name of the Stackfile")
+

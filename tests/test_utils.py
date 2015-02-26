@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import unittest
-import tempfile
 import __builtin__
 
 import mock
@@ -78,61 +77,6 @@ class GetDockerClientTestCase(unittest.TestCase):
     def test_get_docker_client_exception(self, mock_getenv):
         mock_getenv.return_value = '/run/mock.docker.sock'
         self.assertRaises(DockerNotFound, get_docker_client)
-
-
-class BuildDockerfileTestCase(unittest.TestCase):
-    def test_build_dockerfile_with_ports(self):
-        output = '''FROM tutum/buildstep
-
-EXPOSE 8080 8888
-
-CMD [/bin/bash,/run.sh]'''
-        fd, filepath = tempfile.mkstemp()
-        ports = "8080 8888"
-        commands = ["/bin/bash", "/run.sh"]
-        build_dockerfile(filepath, ports, commands)
-        file = open(filepath, 'r')
-        try:
-            data = file.read()
-            self.assertEqual(output, data)
-        finally:
-            os.close(fd)
-            file.close()
-            os.remove(filepath)
-
-    def test_build_dockerfile_without_ports(self):
-        output = '''FROM tutum/buildstep
-
-CMD [/bin/bash,/run.sh]'''
-        fd, filepath = tempfile.mkstemp()
-        ports = None
-        commands = ["/bin/bash", "/run.sh"]
-        build_dockerfile(filepath, ports, commands)
-        file = open(filepath, 'r')
-        try:
-            data = file.read()
-            self.assertEqual(output, data)
-        finally:
-            os.close(fd)
-            file.close()
-            os.remove(filepath)
-
-    def test_build_dockerfile_string_commands(self):
-        output = '''FROM tutum/buildstep
-
-CMD /bin/bash /run.sh'''
-        fd, filepath = tempfile.mkstemp()
-        ports = None
-        commands = "/bin/bash /run.sh"
-        build_dockerfile(filepath, ports, commands)
-        file = open(filepath, 'r')
-        try:
-            data = file.read()
-            self.assertEqual(output, data)
-        finally:
-            os.close(fd)
-            file.close()
-            os.remove(filepath)
 
 
 class FetchRemoteObjectTestCase(unittest.TestCase):
