@@ -54,7 +54,7 @@ def add_unicode_symbol_to_state(state):
         return u"\u25B6 " + state
     elif state in ["Init", "Stopped"]:
         return u"\u25FC " + state
-    elif state in ["Starting", "Stopping", "Scaling", "Terminating", "Deploying"]:
+    elif state in ["Starting", "Stopping", "Scaling", "Terminating", "Deploying", "Redeploying"]:
         return u"\u2699 " + state
     elif state in ["Start failed", "Stopped with errors"]:
         return u"\u0021 " + state

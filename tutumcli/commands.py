@@ -181,7 +181,7 @@ def service_ps(quiet=False, status=None):
         has_unsynchronized_service = False
         for service in service_list:
             service_state = utils.add_unicode_symbol_to_state(service.state)
-            if not service.synchronized:
+            if not service.synchronized and service.state != "Redeploying":
                 service_state += "(*)"
                 has_unsynchronized_service = True
             data_list.append([service.name, service.uuid[:8],
