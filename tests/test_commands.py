@@ -151,7 +151,7 @@ class ServiceCreateTestCase(unittest.TestCase):
         mock_create.return_value = service
         service_create('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
                        exposed_ports, published_ports, container_envvars, '', linked_to_service,
-                       'OFF', 'OFF', 'poweruser', True, None, None, None)
+                       'OFF', 'OFF', 'OFF', 'poweruser', True, None, None, None)
 
         mock_create.assert_called_with(image='imagename', name='containername', cpu_shares=1,
                                        memory='256M', privileged=True,
@@ -159,7 +159,7 @@ class ServiceCreateTestCase(unittest.TestCase):
                                        entrypoint='/bin/mysql', container_ports=ports,
                                        container_envvars=utils.parse_envvars(container_envvars),
                                        linked_to_service=utils.parse_links(linked_to_service, 'to_service'),
-                                       autorestart='OFF', autodestroy='OFF',
+                                       autorestart='OFF', autodestroy='OFF', autoredeploy='OFF',
                                        roles='poweruser', sequential_deployment=True, tags=[], bindings=[],
                                        deployment_strategy=None)
         mock_save.assert_called()
@@ -181,7 +181,7 @@ class ServiceCreateTestCase(unittest.TestCase):
         mock_create.return_value = service
         service_run('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
                     exposed_ports, published_ports, container_envvars, '', linked_to_service,
-                    'OFF', 'OFF', 'poweruser', True, None, None, None)
+                    'OFF', 'OFF', 'OFF', 'poweruser', True, None, None, None)
 
         mock_create.assert_called_with(image='imagename', name='containername', cpu_shares=1,
                                        memory='256M', privileged=True,
@@ -189,7 +189,7 @@ class ServiceCreateTestCase(unittest.TestCase):
                                        entrypoint='/bin/mysql', container_ports=ports,
                                        container_envvars=utils.parse_envvars(container_envvars),
                                        linked_to_service=utils.parse_links(linked_to_service, 'to_service'),
-                                       autorestart='OFF', autodestroy='OFF',
+                                       autorestart='OFF', autodestroy='OFF', autoredeploy='OFF',
                                        roles='poweruser', sequential_deployment=True, tags=[], bindings=[],
                                        deployment_strategy=None)
         mock_save.assert_called()
@@ -206,7 +206,7 @@ class ServiceCreateTestCase(unittest.TestCase):
         linked_to_service = ['mysql:mysql', 'redis:redis']
         service_create('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
                        exposed_ports, published_ports, container_envvars, '', linked_to_service,
-                       'OFF', 'OFF', 'poweruser', True, None, None, None)
+                       'OFF', 'OFF', 'OFF', 'poweruser', True, None, None, None)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
@@ -379,7 +379,7 @@ class ServiceRunTestCase(unittest.TestCase):
         mock_start.return_value = True
         service_run('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
                     exposed_ports, published_ports, container_envvars, '', linked_to_service,
-                    'OFF', 'OFF', 'poweruser', True, None, None, None)
+                    'OFF', 'OFF', 'OFF', 'poweruser', True, None, None, None)
 
         mock_create.assert_called_with(image='imagename', name='containername', cpu_shares=1,
                                        memory='256M', privileged=True,
@@ -387,7 +387,7 @@ class ServiceRunTestCase(unittest.TestCase):
                                        entrypoint='/bin/mysql', container_ports=ports,
                                        container_envvars=utils.parse_envvars(container_envvars),
                                        linked_to_service=utils.parse_links(linked_to_service, 'to_service'),
-                                       autorestart='OFF', autodestroy='OFF',
+                                       autorestart='OFF', autodestroy='OFF', autoredeploy='OFF',
                                        roles='poweruser', sequential_deployment=True, tags=[], bindings=[],
                                        deployment_strategy=None)
         mock_save.assert_called()
@@ -411,7 +411,7 @@ class ServiceRunTestCase(unittest.TestCase):
         mock_start.return_value = True
         service_run('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
                     exposed_ports, published_ports, container_envvars, '', linked_to_service,
-                    'OFF', 'OFF', 'poweruser', True, None, None, None)
+                    'OFF', 'OFF', 'OFF', 'poweruser', True, None, None, None)
 
         mock_create.assert_called_with(image='imagename', name='containername', cpu_shares=1,
                                        memory='256M', privileged=True,
@@ -419,7 +419,7 @@ class ServiceRunTestCase(unittest.TestCase):
                                        entrypoint='/bin/mysql', container_ports=ports,
                                        container_envvars=utils.parse_envvars(container_envvars),
                                        linked_to_service=utils.parse_links(linked_to_service, 'to_service'),
-                                       autorestart='OFF', autodestroy='OFF',
+                                       autorestart='OFF', autodestroy='OFF', autoredeploy='OFF',
                                        roles='poweruser', sequential_deployment=True, tags=[], bindings=[],
                                        deployment_strategy=None)
         mock_save.assert_called()
@@ -436,7 +436,7 @@ class ServiceRunTestCase(unittest.TestCase):
         linked_to_service = ['mysql:mysql', 'redis:redis']
         service_run('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
                     exposed_ports, published_ports, container_envvars, '', linked_to_service,
-                    'OFF', 'OFF', 'poweruser', True, None, None, None)
+                    'OFF', 'OFF', 'OFF', 'poweruser', True, None, None, None)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
@@ -492,7 +492,7 @@ class ServiceSetTestCase(unittest.TestCase):
         mock_fetch_remote_service.return_value = service
         service_set([service.uuid], 'imagename', 1, '256M', True, 3, '-d', '/bin/mysql',
                     exposed_ports, published_ports, container_envvars, '', linked_to_service,
-                    'OFF', 'OFF', 'poweruser', True, False, None, None, None)
+                    'OFF', 'OFF', 'OFF', 'poweruser', True, False, None, None, None)
 
         mock_save.assert_called()
         self.assertEqual('7A4CFE51-03BB-42D6-825E-3B533888D8CD\n'
@@ -510,6 +510,7 @@ class ServiceSetTestCase(unittest.TestCase):
         self.assertEqual(utils.parse_links(linked_to_service, 'to_service'), service.linked_to_service)
         self.assertEqual('OFF', service.autorestart)
         self.assertEqual('OFF', service.autodestroy)
+        self.assertEqual('OFF', service.autoredeploy)
         self.assertEqual('poweruser', service.roles)
         self.assertEqual(True, service.sequential_deployment)
         self.buf.truncate(0)
@@ -526,7 +527,7 @@ class ServiceSetTestCase(unittest.TestCase):
         mock_fetch_remote_service.return_value = service
         service_set(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], 'imagename', 1, '256M', True, 3, '-d', '/bin/mysql',
                     exposed_ports, published_ports, container_envvars, '', linked_to_service,
-                    'OFF', 'OFF', 'poweruser', True, False, None, None, None)
+                    'OFF', 'OFF', 'OFF', 'poweruser', True, False, None, None, None)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 

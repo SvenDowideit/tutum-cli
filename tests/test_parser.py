@@ -127,7 +127,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                     envvars=args.env, tag=args.tag,
                                                     linked_to_service=args.link_service,
                                                     autorestart=args.autorestart, autodestroy=args.autodestroy,
-                                                    roles=args.role,
+                                                    autoredeploy=args.autoredeploy, roles=args.role,
                                                     sequential=args.sequential,
                                                     volume=args.volume, volumes_from=args.volumes_from,
                                                     deployment_strategy=args.deployment_strategy)
@@ -158,7 +158,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                  envvars=args.env, tag=args.tag,
                                                  linked_to_service=args.link_service,
                                                  autorestart=args.autorestart, autodestroy=args.autodestroy,
-                                                 roles=args.role,
+                                                 autoredeploy=args.autoredeploy, roles=args.role,
                                                  sequential=args.sequential,
                                                  volume=args.volume, volumes_from=args.volumes_from,
                                                  deployment_strategy=args.deployment_strategy)
@@ -177,7 +177,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                  envvars=args.env,
                                                  tag=args.tag, linked_to_service=args.link_service,
                                                  autorestart=args.autorestart, autodestroy=args.autodestroy,
-                                                 roles=args.role,
+                                                 autoredeploy=args.autoredeploy, roles=args.role,
                                                  sequential=args.sequential, redeploy=args.redeploy,
                                                  volume=args.volume, volumes_from=args.volumes_from,
                                                  deployment_strategy=args.deployment_strategy)
