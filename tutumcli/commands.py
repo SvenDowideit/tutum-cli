@@ -224,7 +224,7 @@ def service_redeploy(identifiers):
 
 
 def service_create(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
-                   expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, autoredeploy,
+                   expose, publish, envvars, envfiles, tag, linked_to_service, autorestart, autodestroy, autoredeploy,
                    roles, sequential, volume, volumes_from, deployment_strategy):
     try:
         ports = utils.parse_published_ports(publish)
@@ -240,7 +240,7 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
             if not existed:
                 ports.append(exposed_port)
 
-        envvars = utils.parse_envvars(envvars)
+        envvars = utils.parse_envvars(envvars, envfiles)
         links_service = utils.parse_links(linked_to_service, 'to_service')
 
         tags = []
@@ -271,7 +271,7 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
 
 
 def service_run(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
-                expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, autoredeploy,
+                expose, publish, envvars, envfiles, tag, linked_to_service, autorestart, autodestroy, autoredeploy,
                 roles, sequential, volume, volumes_from, deployment_strategy):
     try:
         ports = utils.parse_published_ports(publish)
@@ -287,7 +287,7 @@ def service_run(image, name, cpu_shares, memory, privileged, target_num_containe
             if not existed:
                 ports.append(exposed_port)
 
-        envvars = utils.parse_envvars(envvars)
+        envvars = utils.parse_envvars(envvars, envfiles)
         links_service = utils.parse_links(linked_to_service, 'to_service')
 
         tags = []
@@ -335,7 +335,7 @@ def service_scale(identifiers, target_num_containers):
 
 
 def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
-                expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, autoredeploy,
+                expose, publish, envvars, envfiles, tag, linked_to_service, autorestart, autodestroy, autoredeploy,
                 roles, sequential, redeploy, volume, volumes_from, deployment_strategy):
     has_exception = False
     for identifier in identifiers:
@@ -371,7 +371,7 @@ def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_c
                 if ports:
                     service.container_ports = ports
 
-                envvars = utils.parse_envvars(envvars)
+                envvars = utils.parse_envvars(envvars, envfiles)
                 if envvars:
                     service.container_envvars = envvars
 

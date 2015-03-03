@@ -52,6 +52,8 @@ def add_service_parser(subparsers):
                                help='set environment variables i.e. "ENVVAR=foo" '
                                     '(default: as defined in the image, plus any link- or role-generated variables)',
                                action='append')
+    create_parser.add_argument('--env-file', help='read in a line delimited file of environment variables',
+                               action='append')
     create_parser.add_argument('--tag', help="the tag name being added to the service", action='append')
     create_parser.add_argument('--link-service',
                                help="Add link to another service (name:alias) or (uuid:alias)", action='append')
@@ -125,6 +127,8 @@ def add_service_parser(subparsers):
                             help='set environment variables i.e. "ENVVAR=foo" '
                                  '(default: as defined in the image, plus any link- or role-generated variables)',
                             action='append')
+    run_parser.add_argument('--env-file', help='read in a line delimited file of environment variables',
+                            action='append')
     run_parser.add_argument('--tag', help="the tag name being added to the service", action='append')
     run_parser.add_argument('--link-service',
                             help="Add link to another service (name:alias) or (uuid:alias)", action='append')
@@ -177,6 +181,8 @@ def add_service_parser(subparsers):
     set_parser.add_argument('-e', '--env',
                             help='set environment variables i.e. "ENVVAR=foo" '
                                  '(default: as defined in the image, plus any link- or role-generated variables)',
+                            action='append')
+    set_parser.add_argument('--env-file', help='read in a line delimited file of environment variables',
                             action='append')
     set_parser.add_argument('--tag', help="the tag name being added to the service", action='append')
     set_parser.add_argument('--link-service',
