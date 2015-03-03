@@ -322,11 +322,8 @@ class ParseExposedPortsTestCase(unittest.TestCase):
 
 class ParseEnvironmentVariablesTestCase(unittest.TestCase):
     def test_parse_envvars(self):
-        output = [{'key': 'MYSQL_USER', 'value': 'admin'}, {'key': 'MYSQL_PASS', 'value': 'mypass'}]
-        self.assertEqual(output, parse_envvars(['MYSQL_USER=admin', 'MYSQL_PASS=mypass']))
-
-        output = [{'key': 'MYSQL_USER', 'value': ''}, {'key': 'MYSQL_PASS', 'value': 'mypass=!,'}]
-        self.assertEqual(output, parse_envvars(['MYSQL_USER', 'MYSQL_PASS=mypass=!,']))
+        output = [{'key': 'MYSQL_PASS', 'value': 'mypass'}, {'key': 'MYSQL_USER', 'value': 'admin'}]
+        self.assertEqual(output, parse_envvars(['MYSQL_USER=admin', 'MYSQL_PASS=mypass'], []))
 
 
 class TryRegisterTestCase(unittest.TestCase):

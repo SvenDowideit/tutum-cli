@@ -52,14 +52,19 @@ def add_service_parser(subparsers):
                                help='set environment variables i.e. "ENVVAR=foo" '
                                     '(default: as defined in the image, plus any link- or role-generated variables)',
                                action='append')
+    create_parser.add_argument('--env-file', help='read in a line delimited file of environment variables',
+                               action='append')
     create_parser.add_argument('--tag', help="the tag name being added to the service", action='append')
     create_parser.add_argument('--link-service',
                                help="Add link to another service (name:alias) or (uuid:alias)", action='append')
-    create_parser.add_argument('--autorestart', help='whether the containers should be restarted if they stop '
-                                                     '(default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     create_parser.add_argument('--autodestroy', help='whether the containers should be terminated if '
                                                      'they stop (default: OFF)',
                                choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
+    create_parser.add_argument('--autoredeploy', help="whether the containers should be auto redeployed (default: OFF)."
+                                                      " It only applies to services that use an image stored in Tutum's "
+                                                      "registry", choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
+    create_parser.add_argument('--autorestart', help='whether the containers should be restarted if they stop '
+                                                     '(default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     create_parser.add_argument('--role', help='Tutum API roles to grant the service, '
                                               'i.e. "global" (default: none, possible values: "global")',
                                action='append')
@@ -122,13 +127,19 @@ def add_service_parser(subparsers):
                             help='set environment variables i.e. "ENVVAR=foo" '
                                  '(default: as defined in the image, plus any link- or role-generated variables)',
                             action='append')
+    run_parser.add_argument('--env-file', help='read in a line delimited file of environment variables',
+                            action='append')
     run_parser.add_argument('--tag', help="the tag name being added to the service", action='append')
     run_parser.add_argument('--link-service',
                             help="Add link to another service (name:alias) or (uuid:alias)", action='append')
+    run_parser.add_argument('--autodestroy', help='whether the containers should be terminated if '
+                                                  'they stop (default: OFF)',
+                            choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
+    run_parser.add_argument('--autoredeploy', help="whether the containers should be auto redeployed (default: OFF)."
+                                                   " It only applies to services that use an image stored in Tutum's "
+                                                   "registry", choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     run_parser.add_argument('--autorestart', help='whether the containers should be restarted if they stop '
                                                   '(default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
-    run_parser.add_argument('--autodestroy', help='whether the containers should be terminated if '
-                                                  'they stop (default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     run_parser.add_argument('--role', help='Tutum API roles to grant the service, '
                                            'i.e. "global" (default: none, possible values: "global")', action='append')
     run_parser.add_argument('--sequential', help='whether the containers should be launched and scaled sequentially',
@@ -171,13 +182,19 @@ def add_service_parser(subparsers):
                             help='set environment variables i.e. "ENVVAR=foo" '
                                  '(default: as defined in the image, plus any link- or role-generated variables)',
                             action='append')
+    set_parser.add_argument('--env-file', help='read in a line delimited file of environment variables',
+                            action='append')
     set_parser.add_argument('--tag', help="the tag name being added to the service", action='append')
     set_parser.add_argument('--link-service',
                             help="Add link to another service (name:alias) or (uuid:alias)", action='append')
+    set_parser.add_argument('--autodestroy', help='whether the containers should be terminated if '
+                                                  'they stop (default: OFF)',
+                            choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
+    set_parser.add_argument('--autoredeploy', help="whether the containers should be auto redeployed (default: OFF)."
+                                                   " It only applies to services that use an image stored in Tutum's "
+                                                   "registry", choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     set_parser.add_argument('--autorestart', help='whether the containers should be restarted if they stop '
                                                   '(default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
-    set_parser.add_argument('--autodestroy', help='whether the containers should be terminated if '
-                                                  'they stop (default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     set_parser.add_argument('--role', help='Tutum API roles to grant the service, '
                                            'i.e. "global" (default: none, possible values: "global")', action='append')
     set_parser.add_argument('--sequential',

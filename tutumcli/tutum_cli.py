@@ -97,9 +97,10 @@ def dispatch_cmds(args):
                                     memory=args.memory, privileged=args.privileged,
                                     target_num_containers=args.target_num_containers, run_command=args.run_command,
                                     entrypoint=args.entrypoint, expose=args.expose, publish=args.publish,
-                                    envvars=args.env,
+                                    envvars=args.env, envfiles=args.env_file,
                                     tag=args.tag, linked_to_service=args.link_service,
-                                    autorestart=args.autorestart, autodestroy=args.autodestroy, roles=args.role,
+                                    autorestart=args.autorestart, autodestroy=args.autodestroy,
+                                    autoredeploy=args.autoredeploy, roles=args.role,
                                     sequential=args.sequential, volume=args.volume, volumes_from=args.volumes_from,
                                     deployment_strategy=args.deployment_strategy)
         elif args.subcmd == 'inspect':
@@ -115,8 +116,10 @@ def dispatch_cmds(args):
                                  memory=args.memory, privileged=args.privileged,
                                  target_num_containers=args.target_num_containers, run_command=args.run_command,
                                  entrypoint=args.entrypoint, expose=args.expose, publish=args.publish, envvars=args.env,
+                                 envfiles=args.env_file,
                                  tag=args.tag, linked_to_service=args.link_service,
-                                 autorestart=args.autorestart, autodestroy=args.autodestroy, roles=args.role,
+                                 autorestart=args.autorestart, autodestroy=args.autodestroy,
+                                 autoredeploy=args.autoredeploy, roles=args.role,
                                  sequential=args.sequential, volume=args.volume, volumes_from=args.volumes_from,
                                  deployment_strategy=args.deployment_strategy)
         elif args.subcmd == 'scale':
@@ -126,8 +129,10 @@ def dispatch_cmds(args):
                                  memory=args.memory, privileged=args.privileged,
                                  target_num_containers=args.target_num_containers, run_command=args.run_command,
                                  entrypoint=args.entrypoint, expose=args.expose, publish=args.publish, envvars=args.env,
+                                 envfiles=args.env_file,
                                  tag=args.tag, linked_to_service=args.link_service,
-                                 autorestart=args.autorestart, autodestroy=args.autodestroy, roles=args.role,
+                                 autorestart=args.autorestart, autodestroy=args.autodestroy,
+                                 autoredeploy=args.autoredeploy, roles=args.role,
                                  sequential=args.sequential, redeploy=args.redeploy,
                                  volume=args.volume, volumes_from=args.volumes_from,
                                  deployment_strategy=args.deployment_strategy)

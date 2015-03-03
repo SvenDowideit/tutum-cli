@@ -181,7 +181,7 @@ def service_ps(quiet=False, status=None):
         has_unsynchronized_service = False
         for service in service_list:
             service_state = utils.add_unicode_symbol_to_state(service.state)
-            if not service.synchronized:
+            if not service.synchronized and service.state != "Redeploying":
                 service_state += "(*)"
                 has_unsynchronized_service = True
             data_list.append([service.name, service.uuid[:8],
@@ -224,8 +224,8 @@ def service_redeploy(identifiers):
 
 
 def service_create(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
-                   expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, roles, sequential,
-                   volume, volumes_from, deployment_strategy):
+                   expose, publish, envvars, envfiles, tag, linked_to_service, autorestart, autodestroy, autoredeploy,
+                   roles, sequential, volume, volumes_from, deployment_strategy):
     try:
         ports = utils.parse_published_ports(publish)
 
@@ -240,7 +240,7 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
             if not existed:
                 ports.append(exposed_port)
 
-        envvars = utils.parse_envvars(envvars)
+        envvars = utils.parse_envvars(envvars, envfiles)
         links_service = utils.parse_links(linked_to_service, 'to_service')
 
         tags = []
@@ -259,7 +259,7 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
                                        target_num_containers=target_num_containers, run_command=run_command,
                                        entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
                                        linked_to_service=links_service,
-                                       autorestart=autorestart, autodestroy=autodestroy,
+                                       autorestart=autorestart, autodestroy=autodestroy, autoredeploy=autoredeploy,
                                        roles=roles, sequential_deployment=sequential, tags=tags, bindings=bindings,
                                        deployment_strategy=deployment_strategy)
         result = service.save()
@@ -271,8 +271,8 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
 
 
 def service_run(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
-                expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, roles, sequential,
-                volume, volumes_from, deployment_strategy):
+                expose, publish, envvars, envfiles, tag, linked_to_service, autorestart, autodestroy, autoredeploy,
+                roles, sequential, volume, volumes_from, deployment_strategy):
     try:
         ports = utils.parse_published_ports(publish)
 
@@ -287,7 +287,7 @@ def service_run(image, name, cpu_shares, memory, privileged, target_num_containe
             if not existed:
                 ports.append(exposed_port)
 
-        envvars = utils.parse_envvars(envvars)
+        envvars = utils.parse_envvars(envvars, envfiles)
         links_service = utils.parse_links(linked_to_service, 'to_service')
 
         tags = []
@@ -306,7 +306,7 @@ def service_run(image, name, cpu_shares, memory, privileged, target_num_containe
                                        target_num_containers=target_num_containers, run_command=run_command,
                                        entrypoint=entrypoint, container_ports=ports, container_envvars=envvars,
                                        linked_to_service=links_service,
-                                       autorestart=autorestart, autodestroy=autodestroy,
+                                       autorestart=autorestart, autodestroy=autodestroy, autoredeploy=autoredeploy,
                                        roles=roles, sequential_deployment=sequential, tags=tags, bindings=bindings,
                                        deployment_strategy=deployment_strategy)
         service.save()
@@ -335,8 +335,8 @@ def service_scale(identifiers, target_num_containers):
 
 
 def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
-                expose, publish, envvars, tag, linked_to_service, autorestart, autodestroy, roles, sequential,
-                redeploy, volume, volumes_from, deployment_strategy):
+                expose, publish, envvars, envfiles, tag, linked_to_service, autorestart, autodestroy, autoredeploy,
+                roles, sequential, redeploy, volume, volumes_from, deployment_strategy):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -371,7 +371,7 @@ def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_c
                 if ports:
                     service.container_ports = ports
 
-                envvars = utils.parse_envvars(envvars)
+                envvars = utils.parse_envvars(envvars, envfiles)
                 if envvars:
                     service.container_envvars = envvars
 
@@ -392,6 +392,9 @@ def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_c
 
                 if autodestroy:
                     service.autodestroy = autodestroy
+
+                if autoredeploy:
+                    service.autoredeploy = autoredeploy
 
                 if roles:
                     service.roles = roles

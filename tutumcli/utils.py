@@ -54,7 +54,7 @@ def add_unicode_symbol_to_state(state):
         return u"\u25B6 " + state
     elif state in ["Init", "Stopped"]:
         return u"\u25FC " + state
-    elif state in ["Starting", "Stopping", "Scaling", "Terminating", "Deploying"]:
+    elif state in ["Starting", "Stopping", "Scaling", "Terminating", "Deploying", "Redeploying"]:
         return u"\u2699 " + state
     elif state in ["Start failed", "Stopped with errors"]:
         return u"\u0021 " + state
@@ -402,23 +402,50 @@ def parse_exposed_ports(port_list):
     return parsed_ports
 
 
-def parse_envvars(envvar_list):
-    def _get_envvar(_envvar):
+def parse_envvars(envvar_list, envfile_list):
+    def _transform_envvar(_envvar):
         _envvar = _envvar.split("=", 1)
         length = len(_envvar)
-        if length == 1:
-            return {'key': _envvar[0], 'value': ''}
-        elif length == 2:
+        if length == 2:
             return {'key': _envvar[0], 'value': _envvar[1]}
         else:
-            raise BadParameter("Environment Variable argument %s does not match with 'KEY=VALUE'."
-                               " Example: ENVVAR=foo" % _envvar)
+            raise BadParameter("Environment variable '%s' does not match with 'KEY=VALUE'."
+                               " Example: ENVVAR=foo" % _envvar[0])
 
-    parsed_envvars = []
+    def _read_envvar(envfile):
+        envvars = []
+        with open(envfile) as f:
+            lines = f.readlines()
+            for line in lines:
+                line = line.strip()
+                if line.startswith("#"):
+                    continue
+                if line == "":
+                    continue
+                envvars.append(line)
+            return envvars
+
+    transformed_envvars = []
+    envvars = []
+    if envfile_list is not None:
+        for envfile in envfile_list:
+            envvars.extend(_read_envvar(envfile))
+
     if envvar_list is not None:
-        for envvar in envvar_list:
-            parsed_envvars.append(_get_envvar(envvar))
-    return parsed_envvars
+        envvars.extend(envvar_list)
+
+    if envvars is not None:
+        for envvar in envvars:
+            transformed_envvars.append(_transform_envvar(envvar))
+
+    parsed_envvar_dict = {}
+    parsed_envvar_list = []
+    for transformed_envvar in transformed_envvars:
+        parsed_envvar_dict[transformed_envvar["key"]] = transformed_envvar
+    for v in parsed_envvar_dict.itervalues():
+        parsed_envvar_list.append(v)
+
+    return parsed_envvar_list
 
 
 def try_register(username, password):
