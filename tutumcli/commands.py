@@ -505,7 +505,16 @@ def container_logs(identifiers):
 def container_ps(quiet, status, service):
     try:
         headers = ["NAME", "UUID", "STATUS", "IMAGE", "RUN COMMAND", "EXIT CODE", "DEPLOYED", "PORTS", "STACK"]
-        containers = tutum.Container.list(state=status)
+
+        if service:
+            s = utils.fetch_remote_service(service, raise_exceptions=False)
+            if isinstance(s, NonUniqueIdentifier):
+                raise NonUniqueIdentifier("Identifier %s matches more than one service, please use UUID instead" % service)
+            if isinstance(s, ObjectNotFound):
+                raise ObjectNotFound("Identifier '%s' does not match any service" % service)
+            containers = tutum.Container.list(state=status, service=s.resource_uri)
+        else:
+            containers = tutum.Container.list(state=status)
 
         data_list = []
         long_uuid_list = []
@@ -516,18 +525,7 @@ def container_ps(quiet, status, service):
         for s in tutum.Service.list():
             services[s.resource_uri] = s.stack
 
-        if service:
-            service_obj = utils.fetch_remote_service(service, raise_exceptions=False)
-            if isinstance(service_obj, NonUniqueIdentifier):
-                raise NonUniqueIdentifier("Identifier %s matches more than one service, please use UUID instead" % service)
-            if isinstance(service_obj, ObjectNotFound):
-                raise ObjectNotFound("Identifier '%s' does not match any service" % service)
-
         for container in containers:
-            if service:
-                if container.service != service_obj.resource_uri:
-                    continue
-
             ports = []
             for index, port in enumerate(container.container_ports):
                 ports_string = ""
