@@ -325,9 +325,9 @@ SERVICE1  7A4CFE51  \u25b6 Running              3  test/service1              ww
 SERVICE2  8B4CFE51  \u25fc Stopped              2  test/service2              www.myhello2service.com  service2'''
         mock_list.return_value = self.servicelist
         mock_stack.return_value = self.stacklist
-        service_ps(status='Running')
+        service_ps(False, 'Running', None)
 
-        mock_list.assert_called_with(state='Running')
+        mock_list.assert_called_with(state='Running', stack=None)
         self.buf.getvalue().strip()
         self.assertEqual(output, self.buf.getvalue().strip())
         self.buf.truncate(0)
@@ -339,7 +339,7 @@ SERVICE2  8B4CFE51  \u25fc Stopped              2  test/service2              ww
 8B4CFE51-03BB-42D6-825E-3B533888D8CD'''
         mock_stack.return_value = self.stacklist
         mock_list.return_value = self.servicelist
-        service_ps(quiet=True)
+        service_ps(True, None, None)
 
         self.assertEqual(output, self.buf.getvalue().strip())
         self.buf.truncate(0)
@@ -347,7 +347,7 @@ SERVICE2  8B4CFE51  \u25fc Stopped              2  test/service2              ww
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.tutum.Service.list', side_effect=TutumApiError)
     def test_service_ps_with_exception(self, mock_list, mock_exit):
-        service_ps()
+        service_ps(False, None, None)
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
     @mock.patch('tutumcli.commands.tutum.Stack.list')
@@ -361,9 +361,9 @@ SERVICE2  8B4CFE51  \u25fc Stopped                 2  test/service2             
         self.servicelist[0].synchronized = False
         mock_stack.return_value = self.stacklist
         mock_list.return_value = self.servicelist
-        service_ps(status='Running')
+        service_ps(False, 'Running', None)
 
-        mock_list.assert_called_with(state='Running')
+        mock_list.assert_called_with(state='Running', stack=None)
         self.assertEqual(output, self.buf.getvalue().strip())
         self.buf.truncate(0)
 
@@ -785,7 +785,7 @@ CONTAINER2  8B4CFE51  ◼ Stopped  test/container2  /bin/sh                  0  
         mock_list.return_value = self.containerlist
         container_ps(False, 'Running', None)
 
-        mock_list.assert_called_with(state='Running')
+        mock_list.assert_called_with(state='Running', service=None)
         self.assertEqual(output, self.buf.getvalue().strip())
         self.buf.truncate(0)
 
@@ -917,7 +917,7 @@ class ImageListTestCase(unittest.TestCase):
 image_name_1  image_desc_1
 image_name_2  image_desc_2'''
         mock_list.return_value = self.imagelist
-        image_list()
+        image_list(False, False, False)
 
         self.assertEqual(output, self.buf.getvalue().strip())
         self.buf.truncate(0)
@@ -926,23 +926,23 @@ image_name_2  image_desc_2'''
     def test_image_list_quiet(self, mock_list):
         output = 'image_name_1\nimage_name_2'
         mock_list.return_value = self.imagelist
-        image_list(quiet=True)
+        image_list(True, False, False)
 
         self.assertEqual(output, self.buf.getvalue().strip())
         self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.tutum.Image.list', return_value=[])
     def test_image_list_parameter(self, mock_list):
-        image_list(jumpstarts=True)
+        image_list(False, True, False)
         mock_list.assert_called_with(starred=True)
 
-        image_list(linux=True)
+        image_list(False, False, True)
         mock_list.assert_called_with(base_image=True)
 
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.tutum.Image.list', side_effect=TutumApiError)
     def test_image_list_with_exception(self, mock_fetch_remote_container, mock_exit):
-        image_list()
+        image_list(False, False, False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
@@ -1146,7 +1146,7 @@ bd276db4-cd35-4311-8110-1c82885c33d2'''
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.tutum.Node.list', side_effect=TutumApiError)
     def test_node_list(self, mock_list, mock_exit):
-        node_list()
+        node_list(False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 

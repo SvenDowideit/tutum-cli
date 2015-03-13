@@ -108,7 +108,7 @@ def dispatch_cmds(args):
         elif args.subcmd == 'logs':
             commands.service_logs(args.identifier)
         elif args.subcmd == 'ps':
-            commands.service_ps(args.quiet, args.status)
+            commands.service_ps(args.quiet, args.status, args.stack)
         elif args.subcmd == 'redeploy':
             commands.service_redeploy(args.identifier)
         elif args.subcmd == 'run':

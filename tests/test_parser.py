@@ -141,7 +141,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
 
         args = self.parser.parse_args(['service', 'ps'])
         dispatch_cmds(args)
-        mock_cmds.service_ps.assert_called_with(args.quiet, args.status)
+        mock_cmds.service_ps.assert_called_with(args.quiet, args.status, args.stack)
 
         args = self.parser.parse_args(['service', 'redeploy', 'mysql'])
         dispatch_cmds(args)

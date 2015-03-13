@@ -93,6 +93,8 @@ def add_service_parser(subparsers):
     ps_parser.add_argument('-s', '--status', help='filter services by status',
                            choices=['Init', 'Stopped', 'Starting', 'Running', 'Stopping', 'Terminating', 'Terminated',
                                     'Scaling', 'Partly running', 'Not running', 'Redeploying'])
+    ps_parser.add_argument('--stack', help="filter services by stack (UUID either long or short, or name)")
+
 
     # tutum service redeploy
     redeploy_parser = service_subparser.add_parser('redeploy', help='Redeploy a running service with a '

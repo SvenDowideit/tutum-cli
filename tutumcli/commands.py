@@ -171,10 +171,20 @@ def service_logs(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def service_ps(quiet=False, status=None):
+def service_ps(quiet, status, stack):
     try:
         headers = ["NAME", "UUID", "STATUS", "#CONTAINERS", "IMAGE", "DEPLOYED", "PUBLIC DNS", "STACK"]
-        service_list = tutum.Service.list(state=status)
+
+        stack_resource_uri = None
+        if stack:
+            s = utils.fetch_remote_stack(stack, raise_exceptions=False)
+            if isinstance(s, NonUniqueIdentifier):
+                raise NonUniqueIdentifier("Identifier %s matches more than one stack, please use UUID instead" % stack)
+            if isinstance(s, ObjectNotFound):
+                raise ObjectNotFound("Identifier '%s' does not match any stack" % stack)
+            stack_resource_uri = s.resource_uri
+        service_list = tutum.Service.list(state=status, stack=stack_resource_uri)
+
         data_list = []
         long_uuid_list = []
         has_unsynchronized_service = False
@@ -506,15 +516,17 @@ def container_ps(quiet, status, service):
     try:
         headers = ["NAME", "UUID", "STATUS", "IMAGE", "RUN COMMAND", "EXIT CODE", "DEPLOYED", "PORTS", "STACK"]
 
+        service_resrouce_uri = None
         if service:
             s = utils.fetch_remote_service(service, raise_exceptions=False)
             if isinstance(s, NonUniqueIdentifier):
-                raise NonUniqueIdentifier("Identifier %s matches more than one service, please use UUID instead" % service)
+                raise NonUniqueIdentifier(
+                    "Identifier %s matches more than one service, please use UUID instead" % service)
             if isinstance(s, ObjectNotFound):
                 raise ObjectNotFound("Identifier '%s' does not match any service" % service)
-            containers = tutum.Container.list(state=status, service=s.resource_uri)
-        else:
-            containers = tutum.Container.list(state=status)
+            service_resrouce_uri = s.resource_uri
+
+        containers = tutum.Container.list(state=status, service=service_resrouce_uri)
 
         data_list = []
         long_uuid_list = []
@@ -602,7 +614,7 @@ def container_terminate(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def image_list(quiet=False, jumpstarts=False, linux=False):
+def image_list(quiet, jumpstarts, linux):
     try:
         headers = ["NAME", "DESCRIPTION"]
         data_list = []
@@ -797,7 +809,7 @@ def image_update(repositories, username, password, description):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def node_list(quiet=False):
+def node_list(quiet):
     try:
         headers = ["UUID", "FQDN", "LASTSEEN", "STATUS", "CLUSTER", "DOCKER_VER"]
         node_list = tutum.Node.list()
