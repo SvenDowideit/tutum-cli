@@ -174,11 +174,14 @@ def service_logs(identifiers):
 
 def service_ps(quiet=False, status=None):
     try:
-        headers = ["NAME", "UUID", "STATUS", "#CONTAINERS", "IMAGE", "DEPLOYED", "PUBLIC DNS"]
+        headers = ["NAME", "UUID", "STATUS", "#CONTAINERS", "IMAGE", "DEPLOYED", "PUBLIC DNS", "STACK"]
         service_list = tutum.Service.list(state=status)
         data_list = []
         long_uuid_list = []
         has_unsynchronized_service = False
+        stacks = {}
+        for stack in tutum.Stack.list():
+            stacks[stack.resource_uri] = stack.name
         for service in service_list:
             service_state = utils.add_unicode_symbol_to_state(service.state)
             if not service.synchronized and service.state != "Redeploying":
@@ -189,7 +192,8 @@ def service_ps(quiet=False, status=None):
                               service.current_num_containers,
                               service.image_name,
                               utils.get_humanize_local_datetime_from_utc_datetime_string(service.deployed_datetime),
-                              service.public_dns])
+                              service.public_dns,
+                              stacks.get(service.stack)])
             long_uuid_list.append(service.uuid)
         if len(data_list) == 0:
             data_list.append(["", "", "", "", "", ""])
@@ -501,7 +505,7 @@ def container_logs(identifiers):
 
 def container_ps(identifier, quiet, status, service):
     try:
-        headers = ["NAME", "UUID", "STATUS", "IMAGE", "RUN COMMAND", "EXIT CODE", "DEPLOYED", "PORTS"]
+        headers = ["NAME", "UUID", "STATUS", "IMAGE", "RUN COMMAND", "EXIT CODE", "DEPLOYED", "PORTS", "STACK"]
 
         if identifier is None:
             containers = tutum.Container.list(state=status)
@@ -513,6 +517,12 @@ def container_ps(identifier, quiet, status, service):
 
         data_list = []
         long_uuid_list = []
+        stacks = {}
+        for stack in tutum.Stack.list():
+            stacks[stack.resource_uri] = stack.name
+        services = {}
+        for s in tutum.Service.list():
+            services[s.resource_uri] = s.stack
 
         if service:
             service_obj = utils.fetch_remote_service(service, raise_exceptions=False)
@@ -540,7 +550,8 @@ def container_ps(identifier, quiet, status, service):
                               container.run_command,
                               container.exit_code,
                               utils.get_humanize_local_datetime_from_utc_datetime_string(container.deployed_datetime),
-                              ports_string])
+                              ports_string,
+                              stacks.get(services.get(container.service))])
             long_uuid_list.append(container.uuid)
         if len(data_list) == 0:
             data_list.append(["", "", "", "", "", "", "", ""])
