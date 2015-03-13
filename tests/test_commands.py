@@ -6,7 +6,6 @@ import uuid
 
 import mock
 from tutum.api.exceptions import *
-
 from tutumcli.commands import *
 import tutumcli
 
@@ -784,7 +783,7 @@ CONTAINER2  8B4CFE51  ◼ Stopped  test/container2  /bin/sh                  0  
         mock_stack.return_value = self.stacklist
         mock_service.return_value = self.servicelist
         mock_list.return_value = self.containerlist
-        container_ps(None, False, 'Running', None)
+        container_ps(False, 'Running', None)
 
         mock_list.assert_called_with(state='Running')
         self.assertEqual(output, self.buf.getvalue().strip())
@@ -799,7 +798,7 @@ CONTAINER2  8B4CFE51  ◼ Stopped  test/container2  /bin/sh                  0  
         mock_stack.return_value = self.stacklist
         mock_service.return_value = self.servicelist
         mock_list.return_value = self.containerlist
-        container_ps(None, True, None, None)
+        container_ps(True, None, None)
         self.assertEqual(output, self.buf.getvalue().strip())
         self.buf.truncate(0)
 
@@ -807,7 +806,7 @@ CONTAINER2  8B4CFE51  ◼ Stopped  test/container2  /bin/sh                  0  
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.tutum.Container.list', side_effect=TutumApiError)
     def test_container_ps_with_exception(self, mock_list, mock_exit):
-        container_ps(None, None, None, None)
+        container_ps(None, None, None)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 

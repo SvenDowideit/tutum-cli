@@ -12,8 +12,7 @@ import tutum
 import docker
 from tutum.api import auth
 from tutum.api import exceptions
-
-from exceptions import StreamOutputError, ObjectNotFound
+from exceptions import StreamOutputError, ObjectNotFound, NonUniqueIdentifier
 from tutumcli import utils
 
 
@@ -503,17 +502,10 @@ def container_logs(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def container_ps(identifier, quiet, status, service):
+def container_ps(quiet, status, service):
     try:
         headers = ["NAME", "UUID", "STATUS", "IMAGE", "RUN COMMAND", "EXIT CODE", "DEPLOYED", "PORTS", "STACK"]
-
-        if identifier is None:
-            containers = tutum.Container.list(state=status)
-        elif utils.is_uuid4(identifier):
-            containers = tutum.Container.list(uuid=identifier, state=status)
-        else:
-            containers = tutum.Container.list(name=identifier, state=status) + \
-                         tutum.Container.list(uuid__startswith=identifier, state=status)
+        containers = tutum.Container.list(state=status)
 
         data_list = []
         long_uuid_list = []
@@ -526,6 +518,8 @@ def container_ps(identifier, quiet, status, service):
 
         if service:
             service_obj = utils.fetch_remote_service(service, raise_exceptions=False)
+            if isinstance(service_obj, NonUniqueIdentifier):
+                raise NonUniqueIdentifier("Identifier %s matches more than one service, please use UUID instead" % service)
             if isinstance(service_obj, ObjectNotFound):
                 raise ObjectNotFound("Identifier '%s' does not match any service" % service)
 

@@ -242,7 +242,6 @@ def add_container_parser(subparsers):
 
     # tutum container ps
     ps_parser = container_subparser.add_parser('ps', help='List containers', description='List containers')
-    ps_parser.add_argument('-i', '--identifier', help="container's UUID (either long or short) or name")
     ps_parser.add_argument('-q', '--quiet', help='print only long UUIDs', action='store_true')
     ps_parser.add_argument('-s', '--status', help='filter containers by status',
                            choices=['Init', 'Stopped', 'Starting', 'Running', 'Stopping', 'Terminating', 'Terminated'])
