@@ -282,6 +282,9 @@ def add_image_parser(subparsers):
                                                  description='Register an image from a private repository in Tutum')
     register_parser.add_argument('image_name', help='full image name, i.e. quay.io/tutum/test-repo')
     register_parser.add_argument('-d', '--description', help='Image description')
+    register_parser.add_argument('-u', '--username', help='Username of the private registry')
+    register_parser.add_argument('-p', '--password', help='Password of the private registry')
+
 
     # tutum image push
     push_parser = image_subparser.add_parser('push', help='Push a local image to Tutum private registry',

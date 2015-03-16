@@ -625,10 +625,17 @@ def image_list(quiet, jumpstarts, linux):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def image_register(repository, description):
-    print('Please input username and password of the repository:')
-    username = raw_input('Username: ')
-    password = getpass.getpass()
+def image_register(repository, description, username, password):
+    if not username and not password:
+        print('Please input username and password of the registry:')
+        username = raw_input('Username: ')
+        password = getpass.getpass()
+    elif not username:
+        print('Please input username of the registry:')
+        username = raw_input('Username: ')
+    elif not password:
+        print('Please input password of the registry:')
+        password = getpass.getpass()
     try:
         image = tutum.Image.create(name=repository, username=username, password=password, description=description)
         result = image.save()

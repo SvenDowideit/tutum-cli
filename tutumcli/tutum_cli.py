@@ -159,7 +159,7 @@ def dispatch_cmds(args):
         if args.subcmd == 'list':
             commands.image_list(args.quiet, args.jumpstarts, args.linux)
         elif args.subcmd == 'register':
-            commands.image_register(args.image_name, args.description)
+            commands.image_register(args.image_name, args.description, args.username, args.password)
         elif args.subcmd == 'push':
             commands.image_push(args.name, args.public)
         elif args.subcmd == 'rm':

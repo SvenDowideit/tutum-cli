@@ -962,13 +962,13 @@ class ImageRegister(unittest.TestCase):
     @mock.patch('tutumcli.commands.tutum.Image.create')
     @mock.patch('tutumcli.commands.getpass.getpass', return_value='password')
     def test_register(self, mock_get_pass, mock_create, mock_save):
-        output = '''Please input username and password of the repository:
+        output = '''Please input username and password of the registry:
 image_name'''
         __builtin__.raw_input = lambda _: 'username'  # set username
         image = tutumcli.commands.tutum.Image()
         image.name = 'image_name'
         mock_create.return_value = image
-        image_register('repository', 'descripiton')
+        image_register('repository', 'descripiton', None, None)
 
         self.assertEqual(output, self.buf.getvalue().strip())
         self.buf.truncate(0)
@@ -978,7 +978,7 @@ image_name'''
     @mock.patch('tutumcli.commands.getpass.getpass', return_value='password')
     def test_register_with_exception(self, mock_get_pass, mock_create, mock_exit):
         __builtin__.raw_input = lambda _: 'username'  # set username
-        image_register('repository', 'descripiton')
+        image_register('repository', 'descripiton', None, None)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
