@@ -5,6 +5,7 @@ import urlparse
 import ssl
 import re
 import os
+import codecs
 
 import yaml
 from tabulate import tabulate
@@ -83,11 +84,11 @@ def get_docker_client():
             else:
                 tls_config = False
 
-        base_url = os.getenv("DOCKER_HOST")
+        base_url = os.getenv("DOCKER_HOST", None)
         if tls_config and base_url.startswith("tcp://"):
             base_url = base_url.replace("tcp://", "https://")
 
-        docker_client = docker.Client(base_url=base_url, tls=tls_config)
+        docker_client = docker.Client(base_url=base_url, tls=tls_config, version='auto')
         docker_client.version()
         return docker_client
     except Exception as e:
@@ -135,6 +136,7 @@ def stream_output(output, stream):
             stream.write("%s%s\n" % (status, terminator))
 
     is_terminal = hasattr(stream, 'fileno') and os.isatty(stream.fileno())
+    stream = codecs.getwriter('utf-8')(stream)
     all_events = []
     lines = {}
     diff = 0
@@ -144,7 +146,9 @@ def stream_output(output, stream):
         all_events.append(event)
 
         if 'progress' in event or 'progressDetail' in event:
-            image_id = event['id']
+            image_id = event.get('id')
+            if not image_id:
+                continue
 
             if image_id in lines:
                 diff = len(lines) - lines[image_id]

@@ -4,7 +4,6 @@ import ConfigParser
 import json
 import sys
 import os
-import distutils
 import logging
 from os.path import join, expanduser, abspath
 
@@ -12,6 +11,7 @@ import tutum
 import docker
 from tutum.api import auth
 from tutum.api import exceptions
+
 from exceptions import StreamOutputError, ObjectNotFound, NonUniqueIdentifier
 from tutumcli import utils
 
@@ -99,50 +99,29 @@ def verify_auth(args):
 
 
 def build(tag, working_directory):
-    directory = abspath(working_directory)
     try:
-        work_dir = abspath(working_directory)
-        dockercfg_dir = expanduser("~/.dockercfg")
-        docker_path = distutils.spawn.find_executable("docker")
-
-        if not docker_path:
-            print("Cannot find docker locally", file=sys.stderr)
-            sys.exit(EXCEPTION_EXIT_CODE)
-
-        if os.path.exists(dockercfg_dir):
-            cmd = "docker run -ti --rm --privileged " \
-                  "-v %s:/app -v" \
-                  "-v %s:/usr/bin/docker:r " \
-                  " %s:/.dockercfg:r " \
-                  "-e IMAGE_NAME=%s " % (work_dir, docker_path, dockercfg_dir, tag)
-        else:
-            cmd = "docker run -ti --rm --privileged " \
-                  "-v %s:/app " \
-                  "-v %s:/usr/bin/docker:r " \
-                  "-e USERNAME=%s " \
-                  "-e PASSWORD=%s " \
-                  "-e IMAGE_NAME=%s " \
-                  % (work_dir, docker_path, tutum.user, tutum.apikey, tag)
-
+        docker_client = utils.get_docker_client()
+        binds = {
+            abspath(working_directory):
+                {
+                    'bind': "/app",
+                    'ro': False
+                }
+        }
         if os.path.exists("/var/run/docker.sock"):
-            cmd += "-v /var/run/docker.sock:/var/run/docker.sock:rw "
-
-        if os.getenv("DOCKER_HOST"):
-            cmd += "-e DOCKER_HOST=%s " % os.getenv("DOCKER_HOST")
-
-        if os.getenv("DOCKER_CERT_PATH"):
-            cmd += "-e DOCKER_CERT_PATH=%s " % os.getenv("DOCKER_CERT_PATH")
-
-        if os.getenv("DOCKER_HOST"):
-            cmd += "-e DOCKER_TLS_VERIFY=%s " % os.getenv("DOCKER_TLS_VERIFY")
-
-        cmd += "tutum/builder"
-
-        cli_log.debug("tutum build:%s" % cmd)
-
-        os.system(cmd)
+            binds["/var/run/docker.sock"] = \
+                {
+                    'bind': "/var/run/docker.sock",
+                    'ro': False
+                }
+        container = docker_client.create_container(image="tutum/builder", environment={"IMAGE_NAME": tag})
+        docker_client.start(container=container.get("Id"), privileged=True, binds=binds)
+        output = docker_client.attach(container.get("Id"), stream=True)
+        for chunck in output:
+            print(chunck, end="")
     except Exception as e:
         print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def service_inspect(identifiers):
@@ -215,7 +194,6 @@ def service_ps(quiet, status, stack):
             if has_unsynchronized_service:
                 print(
                     "\n(*) Please note that this service needs to be redeployed to have its configuration changes applied")
-
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
