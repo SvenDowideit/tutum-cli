@@ -99,6 +99,7 @@ def verify_auth(args):
 
 
 def build(tag, working_directory):
+    build_image = "tutum/builder"
     try:
         docker_client = utils.get_docker_client()
         binds = {
@@ -114,7 +115,10 @@ def build(tag, working_directory):
                     'bind': "/var/run/docker.sock",
                     'ro': False
                 }
-        container = docker_client.create_container(image="tutum/builder", environment={"IMAGE_NAME": tag})
+
+        output = docker_client.pull(build_image, stream=True)
+        utils.stream_output(output, sys.stdout)
+        container = docker_client.create_container(image=build_image, environment={"IMAGE_NAME": tag})
         docker_client.start(container=container.get("Id"), privileged=True, binds=binds)
         output = docker_client.attach(container.get("Id"), stream=True)
         for chunck in output:
@@ -647,8 +651,8 @@ def image_push(name, public):
             print(e, file=sys.stderr)
             sys.exit(EXCEPTION_EXIT_CODE)
         try:
-            stream = docker_client.push(repository, stream=True)
-            utils.stream_output(stream, sys.stdout)
+            output = docker_client.push(repository, stream=True)
+            utils.stream_output(output, sys.stdout)
         except StreamOutputError as e:
             if 'status 401' in e.message.lower():
                 output_status = AUTH_ERROR
@@ -712,9 +716,9 @@ def image_push(name, public):
             print(e, file=sys.stderr)
             sys.exit(EXCEPTION_EXIT_CODE)
 
-        stream = docker_client.push(repository, stream=True)
+        output = docker_client.push(repository, stream=True)
         try:
-            utils.stream_output(stream, sys.stdout)
+            utils.stream_output(output, sys.stdout)
         except docker.errors.APIError as e:
             print(e.explanation, file=sys.stderr)
             sys.exit(EXCEPTION_EXIT_CODE)
