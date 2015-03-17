@@ -4,7 +4,6 @@ import StringIO
 import sys
 
 import mock
-
 from tutumcli.tutum_cli import patch_help_option, dispatch_cmds, initialize_parser
 from tutumcli.exceptions import InternalError
 import tutumcli
@@ -142,7 +141,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
 
         args = self.parser.parse_args(['service', 'ps'])
         dispatch_cmds(args)
-        mock_cmds.service_ps.assert_called_with(args.quiet, args.status)
+        mock_cmds.service_ps.assert_called_with(args.quiet, args.status, args.stack)
 
         args = self.parser.parse_args(['service', 'redeploy', 'mysql'])
         dispatch_cmds(args)
@@ -206,7 +205,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
 
         args = self.parser.parse_args(['container', 'ps'])
         dispatch_cmds(args)
-        mock_cmds.container_ps.assert_called_with(args.identifier, args.quiet, args.status, args.service)
+        mock_cmds.container_ps.assert_called_with(args.quiet, args.status, args.service)
 
         args = self.parser.parse_args(['container', 'start', 'id'])
         dispatch_cmds(args)

@@ -14,6 +14,9 @@ test:prepare
 	venv/bin/pip install mock nose
 	venv/bin/python setup.py nosetests
 
+retest:
+	venv/bin/python setup.py nosetests
+
 certs:
 	curl http://ci.kennethreitz.org/job/ca-bundle/lastSuccessfulBuild/artifact/cacerts.pem -o cacert.pem
 

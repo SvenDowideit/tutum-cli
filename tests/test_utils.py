@@ -4,7 +4,6 @@ import __builtin__
 
 import mock
 from tutum.api.exceptions import *
-
 import tutumcli
 from tutumcli.utils import *
 from tutumcli.exceptions import *

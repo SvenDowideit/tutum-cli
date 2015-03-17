@@ -35,8 +35,7 @@ def add_service_parser(subparsers):
     create_parser.add_argument('--memory', help='RAM memory hard limit in MB', type=int)
     create_parser.add_argument('--privileged', help='Give extended privileges to this container', action='store_true')
     create_parser.add_argument('-t', '--target-num-containers',
-                               help='the number of containers to run for this service (default: 1)', type=int,
-                               default=1)
+                               help='the number of containers to run for this service (default: 1)', type=int)
     create_parser.add_argument('-r', '--run-command',
                                help='the command used to start the service containers '
                                     '(default: as defined in the image)')
@@ -75,7 +74,7 @@ def add_service_parser(subparsers):
     create_parser.add_argument('--volumes-from', help='Mount volumes from the specified service(s)', action='append')
 
     create_parser.add_argument('--deployment-strategy', help='Container distribution strategy among nodes',
-                               choices=['EMPTIEST_NODE', 'HIGH_AVAILABILITY', 'EVERY_NODE '])
+                               choices=['EMPTIEST_NODE', 'HIGH_AVAILABILITY', 'EVERY_NODE'])
 
     # tutum service inspect
     inspect_parser = service_subparser.add_parser('inspect', help="Get all details from a service",
@@ -93,6 +92,8 @@ def add_service_parser(subparsers):
     ps_parser.add_argument('-s', '--status', help='filter services by status',
                            choices=['Init', 'Stopped', 'Starting', 'Running', 'Stopping', 'Terminating', 'Terminated',
                                     'Scaling', 'Partly running', 'Not running', 'Redeploying'])
+    ps_parser.add_argument('--stack', help="filter services by stack (UUID either long or short, or name)")
+
 
     # tutum service redeploy
     redeploy_parser = service_subparser.add_parser('redeploy', help='Redeploy a running service with a '
@@ -110,8 +111,7 @@ def add_service_parser(subparsers):
     run_parser.add_argument('--memory', help='RAM memory hard limit in MB', type=int)
     run_parser.add_argument('--privileged', help='Give extended privileges to this container', action='store_true')
     run_parser.add_argument('-t', '--target-num-containers',
-                            help='the number of containers to run for this service (default: 1)', type=int,
-                            default=1)
+                            help='the number of containers to run for this service (default: 1)', type=int)
     run_parser.add_argument('-r', '--run-command',
                             help='the command used to start the service containers '
                                  '(default: as defined in the image)')
@@ -148,7 +148,7 @@ def add_service_parser(subparsers):
                                                    'from Docker: -v /container)', action='append')
     run_parser.add_argument('--volumes-from', help='Mount volumes from the specified service(s)', action='append')
     run_parser.add_argument('--deployment-strategy', help='Container distribution strategy among nodes',
-                            choices=['EMPTIEST_NODE', 'HIGH_AVAILABILITY', 'EVERY_NODE '])
+                            choices=['EMPTIEST_NODE', 'HIGH_AVAILABILITY', 'EVERY_NODE'])
 
     # tutum service scale
     scale_parser = service_subparser.add_parser('scale', help='Scale a running service',
@@ -206,7 +206,7 @@ def add_service_parser(subparsers):
                                                    'from Docker: -v /container)', action='append')
     set_parser.add_argument('--volumes-from', help='Mount volumes from the specified service(s)', action='append')
     set_parser.add_argument('--deployment-strategy', help='Container distribution strategy among nodes',
-                            choices=['EMPTIEST_NODE', 'HIGH_AVAILABILITY', 'EVERY_NODE '])
+                            choices=['EMPTIEST_NODE', 'HIGH_AVAILABILITY', 'EVERY_NODE'])
 
     # tutum service start
     start_parser = service_subparser.add_parser('start', help='Start a stopped service',
@@ -242,7 +242,6 @@ def add_container_parser(subparsers):
 
     # tutum container ps
     ps_parser = container_subparser.add_parser('ps', help='List containers', description='List containers')
-    ps_parser.add_argument('-i', '--identifier', help="container's UUID (either long or short) or name")
     ps_parser.add_argument('-q', '--quiet', help='print only long UUIDs', action='store_true')
     ps_parser.add_argument('-s', '--status', help='filter containers by status',
                            choices=['Init', 'Stopped', 'Starting', 'Running', 'Stopping', 'Terminating', 'Terminated'])
@@ -283,6 +282,9 @@ def add_image_parser(subparsers):
                                                  description='Register an image from a private repository in Tutum')
     register_parser.add_argument('image_name', help='full image name, i.e. quay.io/tutum/test-repo')
     register_parser.add_argument('-d', '--description', help='Image description')
+    register_parser.add_argument('-u', '--username', help='Username of the private registry')
+    register_parser.add_argument('-p', '--password', help='Password of the private registry')
+
 
     # tutum image push
     push_parser = image_subparser.add_parser('push', help='Push a local image to Tutum private registry',
@@ -346,8 +348,7 @@ def add_nodecluster_parser(subparsers):
     create_parser = nodecluster_subparser.add_parser('create', help='Create a nodecluster',
                                                      description='Create a nodecluster')
     create_parser.add_argument('-t', '--target-num-nodes',
-                               help='the target number of nodes to run for this cluster (default: 1)', type=int,
-                               default=1)
+                               help='the target number of nodes to run for this cluster (default: 1)', type=int)
     create_parser.add_argument('name', help='name of the node cluster to create')
     create_parser.add_argument('provider', help='name of the provider')
     create_parser.add_argument('region', help='name of the region')

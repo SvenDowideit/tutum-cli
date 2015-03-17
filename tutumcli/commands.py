@@ -4,7 +4,6 @@ import ConfigParser
 import json
 import sys
 import os
-import distutils
 import logging
 from os.path import join, expanduser, abspath
 
@@ -13,7 +12,7 @@ import docker
 from tutum.api import auth
 from tutum.api import exceptions
 
-from exceptions import StreamOutputError, ObjectNotFound
+from exceptions import StreamOutputError, ObjectNotFound, NonUniqueIdentifier
 from tutumcli import utils
 
 
@@ -100,50 +99,33 @@ def verify_auth(args):
 
 
 def build(tag, working_directory):
-    directory = abspath(working_directory)
+    build_image = "tutum/builder"
     try:
-        work_dir = abspath(working_directory)
-        dockercfg_dir = expanduser("~/.dockercfg")
-        docker_path = distutils.spawn.find_executable("docker")
-
-        if not docker_path:
-            print("Cannot find docker locally", file=sys.stderr)
-            sys.exit(EXCEPTION_EXIT_CODE)
-
-        if os.path.exists(dockercfg_dir):
-            cmd = "docker run -ti --rm --privileged " \
-                  "-v %s:/app -v" \
-                  "-v %s:/usr/bin/docker:r " \
-                  " %s:/.dockercfg:r " \
-                  "-e IMAGE_NAME=%s " % (work_dir, docker_path, dockercfg_dir, tag)
-        else:
-            cmd = "docker run -ti --rm --privileged " \
-                  "-v %s:/app " \
-                  "-v %s:/usr/bin/docker:r " \
-                  "-e USERNAME=%s " \
-                  "-e PASSWORD=%s " \
-                  "-e IMAGE_NAME=%s " \
-                  % (work_dir, docker_path, tutum.user, tutum.apikey, tag)
-
+        docker_client = utils.get_docker_client()
+        binds = {
+            abspath(working_directory):
+                {
+                    'bind': "/app",
+                    'ro': False
+                }
+        }
         if os.path.exists("/var/run/docker.sock"):
-            cmd += "-v /var/run/docker.sock:/var/run/docker.sock:rw "
+            binds["/var/run/docker.sock"] = \
+                {
+                    'bind': "/var/run/docker.sock",
+                    'ro': False
+                }
 
-        if os.getenv("DOCKER_HOST"):
-            cmd += "-e DOCKER_HOST=%s " % os.getenv("DOCKER_HOST")
-
-        if os.getenv("DOCKER_CERT_PATH"):
-            cmd += "-e DOCKER_CERT_PATH=%s " % os.getenv("DOCKER_CERT_PATH")
-
-        if os.getenv("DOCKER_HOST"):
-            cmd += "-e DOCKER_TLS_VERIFY=%s " % os.getenv("DOCKER_TLS_VERIFY")
-
-        cmd += "tutum/builder"
-
-        cli_log.debug("tutum build:%s" % cmd)
-
-        os.system(cmd)
+        output = docker_client.pull(build_image, stream=True)
+        utils.stream_output(output, sys.stdout)
+        container = docker_client.create_container(image=build_image, environment={"IMAGE_NAME": tag})
+        docker_client.start(container=container.get("Id"), privileged=True, binds=binds)
+        output = docker_client.attach(container.get("Id"), stream=True)
+        for chunck in output:
+            print(chunck, end="")
     except Exception as e:
         print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def service_inspect(identifiers):
@@ -172,13 +154,26 @@ def service_logs(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def service_ps(quiet=False, status=None):
+def service_ps(quiet, status, stack):
     try:
-        headers = ["NAME", "UUID", "STATUS", "#CONTAINERS", "IMAGE", "DEPLOYED", "PUBLIC DNS"]
-        service_list = tutum.Service.list(state=status)
+        headers = ["NAME", "UUID", "STATUS", "#CONTAINERS", "IMAGE", "DEPLOYED", "PUBLIC DNS", "STACK"]
+
+        stack_resource_uri = None
+        if stack:
+            s = utils.fetch_remote_stack(stack, raise_exceptions=False)
+            if isinstance(s, NonUniqueIdentifier):
+                raise NonUniqueIdentifier("Identifier %s matches more than one stack, please use UUID instead" % stack)
+            if isinstance(s, ObjectNotFound):
+                raise ObjectNotFound("Identifier '%s' does not match any stack" % stack)
+            stack_resource_uri = s.resource_uri
+        service_list = tutum.Service.list(state=status, stack=stack_resource_uri)
+
         data_list = []
         long_uuid_list = []
         has_unsynchronized_service = False
+        stacks = {}
+        for stack in tutum.Stack.list():
+            stacks[stack.resource_uri] = stack.name
         for service in service_list:
             service_state = utils.add_unicode_symbol_to_state(service.state)
             if not service.synchronized and service.state != "Redeploying":
@@ -189,7 +184,8 @@ def service_ps(quiet=False, status=None):
                               service.current_num_containers,
                               service.image_name,
                               utils.get_humanize_local_datetime_from_utc_datetime_string(service.deployed_datetime),
-                              service.public_dns])
+                              service.public_dns,
+                              stacks.get(service.stack)])
             long_uuid_list.append(service.uuid)
         if len(data_list) == 0:
             data_list.append(["", "", "", "", "", ""])
@@ -202,7 +198,6 @@ def service_ps(quiet=False, status=None):
             if has_unsynchronized_service:
                 print(
                     "\n(*) Please note that this service needs to be redeployed to have its configuration changes applied")
-
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
@@ -499,31 +494,32 @@ def container_logs(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def container_ps(identifier, quiet, status, service):
+def container_ps(quiet, status, service):
     try:
-        headers = ["NAME", "UUID", "STATUS", "IMAGE", "RUN COMMAND", "EXIT CODE", "DEPLOYED", "PORTS"]
+        headers = ["NAME", "UUID", "STATUS", "IMAGE", "RUN COMMAND", "EXIT CODE", "DEPLOYED", "PORTS", "STACK"]
 
-        if identifier is None:
-            containers = tutum.Container.list(state=status)
-        elif utils.is_uuid4(identifier):
-            containers = tutum.Container.list(uuid=identifier, state=status)
-        else:
-            containers = tutum.Container.list(name=identifier, state=status) + \
-                         tutum.Container.list(uuid__startswith=identifier, state=status)
+        service_resrouce_uri = None
+        if service:
+            s = utils.fetch_remote_service(service, raise_exceptions=False)
+            if isinstance(s, NonUniqueIdentifier):
+                raise NonUniqueIdentifier(
+                    "Identifier %s matches more than one service, please use UUID instead" % service)
+            if isinstance(s, ObjectNotFound):
+                raise ObjectNotFound("Identifier '%s' does not match any service" % service)
+            service_resrouce_uri = s.resource_uri
+
+        containers = tutum.Container.list(state=status, service=service_resrouce_uri)
 
         data_list = []
         long_uuid_list = []
-
-        if service:
-            service_obj = utils.fetch_remote_service(service, raise_exceptions=False)
-            if isinstance(service_obj, ObjectNotFound):
-                raise ObjectNotFound("Identifier '%s' does not match any service" % service)
+        stacks = {}
+        for stack in tutum.Stack.list():
+            stacks[stack.resource_uri] = stack.name
+        services = {}
+        for s in tutum.Service.list():
+            services[s.resource_uri] = s.stack
 
         for container in containers:
-            if service:
-                if container.service != service_obj.resource_uri:
-                    continue
-
             ports = []
             for index, port in enumerate(container.container_ports):
                 ports_string = ""
@@ -540,7 +536,8 @@ def container_ps(identifier, quiet, status, service):
                               container.run_command,
                               container.exit_code,
                               utils.get_humanize_local_datetime_from_utc_datetime_string(container.deployed_datetime),
-                              ports_string])
+                              ports_string,
+                              stacks.get(services.get(container.service))])
             long_uuid_list.append(container.uuid)
         if len(data_list) == 0:
             data_list.append(["", "", "", "", "", "", "", ""])
@@ -599,7 +596,7 @@ def container_terminate(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def image_list(quiet=False, jumpstarts=False, linux=False):
+def image_list(quiet, jumpstarts, linux):
     try:
         headers = ["NAME", "DESCRIPTION"]
         data_list = []
@@ -628,10 +625,17 @@ def image_list(quiet=False, jumpstarts=False, linux=False):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def image_register(repository, description):
-    print('Please input username and password of the repository:')
-    username = raw_input('Username: ')
-    password = getpass.getpass()
+def image_register(repository, description, username, password):
+    if not username and not password:
+        print('Please input username and password of the registry:')
+        username = raw_input('Username: ')
+        password = getpass.getpass()
+    elif not username:
+        print('Please input username of the registry:')
+        username = raw_input('Username: ')
+    elif not password:
+        print('Please input password of the registry:')
+        password = getpass.getpass()
     try:
         image = tutum.Image.create(name=repository, username=username, password=password, description=description)
         result = image.save()
@@ -654,8 +658,8 @@ def image_push(name, public):
             print(e, file=sys.stderr)
             sys.exit(EXCEPTION_EXIT_CODE)
         try:
-            stream = docker_client.push(repository, stream=True)
-            utils.stream_output(stream, sys.stdout)
+            output = docker_client.push(repository, stream=True)
+            utils.stream_output(output, sys.stdout)
         except StreamOutputError as e:
             if 'status 401' in e.message.lower():
                 output_status = AUTH_ERROR
@@ -719,9 +723,9 @@ def image_push(name, public):
             print(e, file=sys.stderr)
             sys.exit(EXCEPTION_EXIT_CODE)
 
-        stream = docker_client.push(repository, stream=True)
+        output = docker_client.push(repository, stream=True)
         try:
-            utils.stream_output(stream, sys.stdout)
+            utils.stream_output(output, sys.stdout)
         except docker.errors.APIError as e:
             print(e.explanation, file=sys.stderr)
             sys.exit(EXCEPTION_EXIT_CODE)
@@ -794,7 +798,7 @@ def image_update(repositories, username, password, description):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def node_list(quiet=False):
+def node_list(quiet):
     try:
         headers = ["UUID", "FQDN", "LASTSEEN", "STATUS", "CLUSTER", "DOCKER_VER"]
         node_list = tutum.Node.list()

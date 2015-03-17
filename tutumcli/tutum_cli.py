@@ -4,11 +4,15 @@ import copy
 import sys
 import codecs
 
+import requests
+
 from . import __version__
 from tutumcli import parsers
 from tutumcli import commands
 from tutumcli.exceptions import InternalError
 
+
+requests.packages.urllib3.disable_warnings()
 
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 
@@ -108,7 +112,7 @@ def dispatch_cmds(args):
         elif args.subcmd == 'logs':
             commands.service_logs(args.identifier)
         elif args.subcmd == 'ps':
-            commands.service_ps(args.quiet, args.status)
+            commands.service_ps(args.quiet, args.status, args.stack)
         elif args.subcmd == 'redeploy':
             commands.service_redeploy(args.identifier)
         elif args.subcmd == 'run':
@@ -148,7 +152,7 @@ def dispatch_cmds(args):
         elif args.subcmd == 'logs':
             commands.container_logs(args.identifier)
         elif args.subcmd == 'ps':
-            commands.container_ps(args.identifier, args.quiet, args.status, args.service)
+            commands.container_ps(args.quiet, args.status, args.service)
         elif args.subcmd == 'start':
             commands.container_start(args.identifier)
         elif args.subcmd == 'stop':
@@ -159,7 +163,7 @@ def dispatch_cmds(args):
         if args.subcmd == 'list':
             commands.image_list(args.quiet, args.jumpstarts, args.linux)
         elif args.subcmd == 'register':
-            commands.image_register(args.image_name, args.description)
+            commands.image_register(args.image_name, args.description, args.username, args.password)
         elif args.subcmd == 'push':
             commands.image_push(args.name, args.public)
         elif args.subcmd == 'rm':
