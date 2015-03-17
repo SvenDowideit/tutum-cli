@@ -4,11 +4,15 @@ import copy
 import sys
 import codecs
 
+import requests
+
 from . import __version__
 from tutumcli import parsers
 from tutumcli import commands
 from tutumcli.exceptions import InternalError
 
+
+requests.packages.urllib3.disable_warnings()
 
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 
