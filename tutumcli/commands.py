@@ -1,12 +1,12 @@
 from __future__ import print_function
 import getpass
-import ConfigParser
 import json
 import sys
 import os
 import logging
 from os.path import join, expanduser, abspath
 
+import ConfigParser
 import tutum
 import docker
 from tutum.api import auth
@@ -493,6 +493,20 @@ def container_logs(identifiers):
     if has_exception:
         sys.exit(EXCEPTION_EXIT_CODE)
 
+
+def container_redeploy(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            container = utils.fetch_remote_container(identifier)
+            result = container.redeploy()
+            if result:
+                print(container.uuid)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
 
 def container_ps(quiet, status, service):
     try:

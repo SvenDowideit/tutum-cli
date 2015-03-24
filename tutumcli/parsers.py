@@ -96,9 +96,8 @@ def add_service_parser(subparsers):
 
 
     # tutum service redeploy
-    redeploy_parser = service_subparser.add_parser('redeploy', help='Redeploy a running service with a '
-                                                                    'new version/tag',
-                                                   description='Redeploy a running service with a new version/tag')
+    redeploy_parser = service_subparser.add_parser('redeploy', help='Redeploy a running service',
+                                                   description='Redeploy a running service')
     redeploy_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
 
     # tutum service run
@@ -239,6 +238,10 @@ def add_container_parser(subparsers):
     logs_parser = container_subparser.add_parser('logs', help='Get logs from a container',
                                                  description='Get logs from a container')
     logs_parser.add_argument('identifier', help="container's UUID (either long or short) or name", nargs='+')
+
+    redeploy_parser = container_subparser.add_parser('redeploy', help='Redeploy a running container with a',
+                                                     description='Redeploy a running container')
+    redeploy_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
 
     # tutum container ps
     ps_parser = container_subparser.add_parser('ps', help='List containers', description='List containers')

@@ -151,6 +151,8 @@ def dispatch_cmds(args):
             commands.container_inspect(args.identifier)
         elif args.subcmd == 'logs':
             commands.container_logs(args.identifier)
+        elif args.subcmd == 'redeploy':
+            commands.container_redeploy(args.identifier)
         elif args.subcmd == 'ps':
             commands.container_ps(args.quiet, args.status, args.service)
         elif args.subcmd == 'start':

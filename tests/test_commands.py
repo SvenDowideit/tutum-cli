@@ -640,7 +640,7 @@ class ServiceRedeployTestCase(unittest.TestCase):
 
     @mock.patch('tutumcli.commands.tutum.Service.redeploy')
     @mock.patch('tutumcli.commands.utils.fetch_remote_service')
-    def test_service_teminate(self, mock_fetch_remote_service, mock_redeploy):
+    def test_service_redeploy(self, mock_fetch_remote_service, mock_redeploy):
         service = tutumcli.commands.tutum.Service()
         service.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
         mock_fetch_remote_service.return_value = service
@@ -652,7 +652,7 @@ class ServiceRedeployTestCase(unittest.TestCase):
 
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.utils.fetch_remote_service', side_effect=TutumApiError)
-    def test_service_terminate_with_exception(self, mock_fetch_remote_service, mock_exit):
+    def test_service_redeploy_with_exception(self, mock_fetch_remote_service, mock_exit):
         service_redeploy(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
@@ -891,6 +891,34 @@ class ContainerTerminateTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.utils.fetch_remote_container', side_effect=TutumApiError)
     def test_container_terminate_with_exception(self, mock_fetch_remote_container, mock_exit):
         container_terminate(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+
+        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
+
+
+class ContainerRedeployTestCase(unittest.TestCase):
+    def setUp(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.buf = StringIO.StringIO()
+
+    def tearDown(self):
+        sys.stdout = self.stdout
+
+    @mock.patch('tutumcli.commands.tutum.Container.redeploy')
+    @mock.patch('tutumcli.commands.utils.fetch_remote_container')
+    def test_container_redeploy(self, mock_fetch_remote_container, mock_redeploy):
+        container = tutumcli.commands.tutum.Container()
+        container.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
+        mock_fetch_remote_container.return_value = container
+        mock_redeploy.return_value = True
+        container_redeploy(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+
+        self.assertEqual(container.uuid, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.sys.exit')
+    @mock.patch('tutumcli.commands.utils.fetch_remote_container', side_effect=TutumApiError)
+    def test_container_redeploy_with_exception(self, mock_fetch_remote_container, mock_exit):
+        container_redeploy(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
