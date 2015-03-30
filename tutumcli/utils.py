@@ -6,6 +6,7 @@ import ssl
 import re
 import os
 import codecs
+import requests
 
 import yaml
 from tabulate import tabulate
@@ -13,8 +14,6 @@ import tutum
 from dateutil import tz
 import ago
 import docker
-import requests
-
 from tutumcli.exceptions import NonUniqueIdentifier, ObjectNotFound, BadParameter, DockerNotFound
 from exceptions import StreamOutputError
 from . import __version__
@@ -452,8 +451,9 @@ def parse_envvars(envvar_list, envfile_list):
     return parsed_envvar_list
 
 
-def try_register(username, password):
-    email = raw_input("Email: ")
+def try_register(username, password, email):
+    if not email:
+        email = raw_input("Email: ")
 
     headers = {"Content-Type": "application/json", "User-Agent": "tutum/%s" % __version__}
     data = {'username': username, "password1": password, "password2": password, "email": email}

@@ -58,7 +58,7 @@ class LoginTestCase(unittest.TestCase):
         apikey = uuid.uuid4()
         __builtin__.raw_input = lambda _: user  # set username
         mock_get_auth.return_value = (user, apikey)
-        login()
+        login(None, None, None)
         out = self.stdout_buf.getvalue().strip()
         self.stdout_buf.truncate(0)
         self.assertEqual('Login succeeded!', out)
@@ -79,8 +79,8 @@ apikey = %s''' % (user, apikey)
     @mock.patch('tutumcli.commands.tutum.auth.get_auth', side_effect=TutumAuthError)
     def test_login_register_success(self, mock_get_auth, mock_getpass, mock_register):
         __builtin__.raw_input = lambda _: 'test_username'  # set username
-        login()
-        mock_register.assert_called_with('test_username', 'test_password')
+        login(None, None, None)
+        mock_register.assert_called_with('test_username', 'test_password', None)
         out = self.stdout_buf.getvalue().strip()
         self.stdout_buf.truncate(0)
         self.assertEqual('Registration succeeded!', out)
@@ -92,8 +92,8 @@ apikey = %s''' % (user, apikey)
     @mock.patch('tutumcli.commands.tutum.auth.get_auth', side_effect=TutumAuthError)
     def test_login_register_user_exist(self, mock_get_auth, mock_getpass, mock_exit, mock_register):
         __builtin__.raw_input = lambda _: 'test_username'  # set username
-        login()
-        mock_register.assert_called_with('test_username', 'test_password')
+        login(None, None, None)
+        mock_register.assert_called_with('test_username', 'test_password', None)
         out = self.stderr_buf.getvalue().strip()
         self.stderr_buf.truncate(0)
         self.assertEqual('Wrong username and/or password. Please try to login again', out)
@@ -107,8 +107,8 @@ apikey = %s''' % (user, apikey)
     @mock.patch('tutumcli.commands.tutum.auth.get_auth', side_effect=TutumAuthError)
     def test_login_register_password_required(self, mock_get_auth, mock_getpass, mock_exit, mock_register):
         __builtin__.raw_input = lambda _: 'test_username'  # set username
-        login()
-        mock_register.assert_called_with('test_username', 'test_password')
+        login(None, None, None)
+        mock_register.assert_called_with('test_username', 'test_password', None)
         out = self.stderr_buf.getvalue().strip()
         self.stderr_buf.truncate(0)
         self.assertEqual('password: This field is required.\nemail: This field is required.', out)
@@ -119,7 +119,7 @@ apikey = %s''' % (user, apikey)
     @mock.patch('tutumcli.commands.tutum.auth.get_auth', side_effect=Exception('Cannot open config file'))
     def test_login_register_Exception(self, mock_get_auth, mock_getpass, mock_exit):
         __builtin__.raw_input = lambda _: 'test_username'  # set username
-        login()
+        login(None, None, None)
         out = self.stderr_buf.getvalue().strip()
         self.stderr_buf.truncate(0)
         self.assertEqual('Cannot open config file', out)

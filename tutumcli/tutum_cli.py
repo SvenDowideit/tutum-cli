@@ -3,7 +3,6 @@ import logging
 import copy
 import sys
 import codecs
-
 import requests
 
 from . import __version__
@@ -92,7 +91,7 @@ def dispatch_cmds(args):
         cli_log = logging.getLogger("cli")
         cli_log.setLevel(logging.DEBUG)
     if args.cmd == 'login':
-        commands.login()
+        commands.login(args.username, args.password, args.email)
     elif args.cmd == 'build':
         commands.build(args.tag, args.directory)
     elif args.cmd == 'service':

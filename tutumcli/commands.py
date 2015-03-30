@@ -5,13 +5,12 @@ import sys
 import os
 import logging
 from os.path import join, expanduser, abspath
-
 import ConfigParser
+
 import tutum
 import docker
 from tutum.api import auth
 from tutum.api import exceptions
-
 from exceptions import StreamOutputError, ObjectNotFound, NonUniqueIdentifier
 from tutumcli import utils
 
@@ -29,9 +28,14 @@ EXCEPTION_EXIT_CODE = 3
 cli_log = logging.getLogger("cli")
 
 
-def login():
-    username = raw_input("Username: ")
-    password = getpass.getpass()
+def login(username, password, email):
+    if not username and not password:
+        username = raw_input('Username: ')
+        password = getpass.getpass()
+    elif not username:
+        username = raw_input('Username: ')
+    elif not password:
+        password = getpass.getpass()
     try:
         user, api_key = auth.get_auth(username, password)
         if api_key is not None:
@@ -43,7 +47,7 @@ def login():
                 config.write(cfgfile)
             print("Login succeeded!")
     except exceptions.TutumAuthError:
-        registered, text = utils.try_register(username, password)
+        registered, text = utils.try_register(username, password, email)
         if registered:
             print(text)
         else:
@@ -507,6 +511,7 @@ def container_redeploy(identifiers):
             has_exception = True
     if has_exception:
         sys.exit(EXCEPTION_EXIT_CODE)
+
 
 def container_ps(quiet, status, service):
     try:
