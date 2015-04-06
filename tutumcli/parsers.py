@@ -8,12 +8,8 @@ def add_login_parser(subparsers):
 
 def add_build_parser(subparsers):
     # tutum build
-    build_parser = subparsers.add_parser('build', help='Build an image using an existing Dockerfile, '
-                                                       'or create one using buildstep. '
-                                                       'And push the image to a registry afterwards',
-                                         description='Build an image using an existing Dockerfile, '
-                                                     'or create one using buildstep. '
-                                                     'And push the image to a registry afterwards')
+    build_parser = subparsers.add_parser('build', help='Build an image using tutum/builder',
+                                         description='Build an image using tutum/builder')
     build_parser.add_argument('-t', '--tag', help='repository name (and optionally a tag) to be applied '
                                                   'to the resulting image in case of success')
     build_parser.add_argument('directory', help='working directory')
@@ -242,7 +238,7 @@ def add_container_parser(subparsers):
                                                  description='Get logs from a container')
     logs_parser.add_argument('identifier', help="container's UUID (either long or short) or name", nargs='+')
 
-    redeploy_parser = container_subparser.add_parser('redeploy', help='Redeploy a running container with a',
+    redeploy_parser = container_subparser.add_parser('redeploy', help='Redeploy a running container',
                                                      description='Redeploy a running container')
     redeploy_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
 
