@@ -1360,7 +1360,7 @@ def webhookhandler_rm(identifier, webhook_identifiers):
 
 def stack_up(name, stackfile):
     try:
-        stack = utils.loadStackFile(name=name, stackfile=stackfile)
+        stack = utils.load_stack_file(name=name, stackfile=stackfile)
         stack.save()
         result = stack.start()
         if result:
@@ -1372,7 +1372,7 @@ def stack_up(name, stackfile):
 
 def stack_create(name, stackfile):
     try:
-        stack = utils.loadStackFile(name=name, stackfile=stackfile)
+        stack = utils.load_stack_file(name=name, stackfile=stackfile)
         result = stack.save()
         if result:
             print(stack.uuid)
@@ -1483,7 +1483,7 @@ def stack_terminate(identifiers):
 
 def stack_update(identifier, stackfile):
     try:
-        stack = utils.loadStackFile(name=None, stackfile=stackfile, stack=utils.fetch_remote_stack(identifier))
+        stack = utils.load_stack_file(name=None, stackfile=stackfile, stack=utils.fetch_remote_stack(identifier))
         result = stack.save()
         if result:
             print(stack.uuid)
