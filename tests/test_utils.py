@@ -346,7 +346,7 @@ class TryRegisterTestCase(unittest.TestCase):
         data = json.dumps({'username': 'test_username', "password1": 'test_password', "password2": 'test_password',
                            "email": 'test@email.com'})
 
-        ret, text = try_register(username, password)
+        ret, text = try_register(username, password, None)
         mock_post.assert_called_with(url, headers=headers, data=data)
         self.assertEqual((True, ('Account created. Please check your email for activation instructions.')), (ret, text))
 
@@ -358,7 +358,7 @@ class TryRegisterTestCase(unittest.TestCase):
         response = mock.MagicMock()
         response.status_code = 429
         mock_post.return_value = response
-        ret, text = try_register(username, password)
+        ret, text = try_register(username, password, None)
         self.assertEqual((False, "Too many retries. Please login again later."), (ret, text))
 
     @mock.patch('tutumcli.utils.requests.post')
@@ -373,7 +373,7 @@ class TryRegisterTestCase(unittest.TestCase):
                                                         u'This email address is already in use. Please supply a different email address.']}}
         mock_post.return_value = response
 
-        ret, text = try_register(username, password)
+        ret, text = try_register(username, password, None)
         self.assertEqual((False,
                           u'username: A user with that username already exists.\nemail: This email address is already in use. Please supply a different email address.'),
                          (ret, text))

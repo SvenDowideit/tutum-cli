@@ -3,7 +3,6 @@ import logging
 import copy
 import sys
 import codecs
-
 import requests
 
 from . import __version__
@@ -92,7 +91,7 @@ def dispatch_cmds(args):
         cli_log = logging.getLogger("cli")
         cli_log.setLevel(logging.DEBUG)
     if args.cmd == 'login':
-        commands.login()
+        commands.login(args.username, args.password, args.email)
     elif args.cmd == 'build':
         commands.build(args.tag, args.directory)
     elif args.cmd == 'service':
@@ -151,6 +150,8 @@ def dispatch_cmds(args):
             commands.container_inspect(args.identifier)
         elif args.subcmd == 'logs':
             commands.container_logs(args.identifier)
+        elif args.subcmd == 'redeploy':
+            commands.container_redeploy(args.identifier)
         elif args.subcmd == 'ps':
             commands.container_ps(args.quiet, args.status, args.service)
         elif args.subcmd == 'start':

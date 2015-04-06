@@ -26,24 +26,29 @@ Now you can start using it:
     $ tutum
     
     usage: tutum [-h] [-v]
-             {build,container,image,login,node,nodecluster,service} ...
+                 {build,container,image,login,node,nodecluster,service,stack,tag,volume,volumegroup,webhook-handler}
+                 ...
 
     Tutum's CLI
-    
+
     optional arguments:
       -h, --help            show this help message and exit
       -v, --version         show program's version number and exit
-    
+
     Tutum's CLI commands:
-      {build,container,image,login,node,nodecluster,service}
-        build               Build an image using an existing Dockerfile, or create
-                            one using buildstep
+      {build,container,image,login,node,nodecluster,service,stack,tag,volume,volumegroup,webhook-handler}
+        build               Build an image using tutum/builder
         container           Container-related operations
         image               Image-related operations
         login               Login into Tutum
         node                Node-related operations
         nodecluster         NodeCluster-related operations
         service             Service-related operations
+        stack               Stack-related operations
+        tag                 Tag-related operations
+        volume              Volume-related operations
+        volumegroup         VolumeGroup-related operations
+        webhook-handler     Webhook-handler-related operations
 
 
 

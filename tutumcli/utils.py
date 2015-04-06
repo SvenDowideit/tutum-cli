@@ -6,6 +6,7 @@ import ssl
 import re
 import os
 import codecs
+import requests
 
 import yaml
 from tabulate import tabulate
@@ -13,7 +14,6 @@ import tutum
 from dateutil import tz
 import ago
 import docker
-import requests
 from tutumcli.exceptions import NonUniqueIdentifier, ObjectNotFound, BadParameter, DockerNotFound
 from exceptions import StreamOutputError
 from . import __version__
@@ -451,8 +451,9 @@ def parse_envvars(envvar_list, envfile_list):
     return parsed_envvar_list
 
 
-def try_register(username, password):
-    email = raw_input("Email: ")
+def try_register(username, password, email):
+    if not email:
+        email = raw_input("Email: ")
 
     headers = {"Content-Type": "application/json", "User-Agent": "tutum/%s" % __version__}
     data = {'username': username, "password1": password, "password2": password, "email": email}
@@ -514,7 +515,7 @@ def parse_volumes_from(volumes_from):
     return bindings
 
 
-def loadStackFile(name, stackfile, stack=None):
+def load_stack_file(name, stackfile, stack=None):
     if not stack:
         stack = tutum.Stack.create()
     else:
@@ -532,23 +533,44 @@ def loadStackFile(name, stackfile, stack=None):
             stackfile = "tutum.json"
             filematch += 1
         if filematch == 0:
-            raise BadParameter("Cannot find Stackfile. Are you in the right directory?")
+            raise BadParameter("Cannot find stack file. Are you in the right directory?")
         elif filematch > 1:
-            raise BadParameter("More than one Stackfile was found in the path. "
+            raise BadParameter("More than one stack file was found in the path. "
                                "Please specify which one you'd like to use with -f <filename>")
     with open(stackfile, 'r') as f:
         content = yaml.load(f.read())
-        service = []
+        services = []
         if content:
             for k, v in content.items():
                 v.update({"name": k})
-                service.append(v)
+                services.append(v)
 
             if not name:
                 name = os.path.basename(os.getcwd())
-            data = {'name': name, 'services': service}
+
+            services = inject_env_var(services)
+            data = {'name': name, 'services': services}
             for k, v in list(data.items()):
                 setattr(stack, k, v)
         else:
-            raise BadParameter("Bad format of the stackfile: %s" % stackfile)
+            raise BadParameter("Bad format of the stack file: %s" % stackfile)
+
     return stack
+
+
+def inject_env_var(services):
+    for service in services:
+        try:
+            env_vars = service["environment"]
+        except:
+            continue
+        if isinstance(env_vars, list):
+            for i, env_var in enumerate(env_vars):
+                if env_var.find("=") < 0 and os.getenv(env_var):
+                    env_vars[i] = "%s=%s" % (env_var, os.getenv(env_var))
+        elif isinstance(env_vars, dict):
+            for k, v in env_vars.iteritems():
+                if not v and os.getenv(k):
+                    env_vars[k] = os.getenv(k)
+
+    return services
