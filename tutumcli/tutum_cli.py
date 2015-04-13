@@ -27,6 +27,7 @@ def initialize_parser():
     # Command Parsers
     parsers.add_build_parser(subparsers)
     parsers.add_container_parser(subparsers)
+    parsers.add_event_parser(subparsers)
     parsers.add_image_parser(subparsers)
     parsers.add_login_parser(subparsers)
     parsers.add_node_parser(subparsers)
@@ -94,6 +95,8 @@ def dispatch_cmds(args):
         commands.login(args.username, args.password, args.email)
     elif args.cmd == 'build':
         commands.build(args.tag, args.directory)
+    elif args.cmd == 'event':
+        commands.event()
     elif args.cmd == 'service':
         if args.subcmd == 'create':
             commands.service_create(image=args.image, name=args.name, cpu_shares=args.cpushares,

@@ -15,6 +15,12 @@ def add_build_parser(subparsers):
     build_parser.add_argument('directory', help='working directory')
 
 
+def add_event_parser(subparsers):
+    # tutum event
+    subparsers.add_parser('event', help='Get real time tutum events',
+                          description='Get real time tutum events')
+
+
 def add_service_parser(subparsers):
     def str2bool(v):
         return v.lower() in ("yes", "true", "t", "1", "y")

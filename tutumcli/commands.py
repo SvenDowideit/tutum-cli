@@ -132,6 +132,15 @@ def build(tag, working_directory):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
+def event():
+    try:
+        events = tutum.TutumEvents()
+        events.on_message(lambda e: print(e))
+        events.run_forever()
+    except KeyboardInterrupt:
+        pass
+
+
 def service_inspect(identifiers):
     has_exception = False
     for identifier in identifiers:
@@ -717,7 +726,7 @@ def image_push(name, public):
             sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
 
         try:
-            registry = os.getenv('TUTUM_REGISTRY_URL') or 'https://tutum.co/v1/'
+            registry = os.getenv('TUTUM_REGISTRY_URL') or 'tutum.co'
             docker_client.login(user, apikey, registry=registry)
         except Exception as e:
             print(e, file=sys.stderr)
@@ -741,7 +750,6 @@ def image_push(name, public):
         except Exception as e:
             print(e, file=sys.stderr)
             sys.exit(EXCEPTION_EXIT_CODE)
-
         output = docker_client.push(repository, stream=True)
         try:
             utils.stream_output(output, sys.stdout)
