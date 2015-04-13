@@ -132,6 +132,15 @@ def build(tag, working_directory):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
+def event():
+    try:
+        events = tutum.TutumEvents()
+        events.on_message(lambda e: print(e))
+        events.run_forever()
+    except KeyboardInterrupt:
+        pass
+
+
 def service_inspect(identifiers):
     has_exception = False
     for identifier in identifiers:
