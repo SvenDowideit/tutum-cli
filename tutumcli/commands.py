@@ -681,12 +681,16 @@ def image_push(name, public):
         output_status = NO_ERROR
         # tag a image to its name to check if the images exists
         try:
-            docker_client.tag(name, name)
+            docker_client.tag(name, name, force=True)
         except Exception as e:
             print(e, file=sys.stderr)
             sys.exit(EXCEPTION_EXIT_CODE)
         try:
-            output = docker_client.push(repository, stream=True)
+            tag = None
+            if ':' in repository:
+                tag = repository.split(':')[-1]
+                repository = repository.replace(':%s' % tag, '')
+            output = docker_client.push(repository, tag=tag, stream=True)
             utils.stream_output(output, sys.stdout)
         except StreamOutputError as e:
             if 'status 401' in e.message.lower():
@@ -750,7 +754,8 @@ def image_push(name, public):
         except Exception as e:
             print(e, file=sys.stderr)
             sys.exit(EXCEPTION_EXIT_CODE)
-        output = docker_client.push(repository, stream=True)
+
+        output = docker_client.push(repository, tag=tag, stream=True)
         try:
             utils.stream_output(output, sys.stdout)
         except docker.errors.APIError as e:
