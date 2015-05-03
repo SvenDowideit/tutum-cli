@@ -1,8 +1,7 @@
-FROM tutum/curl
-MAINTAINER Tutum <info@tutum.co>
+FROM alpine
+MAINTAINER support@tutum.co
 
-RUN apt-get update && \
-    apt-get install -y python python-dev python-pip libyaml-dev
+RUN apk --update add python py-pip tar curl
 ADD . /app
 RUN export SDK_VER=$(cat /app/requirements.txt | grep python-tutum | grep -o '[0-9.]*') && \
     curl -0L https://github.com/tutumcloud/python-tutum/archive/v${SDK_VER}.tar.gz | tar -zxv && \
