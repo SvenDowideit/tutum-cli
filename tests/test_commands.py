@@ -150,7 +150,7 @@ class ServiceCreateTestCase(unittest.TestCase):
         mock_create.return_value = service
         service_create('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
                        exposed_ports, published_ports, container_envvars, [], '', linked_to_service,
-                       'OFF', 'OFF', 'OFF', 'poweruser', True, None, None, None)
+                       'OFF', 'OFF', 'OFF', 'poweruser', True, None, None, None, False)
 
         mock_create.assert_called_with(image='imagename', name='containername', cpu_shares=1,
                                        memory='256M', privileged=True,
@@ -180,7 +180,7 @@ class ServiceCreateTestCase(unittest.TestCase):
         mock_create.return_value = service
         service_run('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
                     exposed_ports, published_ports, container_envvars, [], '', linked_to_service,
-                    'OFF', 'OFF', 'OFF', 'poweruser', True, None, None, None)
+                    'OFF', 'OFF', 'OFF', 'poweruser', True, None, None, None, False)
 
         mock_create.assert_called_with(image='imagename', name='containername', cpu_shares=1,
                                        memory='256M', privileged=True,
@@ -205,7 +205,7 @@ class ServiceCreateTestCase(unittest.TestCase):
         linked_to_service = ['mysql:mysql', 'redis:redis']
         service_create('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
                        exposed_ports, published_ports, container_envvars, [], '', linked_to_service,
-                       'OFF', 'OFF', 'OFF', 'poweruser', True, None, None, None)
+                       'OFF', 'OFF', 'OFF', 'poweruser', True, None, None, None, False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
@@ -393,7 +393,7 @@ class ServiceRunTestCase(unittest.TestCase):
         mock_start.return_value = True
         service_run('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
                     exposed_ports, published_ports, container_envvars, [], '', linked_to_service,
-                    'OFF', 'OFF', 'OFF', 'poweruser', True, None, None, None)
+                    'OFF', 'OFF', 'OFF', 'poweruser', True, None, None, None, False)
 
         mock_create.assert_called_with(image='imagename', name='containername', cpu_shares=1,
                                        memory='256M', privileged=True,
@@ -425,7 +425,7 @@ class ServiceRunTestCase(unittest.TestCase):
         mock_start.return_value = True
         service_run('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
                     exposed_ports, published_ports, container_envvars, [], '', linked_to_service,
-                    'OFF', 'OFF', 'OFF', 'poweruser', True, None, None, None)
+                    'OFF', 'OFF', 'OFF', 'poweruser', True, None, None, None, False)
 
         mock_create.assert_called_with(image='imagename', name='containername', cpu_shares=1,
                                        memory='256M', privileged=True,
@@ -450,7 +450,7 @@ class ServiceRunTestCase(unittest.TestCase):
         linked_to_service = ['mysql:mysql', 'redis:redis']
         service_run('imagename', 'containername', 1, '256M', True, 3, '-d', '/bin/mysql',
                     exposed_ports, published_ports, container_envvars, [], '', linked_to_service,
-                    'OFF', 'OFF', 'OFF', 'poweruser', True, None, None, None)
+                    'OFF', 'OFF', 'OFF', 'poweruser', True, None, None, None, False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
@@ -469,7 +469,7 @@ class ServiceScaleTestCase(unittest.TestCase):
         service = tutumcli.commands.tutum.Service()
         service.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
         mock_fetch_remote_service.return_value = service
-        service_scale(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], 3)
+        service_scale(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], 3, False)
 
         mock_save.assert_called()
         self.assertEqual(3, service.target_num_containers)
@@ -479,7 +479,7 @@ class ServiceScaleTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.utils.fetch_remote_service', side_effect=TutumApiError)
     def test_service_scale_with_exception(self, mock_fetch_remote_service, mock_exit):
-        service_scale(['test_id'], 3)
+        service_scale(['test_id'], 3, False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
@@ -506,7 +506,7 @@ class ServiceSetTestCase(unittest.TestCase):
         mock_fetch_remote_service.return_value = service
         service_set([service.uuid], 'imagename', 1, '256M', True, 3, '-d', '/bin/mysql',
                     exposed_ports, published_ports, container_envvars, [], '', linked_to_service,
-                    'OFF', 'OFF', 'OFF', 'poweruser', True, False, None, None, None)
+                    'OFF', 'OFF', 'OFF', 'poweruser', True, False, None, None, None, False)
 
         mock_save.assert_called()
         self.assertEqual('7A4CFE51-03BB-42D6-825E-3B533888D8CD\n'
@@ -541,7 +541,7 @@ class ServiceSetTestCase(unittest.TestCase):
         mock_fetch_remote_service.return_value = service
         service_set(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], 'imagename', 1, '256M', True, 3, '-d', '/bin/mysql',
                     exposed_ports, published_ports, container_envvars, [], '', linked_to_service,
-                    'OFF', 'OFF', 'OFF', 'poweruser', True, False, None, None, None)
+                    'OFF', 'OFF', 'OFF', 'poweruser', True, False, None, None, None, False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
@@ -561,7 +561,7 @@ class ServiceStartTestCase(unittest.TestCase):
         service.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
         mock_fetch_remote_service.return_value = service
         mock_start.return_value = True
-        service_start(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+        service_start(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
         self.assertEqual(service.uuid, self.buf.getvalue().strip())
         self.buf.truncate(0)
@@ -569,7 +569,7 @@ class ServiceStartTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.utils.fetch_remote_service', side_effect=TutumApiError)
     def test_service_start_with_exception(self, mock_fetch_remote_service, mock_exit):
-        service_start(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+        service_start(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
@@ -589,7 +589,7 @@ class ServiceStopTestCase(unittest.TestCase):
         service.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
         mock_fetch_remote_service.return_value = service
         mock_stop.return_value = True
-        service_stop(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+        service_stop(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
         self.assertEqual(service.uuid, self.buf.getvalue().strip())
         self.buf.truncate(0)
@@ -597,7 +597,7 @@ class ServiceStopTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.utils.fetch_remote_service', side_effect=TutumApiError)
     def test_service_stop_with_exception(self, mock_fetch_remote_service, mock_exit):
-        service_start(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+        service_start(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
@@ -617,7 +617,7 @@ class ServiceTerminateTestCase(unittest.TestCase):
         service.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
         mock_fetch_remote_service.return_value = service
         mock_delete.return_value = True
-        service_terminate(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+        service_terminate(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
         self.assertEqual(service.uuid, self.buf.getvalue().strip())
         self.buf.truncate(0)
@@ -625,7 +625,7 @@ class ServiceTerminateTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.utils.fetch_remote_service', side_effect=TutumApiError)
     def test_service_terminate_with_exception(self, mock_fetch_remote_service, mock_exit):
-        service_terminate(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+        service_terminate(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
@@ -645,7 +645,7 @@ class ServiceRedeployTestCase(unittest.TestCase):
         service.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
         mock_fetch_remote_service.return_value = service
         mock_redeploy.return_value = True
-        service_redeploy(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+        service_redeploy(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
         self.assertEqual(service.uuid, self.buf.getvalue().strip())
         self.buf.truncate(0)
@@ -653,7 +653,7 @@ class ServiceRedeployTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.utils.fetch_remote_service', side_effect=TutumApiError)
     def test_service_redeploy_with_exception(self, mock_fetch_remote_service, mock_exit):
-        service_redeploy(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+        service_redeploy(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
@@ -826,7 +826,7 @@ class ContainerStartTestCase(unittest.TestCase):
         container.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
         mock_fetch_remote_container.return_value = container
         mock_start.return_value = True
-        container_start(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+        container_start(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
         self.assertEqual(container.uuid, self.buf.getvalue().strip())
         self.buf.truncate(0)
@@ -834,7 +834,7 @@ class ContainerStartTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.utils.fetch_remote_container', side_effect=TutumApiError)
     def test_container_start_with_exception(self, mock_fetch_remote_container, mock_exit):
-        container_start(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+        container_start(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
@@ -854,7 +854,7 @@ class ContainerStopTestCase(unittest.TestCase):
         container.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
         mock_fetch_remote_container.return_value = container
         mock_stop.return_value = True
-        container_stop(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+        container_stop(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
         self.assertEqual(container.uuid, self.buf.getvalue().strip())
         self.buf.truncate(0)
@@ -862,7 +862,7 @@ class ContainerStopTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.utils.fetch_remote_container', side_effect=TutumApiError)
     def test_container_stop_with_exception(self, mock_fetch_remote_container, mock_exit):
-        container_start(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+        container_start(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
@@ -882,7 +882,7 @@ class ContainerTerminateTestCase(unittest.TestCase):
         container.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
         mock_fetch_remote_container.return_value = container
         mock_delete.return_value = True
-        container_terminate(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+        container_terminate(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
         self.assertEqual(container.uuid, self.buf.getvalue().strip())
         self.buf.truncate(0)
@@ -890,7 +890,7 @@ class ContainerTerminateTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.utils.fetch_remote_container', side_effect=TutumApiError)
     def test_container_terminate_with_exception(self, mock_fetch_remote_container, mock_exit):
-        container_terminate(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+        container_terminate(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
@@ -910,7 +910,7 @@ class ContainerRedeployTestCase(unittest.TestCase):
         container.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
         mock_fetch_remote_container.return_value = container
         mock_redeploy.return_value = True
-        container_redeploy(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+        container_redeploy(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
         self.assertEqual(container.uuid, self.buf.getvalue().strip())
         self.buf.truncate(0)
@@ -918,7 +918,7 @@ class ContainerRedeployTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.utils.fetch_remote_container', side_effect=TutumApiError)
     def test_container_redeploy_with_exception(self, mock_fetch_remote_container, mock_exit):
-        container_redeploy(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+        container_redeploy(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
@@ -996,7 +996,7 @@ image_name'''
         image = tutumcli.commands.tutum.Image()
         image.name = 'image_name'
         mock_create.return_value = image
-        image_register('repository', 'descripiton', None, None)
+        image_register('repository', 'descripiton', None, None, False)
 
         self.assertEqual(output, self.buf.getvalue().strip())
         self.buf.truncate(0)
@@ -1006,7 +1006,7 @@ image_name'''
     @mock.patch('tutumcli.commands.getpass.getpass', return_value='password')
     def test_register_with_exception(self, mock_get_pass, mock_create, mock_exit):
         __builtin__.raw_input = lambda _: 'username'  # set username
-        image_register('repository', 'descripiton', None, None)
+        image_register('repository', 'descripiton', None, None, False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
@@ -1022,7 +1022,7 @@ class ImageRmTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.tutum.Image.delete', return_value=True)
     @mock.patch('tutumcli.commands.tutum.Image.fetch')
     def test_image_rm(self, mock_fetch, mock_delete):
-        image_rm(['repo1', 'repo2'])
+        image_rm(['repo1', 'repo2'], False)
 
         self.assertEqual('repo1\nrepo2', self.buf.getvalue().strip())
         self.buf.truncate(0)
@@ -1032,7 +1032,7 @@ class ImageRmTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.tutum.Image.fetch')
     def test_image_rm_with_exception(self, mock_fetch, mock_delete, mock_exit):
         mock_fetch.side_effect = [tutumcli.commands.tutum.Image(), TutumApiError]
-        image_rm(['repo1', 'repo2'])
+        image_rm(['repo1', 'repo2'], False)
 
         self.assertEqual('repo1', self.buf.getvalue().strip())
         self.buf.truncate(0)
@@ -1106,7 +1106,7 @@ class ImageUpdateTestCase(unittest.TestCase):
         image.name = 'name'
         mock_fetch.return_value = image
         mock_save.return_value = True
-        image_update(['repo'], 'username', 'password', 'description')
+        image_update(['repo'], 'username', 'password', 'description', False)
         self.assertEqual('username', image.username)
         self.assertEqual('password', image.password)
         self.assertEqual('description', image.description)
@@ -1116,7 +1116,7 @@ class ImageUpdateTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.tutum.Image.fetch')
     def test_image_update_with_exception(self, mock_fetch, mock_exit):
         mock_fetch.side_effect = TutumApiError
-        image_update(['repo'], 'username', 'password', 'description')
+        image_update(['repo'], 'username', 'password', 'description', False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
@@ -1236,7 +1236,7 @@ class NodeRmTestCase(unittest.TestCase):
         node.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
         mock_fetch_remote_node.return_value = node
         mock_delete.return_value = True
-        node_rm(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+        node_rm(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
         self.assertEqual(node.uuid, self.buf.getvalue().strip())
         self.buf.truncate(0)
@@ -1244,7 +1244,7 @@ class NodeRmTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.utils.fetch_remote_node', side_effect=TutumApiError)
     def test_node_terminate_with_exception(self, mock_fetch_remote_node, mock_exit):
-        node_rm(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+        node_rm(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
@@ -1383,7 +1383,7 @@ class NodeClusterRmTestCase(unittest.TestCase):
         nodecluster.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
         mock_fetch_remote_nodecluster.return_value = nodecluster
         mock_delete.return_value = True
-        nodecluster_rm(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+        nodecluster_rm(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
         self.assertEqual(nodecluster.uuid, self.buf.getvalue().strip())
         self.buf.truncate(0)
@@ -1391,7 +1391,7 @@ class NodeClusterRmTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.utils.fetch_remote_nodecluster', side_effect=TutumApiError)
     def test_nodecluster_rm_with_exception(self, mock_fetch_remote_nodecluster, mock_exit):
-        nodecluster_rm(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'])
+        nodecluster_rm(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
@@ -1410,7 +1410,7 @@ class NodeClusterScaleTestCase(unittest.TestCase):
         nodecluster = tutumcli.commands.tutum.NodeCluster()
         nodecluster.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
         mock_fetch_remote_nodecluster.return_value = nodecluster
-        nodecluster_scale(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], 3)
+        nodecluster_scale(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], 3, False)
 
         mock_save.assert_called()
         self.assertEqual(3, nodecluster.target_num_nodes)
@@ -1420,7 +1420,7 @@ class NodeClusterScaleTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.utils.fetch_remote_nodecluster', side_effect=TutumApiError)
     def test_nodecluster_scale_with_exception(self, mock_fetch_remote_nodecluster, mock_exit):
-        nodecluster_scale(['test_id'], 3)
+        nodecluster_scale(['test_id'], 3, False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
@@ -1657,7 +1657,7 @@ class NodeClusterCreateTestCase(unittest.TestCase):
         nodecluster = tutumcli.commands.tutum.NodeCluster()
         nodecluster.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
         mock_create.return_value = nodecluster
-        nodecluster_create(3, 'name', provider_name, region_name, nodetype_name)
+        nodecluster_create(3, 'name', provider_name, region_name, nodetype_name, False)
 
         mock_create.assert_called_with(name='name', target_num_nodes=3, region=region_uri,
                                        node_type=nodetype_uri)
@@ -1668,6 +1668,6 @@ class NodeClusterCreateTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.tutum.NodeCluster.create', side_effect=TutumApiError)
     def test_nodecluster_create_with_exception(self, mock_create, mock_exit):
-        nodecluster_create(3, 'name', 'provider', 'region', 'nodetype')
+        nodecluster_create(3, 'name', 'provider', 'region', 'nodetype', False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)

@@ -7,13 +7,15 @@ import re
 import os
 import codecs
 import requests
+import sys
+import time
 
 import yaml
-from tabulate import tabulate
-import tutum
-from dateutil import tz
 import ago
 import docker
+import tutum
+from dateutil import tz
+from tabulate import tabulate
 from tutumcli.exceptions import NonUniqueIdentifier, ObjectNotFound, BadParameter, DockerNotFound
 from exceptions import StreamOutputError
 from . import __version__
@@ -574,3 +576,30 @@ def inject_env_var(services):
                     env_vars[k] = os.getenv(k)
 
     return services
+
+
+def sync_action(obj, sync):
+    action_uri = getattr(obj, "tutum_action_uri", "")
+    if sync and action_uri:
+        last_state = None
+        while True:
+            try:
+                action = tutum.Utils.fetch_by_resource_uri(action_uri)
+                if last_state != action.state:
+                    if last_state:
+                        sys.stdout.write('\n')
+                    sys.stdout.write(action.state)
+                    last_state = action.state
+                else:
+                    sys.stdout.write('.')
+                if action.state.lower() == "success":
+                    sys.stdout.write('\n')
+                    break
+                sys.stdout.flush()
+                time.sleep(4)
+            except tutum.TutumApiError as e:
+                print(e, file=sys.stderr)
+                continue
+            except Exception as e:
+                print(e, file=sys.stderr)
+                break

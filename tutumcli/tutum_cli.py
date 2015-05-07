@@ -108,7 +108,7 @@ def dispatch_cmds(args):
                                     autorestart=args.autorestart, autodestroy=args.autodestroy,
                                     autoredeploy=args.autoredeploy, roles=args.role,
                                     sequential=args.sequential, volume=args.volume, volumes_from=args.volumes_from,
-                                    deployment_strategy=args.deployment_strategy)
+                                    deployment_strategy=args.deployment_strategy, sync=args.sync)
         elif args.subcmd == 'inspect':
             commands.service_inspect(args.identifier)
         elif args.subcmd == 'logs':
@@ -116,7 +116,7 @@ def dispatch_cmds(args):
         elif args.subcmd == 'ps':
             commands.service_ps(args.quiet, args.status, args.stack)
         elif args.subcmd == 'redeploy':
-            commands.service_redeploy(args.identifier)
+            commands.service_redeploy(args.identifier, args.sync)
         elif args.subcmd == 'run':
             commands.service_run(image=args.image, name=args.name, cpu_shares=args.cpushares,
                                  memory=args.memory, privileged=args.privileged,
@@ -127,9 +127,9 @@ def dispatch_cmds(args):
                                  autorestart=args.autorestart, autodestroy=args.autodestroy,
                                  autoredeploy=args.autoredeploy, roles=args.role,
                                  sequential=args.sequential, volume=args.volume, volumes_from=args.volumes_from,
-                                 deployment_strategy=args.deployment_strategy)
+                                 deployment_strategy=args.deployment_strategy, sync=args.sync)
         elif args.subcmd == 'scale':
-            commands.service_scale(args.identifier, args.target_num_containers)
+            commands.service_scale(args.identifier, args.target_num_containers, args.sync)
         elif args.subcmd == 'set':
             commands.service_set(args.identifier, image=args.image, cpu_shares=args.cpushares,
                                  memory=args.memory, privileged=args.privileged,
@@ -141,55 +141,55 @@ def dispatch_cmds(args):
                                  autoredeploy=args.autoredeploy, roles=args.role,
                                  sequential=args.sequential, redeploy=args.redeploy,
                                  volume=args.volume, volumes_from=args.volumes_from,
-                                 deployment_strategy=args.deployment_strategy)
+                                 deployment_strategy=args.deployment_strategy, sync=args.sync)
         elif args.subcmd == 'start':
-            commands.service_start(args.identifier)
+            commands.service_start(args.identifier, args.sync)
         elif args.subcmd == 'stop':
-            commands.service_stop(args.identifier)
+            commands.service_stop(args.identifier, args.sync)
         elif args.subcmd == 'terminate':
-            commands.service_terminate(args.identifier)
+            commands.service_terminate(args.identifier, args.sync)
     elif args.cmd == 'container':
         if args.subcmd == 'inspect':
             commands.container_inspect(args.identifier)
         elif args.subcmd == 'logs':
             commands.container_logs(args.identifier)
         elif args.subcmd == 'redeploy':
-            commands.container_redeploy(args.identifier)
+            commands.container_redeploy(args.identifier, args.sync)
         elif args.subcmd == 'ps':
             commands.container_ps(args.quiet, args.status, args.service)
         elif args.subcmd == 'start':
-            commands.container_start(args.identifier)
+            commands.container_start(args.identifier, args.sync)
         elif args.subcmd == 'stop':
-            commands.container_stop(args.identifier)
+            commands.container_stop(args.identifier, args.sync)
         elif args.subcmd == 'terminate':
-            commands.container_terminate(args.identifier)
+            commands.container_terminate(args.identifier, args.sync)
     elif args.cmd == 'image':
         if args.subcmd == 'list':
             commands.image_list(args.quiet, args.jumpstarts, args.linux)
         elif args.subcmd == 'register':
-            commands.image_register(args.image_name, args.description, args.username, args.password)
+            commands.image_register(args.image_name, args.description, args.username, args.password, args.sync)
         elif args.subcmd == 'push':
             commands.image_push(args.name, args.public)
         elif args.subcmd == 'rm':
-            commands.image_rm(args.image_name)
+            commands.image_rm(args.image_name, args.sync)
         elif args.subcmd == 'search':
             commands.image_search(args.query)
         elif args.subcmd == 'update':
-            commands.image_update(args.image_name, args.username, args.password, args.description)
+            commands.image_update(args.image_name, args.username, args.password, args.description, args.sync)
     elif args.cmd == 'node':
         if args.subcmd == 'inspect':
             commands.node_inspect(args.identifier)
         elif args.subcmd == 'list':
             commands.node_list(args.quiet)
         elif args.subcmd == 'rm':
-            commands.node_rm(args.identifier)
+            commands.node_rm(args.identifier, args.sync)
         elif args.subcmd == 'upgrade':
-            commands.node_upgrade(args.identifier)
+            commands.node_upgrade(args.identifier, args.sync)
         elif args.subcmd == 'byo':
             commands.node_byo()
     elif args.cmd == 'nodecluster':
         if args.subcmd == 'create':
-            commands.nodecluster_create(args.target_num_nodes, args.name, args.provider, args.region, args.nodetype)
+            commands.nodecluster_create(args.target_num_nodes, args.name, args.provider, args.region, args.nodetype, args.sync)
         elif args.subcmd == 'inspect':
             commands.nodecluster_inspect(args.identifier)
         elif args.subcmd == 'list':
@@ -201,9 +201,9 @@ def dispatch_cmds(args):
         elif args.subcmd == 'nodetype':
             commands.nodecluster_show_types(args.provider, args.region)
         elif args.subcmd == 'rm':
-            commands.nodecluster_rm(args.identifier)
+            commands.nodecluster_rm(args.identifier, args.sync)
         elif args.subcmd == 'scale':
-            commands.nodecluster_scale(args.identifier, args.target_num_nodes)
+            commands.nodecluster_scale(args.identifier, args.target_num_nodes, args.sync)
     elif args.cmd == 'tag':
         if args.subcmd == 'add':
             commands.tag_add(args.identifier, args.tag)
@@ -232,23 +232,23 @@ def dispatch_cmds(args):
             commands.webhookhandler_rm(args.identifier, args.webhookhandler)
     elif args.cmd == 'stack':
         if args.subcmd == 'create':
-            commands.stack_create(args.name, args.file)
+            commands.stack_create(args.name, args.file, args.sync)
         elif args.subcmd == 'inspect':
             commands.stack_inspect(args.identifier)
         elif args.subcmd == 'list':
             commands.stack_list(args.quiet)
         elif args.subcmd == 'redeploy':
-            commands.stack_redeploy(args.identifier)
+            commands.stack_redeploy(args.identifier, args.sync)
         elif args.subcmd == 'start':
-            commands.stack_start(args.identifier)
+            commands.stack_start(args.identifier, args.sync)
         elif args.subcmd == 'stop':
-            commands.stack_stop(args.identifier)
+            commands.stack_stop(args.identifier, args.sync)
         elif args.subcmd == 'terminate':
-            commands.stack_terminate(args.identifier)
+            commands.stack_terminate(args.identifier, args.sync)
         elif args.subcmd == 'up':
-            commands.stack_up(args.name, args.file)
+            commands.stack_up(args.name, args.file, args.sync)
         elif args.subcmd == 'update':
-            commands.stack_update(args.identifier, args.file)
+            commands.stack_update(args.identifier, args.file, args.sync)
 
 
 def main():
