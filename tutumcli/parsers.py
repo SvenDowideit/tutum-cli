@@ -13,6 +13,7 @@ def add_build_parser(subparsers):
     build_parser.add_argument('-t', '--tag', help='repository name (and optionally a tag) to be applied '
                                                   'to the resulting image in case of success')
     build_parser.add_argument('directory', help='working directory')
+    build_parser.add_argument('-s', '--sock', help='docker unix sock address. Default: "/var/run/docker.sock"')
 
 
 def add_event_parser(subparsers):

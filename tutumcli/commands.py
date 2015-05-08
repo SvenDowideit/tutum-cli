@@ -103,8 +103,10 @@ def verify_auth(args):
                     print("Not Authorized, Please login:", file=sys.stderr)
 
 
-def build(tag, working_directory):
-    build_image = "tutum/builder"
+def build(tag, working_directory, docker_sock):
+    build_image = "tutum/builder:latest"
+    if not docker_sock:
+        docker_sock = "/var/run/docker.sock"
     try:
         docker_client = utils.get_docker_client()
         binds = {
@@ -114,12 +116,11 @@ def build(tag, working_directory):
                     'ro': False
                 }
         }
-        if os.path.exists("/var/run/docker.sock"):
-            binds["/var/run/docker.sock"] = \
-                {
-                    'bind': "/var/run/docker.sock",
-                    'ro': False
-                }
+        binds[docker_sock] = \
+            {
+                'bind': "/var/run/docker.sock",
+                'ro': False
+            }
 
         output = docker_client.pull(build_image, stream=True)
         utils.stream_output(output, sys.stdout)

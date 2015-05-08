@@ -110,7 +110,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
     def test_build_dispatch(self, mock_cmds):
         args = self.parser.parse_args(['build', '-t', 'mysql', '.'])
         dispatch_cmds(args)
-        mock_cmds.build.assert_called_with(args.tag, args.directory)
+        mock_cmds.build.assert_called_with(args.tag, args.directory, args.sock)
 
     @mock.patch('tutumcli.tutum_cli.commands')
     def test_service_dispatch(self, mock_cmds):

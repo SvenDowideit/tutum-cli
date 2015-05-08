@@ -94,7 +94,7 @@ def dispatch_cmds(args):
     if args.cmd == 'login':
         commands.login(args.username, args.password, args.email)
     elif args.cmd == 'build':
-        commands.build(args.tag, args.directory)
+        commands.build(args.tag, args.directory, args.sock)
     elif args.cmd == 'event':
         commands.event()
     elif args.cmd == 'service':
