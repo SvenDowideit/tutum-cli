@@ -592,7 +592,7 @@ def sync_action(obj, sync):
                     last_state = action.state
                 else:
                     sys.stdout.write('.')
-                if action.state.lower() == "success":
+                if action.state.lower() == "success" or action.state.lower() == "failed":
                     sys.stdout.write('\n')
                     break
                 sys.stdout.flush()

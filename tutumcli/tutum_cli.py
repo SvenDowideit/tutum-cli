@@ -77,7 +77,7 @@ def patch_help_option(argv=sys.argv):
             args.append('-h')
         elif args[1] == 'volumegroup' and args[2] in ['inspect']:
             args.append('-h')
-        elif args[1] == 'stack' and args[2] in ['inspect', 'redeploy', 'terminate', 'start', 'stop', 'update']:
+        elif args[1] == 'stack' and args[2] in ['inspect', 'redeploy', 'terminate', 'start', 'stop', 'update', 'export']:
             args.append('-h')
 
     if debug:
@@ -249,6 +249,8 @@ def dispatch_cmds(args):
             commands.stack_up(args.name, args.file, args.sync)
         elif args.subcmd == 'update':
             commands.stack_update(args.identifier, args.file, args.sync)
+        elif args.subcmd == 'export':
+            commands.stack_export(args.identifier, args.file)
 
 
 def main():

@@ -540,6 +540,13 @@ def add_stack_parser(subparsers):
     create_parser.add_argument('--sync', help='block the command until the async operation has finished',
                             action='store_true')
 
+    # tutum stack export
+    export_parser = stack_subparser.add_parser('export', help='Export the stack from tutum',
+                                           description='Export the stack from tutum')
+    export_parser.add_argument('identifier', help='UUID or name of the stack')
+    export_parser.add_argument('-f', '--file', help="the name of the file to export to")
+
+
     # tutum stack inspect
     inspect_parser = stack_subparser.add_parser('inspect', help='Inspect a stack', description='Inspect a stack')
     inspect_parser.add_argument('identifier', help="stack's UUID (either long or short) or name", nargs='+')
@@ -588,4 +595,3 @@ def add_stack_parser(subparsers):
     update_parser.add_argument('-f', '--file', help="the name of the Stackfile")
     update_parser.add_argument('--sync', help='block the command until the async operation has finished',
                             action='store_true')
-

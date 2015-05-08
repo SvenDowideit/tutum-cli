@@ -354,6 +354,10 @@ class CommandsDispatchTestCase(unittest.TestCase):
         dispatch_cmds(args)
         mock_cmds.stack_update.assert_called_with(args.identifier, args.file, args.sync)
 
+        args = self.parser.parse_args(['stack', 'export', 'id'])
+        dispatch_cmds(args)
+        mock_cmds.stack_export.assert_called_with(args.identifier, args.file)
+
 
 class ParserTestCase(unittest.TestCase):
     def setUp(self):

@@ -9,6 +9,7 @@ import ConfigParser
 
 import tutum
 import docker
+import yaml
 from tutum.api import auth
 from tutum.api import exceptions
 from exceptions import StreamOutputError, ObjectNotFound, NonUniqueIdentifier
@@ -1525,6 +1526,23 @@ def stack_update(identifier, stackfile, sync):
         utils.sync_action(stack, sync)
         if result:
             print(stack.uuid)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def stack_export(identifier, stackfile):
+    try:
+        stack = utils.fetch_remote_stack(identifier)
+        content = stack.export()
+        if content:
+            print (stackfile)
+            if stackfile:
+                with open(stackfile, 'w') as outfile:
+                    outfile.write(yaml.safe_dump(content, default_flow_style=False, allow_unicode=True))
+            else:
+                print (yaml.safe_dump(content, default_flow_style=False, allow_unicode=True))
+
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)

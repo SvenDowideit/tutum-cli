@@ -1451,8 +1451,8 @@ class NodeClusterShowProviderTestCase(unittest.TestCase):
 
     @mock.patch('tutumcli.commands.tutum.Provider.list')
     def test_nodecluster_show_providers(self, mock_list):
-        output = '''NAME          LABEL          REGIONS
-digitalocean  Digital Ocean  ams1, ams2, ams3, lon1, nyc1, nyc2, nyc3, sfo1, sgp1'''
+        output = '''NAME          LABEL
+digitalocean  Digital Ocean'''
         mock_list.return_value = self.providerlist
         nodecluster_show_providers(quiet=False)
 
@@ -1519,10 +1519,10 @@ class NodeClusterShowRegionsTestCase(unittest.TestCase):
 
     @mock.patch('tutumcli.commands.tutum.Region.list')
     def test_nodecluster_show_regions(self, mock_list):
-        output = '''NAME    LABEL            PROVIDER      TYPE
-ams1    Amsterdam 1      digitalocean  512mb, 1gb, 2gb, 4gb, 8gb, 16gb
-sfo1    San Francisco 1  digitalocean  512mb, 1gb, 2gb, 4gb, 8gb, 16gb, 32gb, 48gb, 64gb
-jap1    Japan 1          aws           512mb, 1gb, 2gb, 4gb, 8gb'''
+        output = '''NAME    LABEL            PROVIDER
+ams1    Amsterdam 1      digitalocean
+sfo1    San Francisco 1  digitalocean
+jap1    Japan 1          aws'''
         mock_list.return_value = self.regionlist
         nodecluster_show_regions('')
 
@@ -1531,9 +1531,9 @@ jap1    Japan 1          aws           512mb, 1gb, 2gb, 4gb, 8gb'''
 
     @mock.patch('tutumcli.commands.tutum.Region.list')
     def test_nodecluster_show_regions_with_filter(self, mock_list):
-        output = '''NAME    LABEL            PROVIDER      TYPE
-ams1    Amsterdam 1      digitalocean  512mb, 1gb, 2gb, 4gb, 8gb, 16gb
-sfo1    San Francisco 1  digitalocean  512mb, 1gb, 2gb, 4gb, 8gb, 16gb, 32gb, 48gb, 64gb'''
+        output = '''NAME    LABEL            PROVIDER
+ams1    Amsterdam 1      digitalocean
+sfo1    San Francisco 1  digitalocean'''
         mock_list.return_value = self.regionlist
         nodecluster_show_regions('digitalocean')
 
