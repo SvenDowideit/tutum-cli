@@ -1018,18 +1018,17 @@ def nodecluster_show_providers(quiet):
 
 def nodecluster_show_regions(provider):
     try:
-        headers = ["NAME", "LABEL", "PROVIDER", "TYPE"]
+        headers = ["NAME", "LABEL", "PROVIDER"]
         data_list = []
         region_list = tutum.Region.list()
         for region in region_list:
             provider_name = region.resource_uri.strip("/").split("/")[-2]
             if provider and provider != provider_name:
                 continue
-            data_list.append([region.name, region.label, provider_name,
-                              ", ".join([nodetype.strip("/").split("/")[-1] for nodetype in region.node_types])])
+            data_list.append([region.name, region.label, provider_name])
 
         if len(data_list) == 0:
-            data_list.append(["", "", "", ""])
+            data_list.append(["", "", ""])
         utils.tabulate_result(data_list, headers)
     except Exception as e:
         print(e, file=sys.stderr)
