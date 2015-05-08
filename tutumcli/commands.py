@@ -993,7 +993,7 @@ def nodecluster_inspect(identifiers):
 
 def nodecluster_show_providers(quiet):
     try:
-        headers = ["NAME", "LABEL", "REGIONS"]
+        headers = ["NAME", "LABEL"]
         data_list = []
         name_list = []
         provider_list = tutum.Provider.list()
@@ -1002,11 +1002,10 @@ def nodecluster_show_providers(quiet):
                 name_list.append(provider.name)
                 continue
 
-            data_list.append([provider.name, provider.label,
-                              ", ".join([region.strip("/").split("/")[-1] for region in provider.regions])])
+            data_list.append([provider.name, provider.label])
 
         if len(data_list) == 0:
-            data_list.append(["", "", ""])
+            data_list.append(["", ""])
         if quiet:
             for name in name_list:
                 print(name)
