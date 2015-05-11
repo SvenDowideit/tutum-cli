@@ -786,15 +786,34 @@ class ContainerPsTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.tutum.Stack.list')
     @mock.patch('tutumcli.commands.tutum.Service.list')
     @mock.patch('tutumcli.commands.tutum.Container.list')
-    def test_container_ps(self, mock_list, mock_service, mock_stack, mock_node):
-        output = u'''NAME        UUID      STATUS     IMAGE            RUN COMMAND      EXIT CODE  DEPLOYED    PORTS                         NODE                                  STACK
-CONTAINER1  7A4CFE51  \u25b6 Running  test/container1  /bin/bash                1              container1.io:8080->8080/tcp  d20430ae-da6d-4c13-bc91-ab15cf0b973d  service1
-CONTAINER2  8B4CFE51  \u25fc Stopped  test/container2  /bin/sh                  0              container2.io:3307->3306/tcp  445c3d27-0dd4-443c-ad51-ea7539083114  service2'''
+    def test_container_ps_trunc(self, mock_list, mock_service, mock_stack, mock_node):
+        output = u'''NAME        UUID      STATUS     IMAGE            RUN COMMAND      EXIT CODE  DEPLOYED    PORTS                 NODE      STACK
+CONTAINER1  7A4CFE51  \u25b6 Running  test/container1  /bin/bash                1              container1.io:808...  d20430ae  service1
+CONTAINER2  8B4CFE51  \u25fc Stopped  test/container2  /bin/sh                  0              container2.io:330...  445c3d27  service2'''
         mock_node.return_value = self.nodelist
         mock_stack.return_value = self.stacklist
         mock_service.return_value = self.servicelist
         mock_list.return_value = self.containerlist
-        container_ps(False, 'Running', None)
+
+        container_ps(False, 'Running', None, False)
+
+        mock_list.assert_called_with(state='Running', service=None)
+        self.assertEqual(output, self.buf.getvalue().strip())
+        self.buf.truncate(0)
+
+    @mock.patch('tutumcli.commands.tutum.Node.list')
+    @mock.patch('tutumcli.commands.tutum.Stack.list')
+    @mock.patch('tutumcli.commands.tutum.Service.list')
+    @mock.patch('tutumcli.commands.tutum.Container.list')
+    def test_container_ps_notrunc(self, mock_list, mock_service, mock_stack, mock_node):
+        output = u'''NAME        UUID                                  STATUS     IMAGE            RUN COMMAND      EXIT CODE  DEPLOYED    PORTS                         NODE                                  STACK
+CONTAINER1  7A4CFE51-03BB-42D6-825E-3B533888D8CD  \u25b6 Running  test/container1  /bin/bash                1              container1.io:8080->8080/tcp  d20430ae-da6d-4c13-bc91-ab15cf0b973d  service1
+CONTAINER2  8B4CFE51-03BB-42D6-825E-3B533888D8CD  \u25fc Stopped  test/container2  /bin/sh                  0              container2.io:3307->3306/tcp  445c3d27-0dd4-443c-ad51-ea7539083114  service2'''
+        mock_node.return_value = self.nodelist
+        mock_stack.return_value = self.stacklist
+        mock_service.return_value = self.servicelist
+        mock_list.return_value = self.containerlist
+        container_ps(False, 'Running', None, True)
 
         mock_list.assert_called_with(state='Running', service=None)
         self.assertEqual(output, self.buf.getvalue().strip())
@@ -811,7 +830,7 @@ CONTAINER2  8B4CFE51  \u25fc Stopped  test/container2  /bin/sh                  
         mock_stack.return_value = self.stacklist
         mock_service.return_value = self.servicelist
         mock_list.return_value = self.containerlist
-        container_ps(True, None, None)
+        container_ps(True, None, None, False)
         self.assertEqual(output, self.buf.getvalue().strip())
         self.buf.truncate(0)
 
@@ -819,7 +838,7 @@ CONTAINER2  8B4CFE51  \u25fc Stopped  test/container2  /bin/sh                  
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.tutum.Container.list', side_effect=TutumApiError)
     def test_container_ps_with_exception(self, mock_list, mock_exit):
-        container_ps(None, None, None)
+        container_ps(None, None, None, False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 

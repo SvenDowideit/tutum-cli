@@ -156,7 +156,7 @@ def dispatch_cmds(args):
         elif args.subcmd == 'redeploy':
             commands.container_redeploy(args.identifier, args.sync)
         elif args.subcmd == 'ps':
-            commands.container_ps(args.quiet, args.status, args.service)
+            commands.container_ps(args.quiet, args.status, args.service, args.no_trunc)
         elif args.subcmd == 'start':
             commands.container_start(args.identifier, args.sync)
         elif args.subcmd == 'stop':

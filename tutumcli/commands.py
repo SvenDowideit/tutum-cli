@@ -533,7 +533,7 @@ def container_redeploy(identifiers, sync):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def container_ps(quiet, status, service):
+def container_ps(quiet, status, service, no_trunc):
     try:
         headers = ["NAME", "UUID", "STATUS", "IMAGE", "RUN COMMAND", "EXIT CODE", "DEPLOYED", "PORTS", "NODE", "STACK"]
 
@@ -570,16 +570,29 @@ def container_ps(quiet, status, service):
                 ports_string += "%d/%s" % (port['inner_port'], port['protocol'])
                 ports.append(ports_string)
 
+
+            container_uuid = container.uuid
+            run_command = container.run_command
             ports_string = ", ".join(ports)
+            node = nodes.get(container.node)
+            if not no_trunc:
+                container_uuid = container_uuid[:8]
+
+                if len(run_command) > 20:
+                    run_command = run_command[:17] + '...'
+                if len(ports_string) > 20:
+                    ports_string = ports_string[:17] + '...'
+                node = node[:8]
+
             data_list.append([container.name,
-                              container.uuid[:8],
+                              container_uuid,
                               utils.add_unicode_symbol_to_state(container.state),
                               container.image_name,
-                              container.run_command,
+                              run_command,
                               container.exit_code,
                               utils.get_humanize_local_datetime_from_utc_datetime_string(container.deployed_datetime),
                               ports_string,
-                              nodes.get(container.node),
+                              node,
                               stacks.get(services.get(container.service))])
             long_uuid_list.append(container.uuid)
         if len(data_list) == 0:

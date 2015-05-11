@@ -205,7 +205,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
 
         args = self.parser.parse_args(['container', 'ps'])
         dispatch_cmds(args)
-        mock_cmds.container_ps.assert_called_with(args.quiet, args.status, args.service)
+        mock_cmds.container_ps.assert_called_with(args.quiet, args.status, args.service, args.no_trunc)
 
         args = self.parser.parse_args(['container', 'start', 'id'])
         dispatch_cmds(args)
