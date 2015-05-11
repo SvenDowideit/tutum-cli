@@ -742,6 +742,7 @@ class ContainerPsTestCase(unittest.TestCase):
         container1.container_ports = [{'protocol': 'tcp', 'inner_port': 8080, 'outer_port': 8080}]
         container1.exit_code = 1
         container1.service = 'container1_service_uri'
+        container1.node = 'container1_node_uri'
         container2 = tutumcli.commands.tutum.Container()
         container2.name = 'CONTAINER2'
         container2.uuid = '8B4CFE51-03BB-42D6-825E-3B533888D8CD'
@@ -753,6 +754,7 @@ class ContainerPsTestCase(unittest.TestCase):
         container2.container_ports = [{'protocol': 'tcp', 'inner_port': 3306, 'outer_port': 3307}]
         container2.exit_code = 0
         container2.service = 'container2_service_uri'
+        container2.node = 'container2_node_uri'
         self.containerlist = [container1, container2]
         service1 = tutumcli.commands.tutum.Service()
         service1.resource_uri = 'container1_service_uri'
@@ -768,18 +770,27 @@ class ContainerPsTestCase(unittest.TestCase):
         stack2.resource_uri = 'container2_service_stack_uri'
         stack2.name = 'service2'
         self.stacklist = [stack1, stack2]
+        node1 = tutumcli.commands.tutum.Node()
+        node1.resource_uri = 'container1_node_uri'
+        node1.uuid = 'd20430ae-da6d-4c13-bc91-ab15cf0b973d'
+        node2 = tutumcli.commands.tutum.Node()
+        node2.resource_uri = 'container2_node_uri'
+        node2.uuid = '445c3d27-0dd4-443c-ad51-ea7539083114'
+        self.nodelist = [node1, node2]
 
     def tearDown(self):
         pass
         sys.stdout = self.stdout
 
+    @mock.patch('tutumcli.commands.tutum.Node.list')
     @mock.patch('tutumcli.commands.tutum.Stack.list')
     @mock.patch('tutumcli.commands.tutum.Service.list')
     @mock.patch('tutumcli.commands.tutum.Container.list')
-    def test_container_ps(self, mock_list, mock_service, mock_stack):
-        output = u'''NAME        UUID      STATUS     IMAGE            RUN COMMAND      EXIT CODE  DEPLOYED    PORTS                         STACK
-CONTAINER1  7A4CFE51  ▶ Running  test/container1  /bin/bash                1              container1.io:8080->8080/tcp  service1
-CONTAINER2  8B4CFE51  ◼ Stopped  test/container2  /bin/sh                  0              container2.io:3307->3306/tcp  service2'''
+    def test_container_ps(self, mock_list, mock_service, mock_stack, mock_node):
+        output = u'''NAME        UUID      STATUS     IMAGE            RUN COMMAND      EXIT CODE  DEPLOYED    PORTS                         NODE                                  STACK
+CONTAINER1  7A4CFE51  \u25b6 Running  test/container1  /bin/bash                1              container1.io:8080->8080/tcp  d20430ae-da6d-4c13-bc91-ab15cf0b973d  service1
+CONTAINER2  8B4CFE51  \u25fc Stopped  test/container2  /bin/sh                  0              container2.io:3307->3306/tcp  445c3d27-0dd4-443c-ad51-ea7539083114  service2'''
+        mock_node.return_value = self.nodelist
         mock_stack.return_value = self.stacklist
         mock_service.return_value = self.servicelist
         mock_list.return_value = self.containerlist
@@ -789,12 +800,14 @@ CONTAINER2  8B4CFE51  ◼ Stopped  test/container2  /bin/sh                  0  
         self.assertEqual(output, self.buf.getvalue().strip())
         self.buf.truncate(0)
 
+    @mock.patch('tutumcli.commands.tutum.Node.list')
     @mock.patch('tutumcli.commands.tutum.Stack.list')
     @mock.patch('tutumcli.commands.tutum.Service.list')
     @mock.patch('tutumcli.commands.tutum.Container.list')
-    def test_container_ps_quiet(self, mock_list, mock_service, mock_stack):
+    def test_container_ps_quiet(self, mock_list, mock_service, mock_stack, mock_node):
         output = '''7A4CFE51-03BB-42D6-825E-3B533888D8CD
 8B4CFE51-03BB-42D6-825E-3B533888D8CD'''
+        mock_node.return_value = self.nodelist
         mock_stack.return_value = self.stacklist
         mock_service.return_value = self.servicelist
         mock_list.return_value = self.containerlist

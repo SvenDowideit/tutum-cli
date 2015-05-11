@@ -535,7 +535,7 @@ def container_redeploy(identifiers, sync):
 
 def container_ps(quiet, status, service):
     try:
-        headers = ["NAME", "UUID", "STATUS", "IMAGE", "RUN COMMAND", "EXIT CODE", "DEPLOYED", "PORTS", "STACK"]
+        headers = ["NAME", "UUID", "STATUS", "IMAGE", "RUN COMMAND", "EXIT CODE", "DEPLOYED", "PORTS", "NODE", "STACK"]
 
         service_resrouce_uri = None
         if service:
@@ -557,6 +557,9 @@ def container_ps(quiet, status, service):
         services = {}
         for s in tutum.Service.list():
             services[s.resource_uri] = s.stack
+        nodes = {}
+        for n in tutum.Node.list():
+            nodes[n.resource_uri] = n.uuid
 
         for container in containers:
             ports = []
@@ -576,10 +579,11 @@ def container_ps(quiet, status, service):
                               container.exit_code,
                               utils.get_humanize_local_datetime_from_utc_datetime_string(container.deployed_datetime),
                               ports_string,
+                              nodes.get(container.node),
                               stacks.get(services.get(container.service))])
             long_uuid_list.append(container.uuid)
         if len(data_list) == 0:
-            data_list.append(["", "", "", "", "", "", "", ""])
+            data_list.append(["", "", "", "", "", "", "", "", ""])
         if quiet:
             for uuid in long_uuid_list:
                 print(uuid)
