@@ -9,6 +9,7 @@ import ConfigParser
 
 import tutum
 import docker
+import yaml
 from tutum.api import auth
 from tutum.api import exceptions
 from exceptions import StreamOutputError, ObjectNotFound, NonUniqueIdentifier
@@ -102,8 +103,10 @@ def verify_auth(args):
                     print("Not Authorized, Please login:", file=sys.stderr)
 
 
-def build(tag, working_directory):
-    build_image = "tutum/builder"
+def build(tag, working_directory, docker_sock):
+    build_image = "tutum/builder:latest"
+    if not docker_sock:
+        docker_sock = "/var/run/docker.sock"
     try:
         docker_client = utils.get_docker_client()
         binds = {
@@ -113,12 +116,11 @@ def build(tag, working_directory):
                     'ro': False
                 }
         }
-        if os.path.exists("/var/run/docker.sock"):
-            binds["/var/run/docker.sock"] = \
-                {
-                    'bind': "/var/run/docker.sock",
-                    'ro': False
-                }
+        binds[docker_sock] = \
+            {
+                'bind': "/var/run/docker.sock",
+                'ro': False
+            }
 
         output = docker_client.pull(build_image, stream=True)
         utils.stream_output(output, sys.stdout)
@@ -216,12 +218,13 @@ def service_ps(quiet, status, stack):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def service_redeploy(identifiers):
+def service_redeploy(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
             service = utils.fetch_remote_service(identifier)
             result = service.redeploy()
+            utils.sync_action(service, sync)
             if result:
                 print(service.uuid)
         except Exception as e:
@@ -233,7 +236,7 @@ def service_redeploy(identifiers):
 
 def service_create(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
                    expose, publish, envvars, envfiles, tag, linked_to_service, autorestart, autodestroy, autoredeploy,
-                   roles, sequential, volume, volumes_from, deployment_strategy):
+                   roles, sequential, volume, volumes_from, deployment_strategy, sync):
     try:
         ports = utils.parse_published_ports(publish)
 
@@ -271,6 +274,7 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
                                        roles=roles, sequential_deployment=sequential, tags=tags, bindings=bindings,
                                        deployment_strategy=deployment_strategy)
         result = service.save()
+        utils.sync_action(service, sync)
         if result:
             print(service.uuid)
     except Exception as e:
@@ -280,7 +284,7 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
 
 def service_run(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
                 expose, publish, envvars, envfiles, tag, linked_to_service, autorestart, autodestroy, autoredeploy,
-                roles, sequential, volume, volumes_from, deployment_strategy):
+                roles, sequential, volume, volumes_from, deployment_strategy, sync):
     try:
         ports = utils.parse_published_ports(publish)
 
@@ -319,6 +323,7 @@ def service_run(image, name, cpu_shares, memory, privileged, target_num_containe
                                        deployment_strategy=deployment_strategy)
         service.save()
         result = service.start()
+        utils.sync_action(service, sync)
         if result:
             print(service.uuid)
     except Exception as e:
@@ -326,13 +331,14 @@ def service_run(image, name, cpu_shares, memory, privileged, target_num_containe
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def service_scale(identifiers, target_num_containers):
+def service_scale(identifiers, target_num_containers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
             service = utils.fetch_remote_service(identifier)
             service.target_num_containers = target_num_containers
             result = service.save()
+            utils.sync_action(service, sync)
             if result:
                 print(service.uuid)
         except Exception as e:
@@ -344,7 +350,7 @@ def service_scale(identifiers, target_num_containers):
 
 def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
                 expose, publish, envvars, envfiles, tag, linked_to_service, autorestart, autodestroy, autoredeploy,
-                roles, sequential, redeploy, volume, volumes_from, deployment_strategy):
+                roles, sequential, redeploy, volume, volumes_from, deployment_strategy, sync):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -419,6 +425,7 @@ def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_c
                     service.deployment_strategy = deployment_strategy
 
                 result = service.save()
+                utils.sync_action(service, sync)
                 if result:
                     if redeploy:
                         print("Redeploying Service ...")
@@ -436,12 +443,13 @@ def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_c
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def service_start(identifiers):
+def service_start(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
             service = utils.fetch_remote_service(identifier)
             result = service.start()
+            utils.sync_action(service, sync)
             if result:
                 print(service.uuid)
         except Exception as e:
@@ -451,12 +459,13 @@ def service_start(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def service_stop(identifiers):
+def service_stop(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
             service = utils.fetch_remote_service(identifier)
             result = service.stop()
+            utils.sync_action(service, sync)
             if result:
                 print(service.uuid)
         except Exception as e:
@@ -466,12 +475,13 @@ def service_stop(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def service_terminate(identifiers):
+def service_terminate(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
             service = utils.fetch_remote_service(identifier)
             result = service.delete()
+            utils.sync_action(service, sync)
             if result:
                 print(service.uuid)
         except Exception as e:
@@ -507,12 +517,13 @@ def container_logs(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def container_redeploy(identifiers):
+def container_redeploy(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
             container = utils.fetch_remote_container(identifier)
             result = container.redeploy()
+            utils.sync_action(container, sync)
             if result:
                 print(container.uuid)
         except Exception as e:
@@ -522,9 +533,9 @@ def container_redeploy(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def container_ps(quiet, status, service):
+def container_ps(quiet, status, service, no_trunc):
     try:
-        headers = ["NAME", "UUID", "STATUS", "IMAGE", "RUN COMMAND", "EXIT CODE", "DEPLOYED", "PORTS", "STACK"]
+        headers = ["NAME", "UUID", "STATUS", "IMAGE", "RUN COMMAND", "EXIT CODE", "DEPLOYED", "PORTS", "NODE", "STACK"]
 
         service_resrouce_uri = None
         if service:
@@ -546,6 +557,9 @@ def container_ps(quiet, status, service):
         services = {}
         for s in tutum.Service.list():
             services[s.resource_uri] = s.stack
+        nodes = {}
+        for n in tutum.Node.list():
+            nodes[n.resource_uri] = n.uuid
 
         for container in containers:
             ports = []
@@ -556,19 +570,33 @@ def container_ps(quiet, status, service):
                 ports_string += "%d/%s" % (port['inner_port'], port['protocol'])
                 ports.append(ports_string)
 
+
+            container_uuid = container.uuid
+            run_command = container.run_command
             ports_string = ", ".join(ports)
+            node = nodes.get(container.node)
+            if not no_trunc:
+                container_uuid = container_uuid[:8]
+
+                if len(run_command) > 20:
+                    run_command = run_command[:17] + '...'
+                if len(ports_string) > 20:
+                    ports_string = ports_string[:17] + '...'
+                node = node[:8]
+
             data_list.append([container.name,
-                              container.uuid[:8],
+                              container_uuid,
                               utils.add_unicode_symbol_to_state(container.state),
                               container.image_name,
-                              container.run_command,
+                              run_command,
                               container.exit_code,
                               utils.get_humanize_local_datetime_from_utc_datetime_string(container.deployed_datetime),
                               ports_string,
+                              node,
                               stacks.get(services.get(container.service))])
             long_uuid_list.append(container.uuid)
         if len(data_list) == 0:
-            data_list.append(["", "", "", "", "", "", "", ""])
+            data_list.append(["", "", "", "", "", "", "", "", ""])
         if quiet:
             for uuid in long_uuid_list:
                 print(uuid)
@@ -579,12 +607,13 @@ def container_ps(quiet, status, service):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def container_start(identifiers):
+def container_start(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
             container = utils.fetch_remote_container(identifier)
             result = container.start()
+            utils.sync_action(container, sync)
             if result:
                 print(container.uuid)
         except Exception as e:
@@ -594,12 +623,13 @@ def container_start(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def container_stop(identifiers):
+def container_stop(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
             container = utils.fetch_remote_container(identifier)
             result = container.stop()
+            utils.sync_action(container, sync)
             if result:
                 print(container.uuid)
         except Exception as e:
@@ -609,12 +639,13 @@ def container_stop(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def container_terminate(identifiers):
+def container_terminate(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
             container = utils.fetch_remote_container(identifier)
             result = container.delete()
+            utils.sync_action(container, sync)
             if result:
                 print(container.uuid)
         except Exception as e:
@@ -653,7 +684,7 @@ def image_list(quiet, jumpstarts, linux):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def image_register(repository, description, username, password):
+def image_register(repository, description, username, password, sync):
     if not username and not password:
         print('Please input username and password of the registry:')
         username = raw_input('Username: ')
@@ -667,6 +698,7 @@ def image_register(repository, description, username, password):
     try:
         image = tutum.Image.create(name=repository, username=username, password=password, description=description)
         result = image.save()
+        utils.sync_action(image, sync)
         if result:
             print(image.name)
     except Exception as e:
@@ -681,12 +713,16 @@ def image_push(name, public):
         output_status = NO_ERROR
         # tag a image to its name to check if the images exists
         try:
-            docker_client.tag(name, name)
+            docker_client.tag(name, name, force=True)
         except Exception as e:
             print(e, file=sys.stderr)
             sys.exit(EXCEPTION_EXIT_CODE)
         try:
-            output = docker_client.push(repository, stream=True)
+            tag = None
+            if ':' in repository:
+                tag = repository.split(':')[-1]
+                repository = repository.replace(':%s' % tag, '')
+            output = docker_client.push(repository, tag=tag, stream=True)
             utils.stream_output(output, sys.stdout)
         except StreamOutputError as e:
             if 'status 401' in e.message.lower():
@@ -750,7 +786,8 @@ def image_push(name, public):
         except Exception as e:
             print(e, file=sys.stderr)
             sys.exit(EXCEPTION_EXIT_CODE)
-        output = docker_client.push(repository, stream=True)
+
+        output = docker_client.push(repository, tag=tag, stream=True)
         try:
             utils.stream_output(output, sys.stdout)
         except docker.errors.APIError as e:
@@ -768,12 +805,13 @@ def image_push(name, public):
         push_to_tutum(name)
 
 
-def image_rm(repositories):
+def image_rm(repositories, sync):
     has_exception = False
     for repository in repositories:
         try:
             image = tutum.Image.fetch(repository)
             result = image.delete()
+            utils.sync_action(image, sync)
             if result:
                 print(repository)
         except Exception as e:
@@ -804,7 +842,7 @@ def image_search(text):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def image_update(repositories, username, password, description):
+def image_update(repositories, username, password, description, sync):
     has_exception = False
     for repository in repositories:
         try:
@@ -816,6 +854,7 @@ def image_update(repositories, username, password, description):
             if description is not None:
                 image.description = description
             result = image.save()
+            utils.sync_action(image, sync)
             if result:
                 print(image.name)
         except Exception as e:
@@ -869,12 +908,13 @@ def node_inspect(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def node_rm(identifiers):
+def node_rm(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
             node = utils.fetch_remote_node(identifier)
             result = node.delete()
+            utils.sync_action(node, sync)
             if result:
                 print(node.uuid)
         except Exception as e:
@@ -884,12 +924,13 @@ def node_rm(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def node_upgrade(identifiers):
+def node_upgrade(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
             node = utils.fetch_remote_node(identifier)
             result = node.upgrade_docker()
+            utils.sync_action(node, sync)
             if result:
                 print(node.uuid)
         except Exception as e:
@@ -971,7 +1012,7 @@ def nodecluster_inspect(identifiers):
 
 def nodecluster_show_providers(quiet):
     try:
-        headers = ["NAME", "LABEL", "REGIONS"]
+        headers = ["NAME", "LABEL"]
         data_list = []
         name_list = []
         provider_list = tutum.Provider.list()
@@ -980,11 +1021,10 @@ def nodecluster_show_providers(quiet):
                 name_list.append(provider.name)
                 continue
 
-            data_list.append([provider.name, provider.label,
-                              ", ".join([region.strip("/").split("/")[-1] for region in provider.regions])])
+            data_list.append([provider.name, provider.label])
 
         if len(data_list) == 0:
-            data_list.append(["", "", ""])
+            data_list.append(["", ""])
         if quiet:
             for name in name_list:
                 print(name)
@@ -997,18 +1037,17 @@ def nodecluster_show_providers(quiet):
 
 def nodecluster_show_regions(provider):
     try:
-        headers = ["NAME", "LABEL", "PROVIDER", "TYPE"]
+        headers = ["NAME", "LABEL", "PROVIDER"]
         data_list = []
         region_list = tutum.Region.list()
         for region in region_list:
             provider_name = region.resource_uri.strip("/").split("/")[-2]
             if provider and provider != provider_name:
                 continue
-            data_list.append([region.name, region.label, provider_name,
-                              ", ".join([nodetype.strip("/").split("/")[-1] for nodetype in region.node_types])])
+            data_list.append([region.name, region.label, provider_name])
 
         if len(data_list) == 0:
-            data_list.append(["", "", "", ""])
+            data_list.append(["", "", ""])
         utils.tabulate_result(data_list, headers)
     except Exception as e:
         print(e, file=sys.stderr)
@@ -1039,7 +1078,7 @@ def nodecluster_show_types(provider, region):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def nodecluster_create(target_num_nodes, name, provider, region, nodetype):
+def nodecluster_create(target_num_nodes, name, provider, region, nodetype, sync):
     region_uri = "/api/v1/region/%s/%s/" % (provider, region)
     nodetype_uri = "/api/v1/nodetype/%s/%s/" % (provider, nodetype)
 
@@ -1048,6 +1087,7 @@ def nodecluster_create(target_num_nodes, name, provider, region, nodetype):
                                                region=region_uri, node_type=nodetype_uri)
         nodecluster.save()
         result = nodecluster.deploy()
+        utils.sync_action(nodecluster, sync)
         if result:
             print(nodecluster.uuid)
     except Exception as e:
@@ -1055,12 +1095,13 @@ def nodecluster_create(target_num_nodes, name, provider, region, nodetype):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def nodecluster_rm(identifiers):
+def nodecluster_rm(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
             nodecluster = utils.fetch_remote_nodecluster(identifier)
             result = nodecluster.delete()
+            utils.sync_action(nodecluster, sync)
             if result:
                 print(nodecluster.uuid)
         except Exception as e:
@@ -1070,13 +1111,14 @@ def nodecluster_rm(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def nodecluster_scale(identifiers, target_num_nodes):
+def nodecluster_scale(identifiers, target_num_nodes, sync):
     has_exception = False
     for identifier in identifiers:
         try:
             nodecluster = utils.fetch_remote_nodecluster(identifier)
             nodecluster.target_num_nodes = target_num_nodes
             result = nodecluster.save()
+            utils.sync_action(nodecluster, sync)
             if result:
                 print(nodecluster.uuid)
         except Exception as e:
@@ -1366,11 +1408,12 @@ def webhookhandler_rm(identifier, webhook_identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def stack_up(name, stackfile):
+def stack_up(name, stackfile, sync):
     try:
         stack = utils.load_stack_file(name=name, stackfile=stackfile)
         stack.save()
         result = stack.start()
+        utils.sync_action(stack, sync)
         if result:
             print(stack.uuid)
     except Exception as e:
@@ -1378,10 +1421,11 @@ def stack_up(name, stackfile):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def stack_create(name, stackfile):
+def stack_create(name, stackfile, sync):
     try:
         stack = utils.load_stack_file(name=name, stackfile=stackfile)
         result = stack.save()
+        utils.sync_action(stack, sync)
         if result:
             print(stack.uuid)
     except Exception as e:
@@ -1429,12 +1473,13 @@ def stack_list(quiet):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def stack_redeploy(identifiers):
+def stack_redeploy(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
             stack = utils.fetch_remote_stack(identifier)
             result = stack.redeploy()
+            utils.sync_action(stack, sync)
             if result:
                 print(stack.uuid)
         except Exception as e:
@@ -1444,12 +1489,13 @@ def stack_redeploy(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def stack_start(identifiers):
+def stack_start(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
             stack = utils.fetch_remote_stack(identifier)
             result = stack.start()
+            utils.sync_action(stack, sync)
             if result:
                 print(stack.uuid)
         except Exception as e:
@@ -1459,12 +1505,13 @@ def stack_start(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def stack_stop(identifiers):
+def stack_stop(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
             stack = utils.fetch_remote_stack(identifier)
             result = stack.stop()
+            utils.sync_action(stack, sync)
             if result:
                 print(stack.uuid)
         except Exception as e:
@@ -1474,12 +1521,13 @@ def stack_stop(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def stack_terminate(identifiers):
+def stack_terminate(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
             stack = utils.fetch_remote_stack(identifier)
             result = stack.delete()
+            utils.sync_action(stack, sync)
             if result:
                 print(stack.uuid)
         except Exception as e:
@@ -1489,12 +1537,30 @@ def stack_terminate(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def stack_update(identifier, stackfile):
+def stack_update(identifier, stackfile, sync):
     try:
         stack = utils.load_stack_file(name=None, stackfile=stackfile, stack=utils.fetch_remote_stack(identifier))
         result = stack.save()
+        utils.sync_action(stack, sync)
         if result:
             print(stack.uuid)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def stack_export(identifier, stackfile):
+    try:
+        stack = utils.fetch_remote_stack(identifier)
+        content = stack.export()
+        if content:
+            print (stackfile)
+            if stackfile:
+                with open(stackfile, 'w') as outfile:
+                    outfile.write(yaml.safe_dump(content, default_flow_style=False, allow_unicode=True))
+            else:
+                print (yaml.safe_dump(content, default_flow_style=False, allow_unicode=True))
+
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)

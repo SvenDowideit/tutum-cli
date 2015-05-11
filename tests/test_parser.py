@@ -110,7 +110,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
     def test_build_dispatch(self, mock_cmds):
         args = self.parser.parse_args(['build', '-t', 'mysql', '.'])
         dispatch_cmds(args)
-        mock_cmds.build.assert_called_with(args.tag, args.directory)
+        mock_cmds.build.assert_called_with(args.tag, args.directory, args.sock)
 
     @mock.patch('tutumcli.tutum_cli.commands')
     def test_service_dispatch(self, mock_cmds):
@@ -129,7 +129,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                     autoredeploy=args.autoredeploy, roles=args.role,
                                                     sequential=args.sequential,
                                                     volume=args.volume, volumes_from=args.volumes_from,
-                                                    deployment_strategy=args.deployment_strategy)
+                                                    deployment_strategy=args.deployment_strategy, sync=args.sync)
 
         args = self.parser.parse_args(['service', 'inspect', 'id'])
         dispatch_cmds(args)
@@ -145,7 +145,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
 
         args = self.parser.parse_args(['service', 'redeploy', 'mysql'])
         dispatch_cmds(args)
-        mock_cmds.service_redeploy.assert_called_with(args.identifier)
+        mock_cmds.service_redeploy.assert_called_with(args.identifier, args.sync)
 
         args = self.parser.parse_args(['service', 'run', 'mysql'])
         dispatch_cmds(args)
@@ -160,11 +160,11 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                  autoredeploy=args.autoredeploy, roles=args.role,
                                                  sequential=args.sequential,
                                                  volume=args.volume, volumes_from=args.volumes_from,
-                                                 deployment_strategy=args.deployment_strategy)
+                                                 deployment_strategy=args.deployment_strategy, sync=args.sync)
 
         args = self.parser.parse_args(['service', 'scale', 'id', '3'])
         dispatch_cmds(args)
-        mock_cmds.service_scale.assert_called_with(args.identifier, args.target_num_containers)
+        mock_cmds.service_scale.assert_called_with(args.identifier, args.target_num_containers, args.sync)
 
         args = self.parser.parse_args(['service', 'set', 'id'])
         dispatch_cmds(args)
@@ -179,19 +179,19 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                  autoredeploy=args.autoredeploy, roles=args.role,
                                                  sequential=args.sequential, redeploy=args.redeploy,
                                                  volume=args.volume, volumes_from=args.volumes_from,
-                                                 deployment_strategy=args.deployment_strategy)
+                                                 deployment_strategy=args.deployment_strategy, sync=args.sync)
 
         args = self.parser.parse_args(['service', 'start', 'id'])
         dispatch_cmds(args)
-        mock_cmds.service_start.assert_called_with(args.identifier)
+        mock_cmds.service_start.assert_called_with(args.identifier, args.sync)
 
         args = self.parser.parse_args(['service', 'stop', 'id'])
         dispatch_cmds(args)
-        mock_cmds.service_stop.assert_called_with(args.identifier)
+        mock_cmds.service_stop.assert_called_with(args.identifier, args.sync)
 
         args = self.parser.parse_args(['service', 'terminate', 'id'])
         dispatch_cmds(args)
-        mock_cmds.service_terminate.assert_called_with(args.identifier)
+        mock_cmds.service_terminate.assert_called_with(args.identifier, args.sync)
 
     @mock.patch('tutumcli.tutum_cli.commands')
     def test_container_dispatch(self, mock_cmds):
@@ -205,19 +205,19 @@ class CommandsDispatchTestCase(unittest.TestCase):
 
         args = self.parser.parse_args(['container', 'ps'])
         dispatch_cmds(args)
-        mock_cmds.container_ps.assert_called_with(args.quiet, args.status, args.service)
+        mock_cmds.container_ps.assert_called_with(args.quiet, args.status, args.service, args.no_trunc)
 
         args = self.parser.parse_args(['container', 'start', 'id'])
         dispatch_cmds(args)
-        mock_cmds.container_start.assert_called_with(args.identifier)
+        mock_cmds.container_start.assert_called_with(args.identifier, args.sync)
 
         args = self.parser.parse_args(['container', 'stop', 'id'])
         dispatch_cmds(args)
-        mock_cmds.container_stop.assert_called_with(args.identifier)
+        mock_cmds.container_stop.assert_called_with(args.identifier, args.sync)
 
         args = self.parser.parse_args(['container', 'terminate', 'id'])
         dispatch_cmds(args)
-        mock_cmds.container_terminate.assert_called_with(args.identifier)
+        mock_cmds.container_terminate.assert_called_with(args.identifier, args.sync)
 
     @mock.patch('tutumcli.tutum_cli.commands')
     def test_image_dispatch(self, mock_cmds):
@@ -227,7 +227,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
 
         args = self.parser.parse_args(['image', 'register', 'name'])
         dispatch_cmds(args)
-        mock_cmds.image_register(args.image_name, args.description)
+        mock_cmds.image_register(args.image_name, args.description, args.sync)
 
         args = self.parser.parse_args(['image', 'push', 'name'])
         dispatch_cmds(args)
@@ -235,7 +235,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
 
         args = self.parser.parse_args(['image', 'rm', 'name'])
         dispatch_cmds(args)
-        mock_cmds.image_rm(args.image_name)
+        mock_cmds.image_rm(args.image_name, args.sync)
 
         args = self.parser.parse_args(['image', 'search', 'name'])
         dispatch_cmds(args)
@@ -243,7 +243,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
 
         args = self.parser.parse_args(['image', 'update', 'name'])
         dispatch_cmds(args)
-        mock_cmds.image_update(args.image_name, args.username, args.password, args.description)
+        mock_cmds.image_update(args.image_name, args.username, args.password, args.description, args.sync)
 
     @mock.patch('tutumcli.tutum_cli.commands')
     def test_node_dispatch(self, mock_cmds):
@@ -257,18 +257,18 @@ class CommandsDispatchTestCase(unittest.TestCase):
 
         args = self.parser.parse_args(['node', 'rm', 'id'])
         dispatch_cmds(args)
-        mock_cmds.node_rm(args.identifier)
+        mock_cmds.node_rm(args.identifier, args.sync)
 
         args = self.parser.parse_args(['node', 'upgrade', 'id'])
         dispatch_cmds(args)
-        mock_cmds.node_rm(args.identifier)
+        mock_cmds.node_rm(args.identifier, args.sync)
 
     @mock.patch('tutumcli.tutum_cli.commands')
     def test_nodecluster_dispatch(self, mock_cmds):
         args = self.parser.parse_args(['nodecluster', 'create', 'name', '1', '2', '3'])
         dispatch_cmds(args)
         mock_cmds.nodecluster_create(args.target_num_nodes, args.name,
-                                     args.provider, args.region, args.nodetype)
+                                     args.provider, args.region, args.nodetype, args.sync)
 
         args = self.parser.parse_args(['nodecluster', 'inspect', 'id'])
         dispatch_cmds(args)
@@ -292,11 +292,11 @@ class CommandsDispatchTestCase(unittest.TestCase):
 
         args = self.parser.parse_args(['nodecluster', 'rm', 'id'])
         dispatch_cmds(args)
-        mock_cmds.nodecluster_rm(args.identifier)
+        mock_cmds.nodecluster_rm(args.identifier, args.sync)
 
         args = self.parser.parse_args(['nodecluster', 'scale', 'id', '3'])
         dispatch_cmds(args)
-        mock_cmds.nodecluster_scale(args.identifier, args.target_num_nodes)
+        mock_cmds.nodecluster_scale(args.identifier, args.target_num_nodes, args.sync)
 
     @mock.patch('tutumcli.tutum_cli.commands')
     def test_tag_dispatch(self, mock_cmds):
@@ -315,6 +315,48 @@ class CommandsDispatchTestCase(unittest.TestCase):
         args = self.parser.parse_args(['tag', 'set', '-t', 'abc', 'id'])
         dispatch_cmds(args)
         mock_cmds.tag_set.assert_called_with(args.identifier, args.tag)
+
+    @mock.patch('tutumcli.tutum_cli.commands')
+    def test_stack_dispatch(self, mock_cmds):
+        args = self.parser.parse_args(['stack', 'create'])
+        dispatch_cmds(args)
+        mock_cmds.stack_create.assert_called_with(args.name, args.file, args.sync)
+
+        args = self.parser.parse_args(['stack', 'inspect', 'id'])
+        dispatch_cmds(args)
+        mock_cmds.stack_inspect.assert_called_with(args.identifier)
+
+        args = self.parser.parse_args(['stack', 'list'])
+        dispatch_cmds(args)
+        mock_cmds.stack_list.assert_called_with(args.quiet)
+
+        args = self.parser.parse_args(['stack', 'redeploy', 'id'])
+        dispatch_cmds(args)
+        mock_cmds.stack_redeploy.assert_called_with(args.identifier, args.sync)
+
+        args = self.parser.parse_args(['stack', 'start', 'id'])
+        dispatch_cmds(args)
+        mock_cmds.stack_start.assert_called_with(args.identifier, args.sync)
+
+        args = self.parser.parse_args(['stack', 'stop', 'id'])
+        dispatch_cmds(args)
+        mock_cmds.stack_stop.assert_called_with(args.identifier, args.sync)
+
+        args = self.parser.parse_args(['stack', 'terminate', 'id'])
+        dispatch_cmds(args)
+        mock_cmds.stack_terminate.assert_called_with(args.identifier, args.sync)
+
+        args = self.parser.parse_args(['stack', 'up'])
+        dispatch_cmds(args)
+        mock_cmds.stack_up.assert_called_with(args.name, args.file, args.sync)
+
+        args = self.parser.parse_args(['stack', 'update', 'id'])
+        dispatch_cmds(args)
+        mock_cmds.stack_update.assert_called_with(args.identifier, args.file, args.sync)
+
+        args = self.parser.parse_args(['stack', 'export', 'id'])
+        dispatch_cmds(args)
+        mock_cmds.stack_export.assert_called_with(args.identifier, args.file)
 
 
 class ParserTestCase(unittest.TestCase):

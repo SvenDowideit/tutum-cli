@@ -13,6 +13,7 @@ def add_build_parser(subparsers):
     build_parser.add_argument('-t', '--tag', help='repository name (and optionally a tag) to be applied '
                                                   'to the resulting image in case of success')
     build_parser.add_argument('directory', help='working directory')
+    build_parser.add_argument('-s', '--sock', help='docker unix sock address. Default: "/var/run/docker.sock"')
 
 
 def add_event_parser(subparsers):
@@ -80,6 +81,8 @@ def add_service_parser(subparsers):
 
     create_parser.add_argument('--deployment-strategy', help='Container distribution strategy among nodes',
                                choices=['EMPTIEST_NODE', 'HIGH_AVAILABILITY', 'EVERY_NODE'])
+    create_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
     # tutum service inspect
     inspect_parser = service_subparser.add_parser('inspect', help="Get all details from a service",
@@ -104,6 +107,8 @@ def add_service_parser(subparsers):
     redeploy_parser = service_subparser.add_parser('redeploy', help='Redeploy a running service',
                                                    description='Redeploy a running service')
     redeploy_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
+    redeploy_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
     # tutum service run
     run_parser = service_subparser.add_parser('run', help='Create and run a new service',
@@ -153,6 +158,8 @@ def add_service_parser(subparsers):
     run_parser.add_argument('--volumes-from', help='Mount volumes from the specified service(s)', action='append')
     run_parser.add_argument('--deployment-strategy', help='Container distribution strategy among nodes',
                             choices=['EMPTIEST_NODE', 'HIGH_AVAILABILITY', 'EVERY_NODE'])
+    run_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
     # tutum service scale
     scale_parser = service_subparser.add_parser('scale', help='Scale a running service',
@@ -160,6 +167,9 @@ def add_service_parser(subparsers):
     scale_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
     scale_parser.add_argument("target_num_containers", metavar="target-num-containers",
                               help="target number of containers to scale this service to", type=int)
+    scale_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
+
     # tutum service set
     set_parser = service_subparser.add_parser('set', help='Change service properties',
                                               description='Change service properties')
@@ -211,21 +221,29 @@ def add_service_parser(subparsers):
     set_parser.add_argument('--volumes-from', help='Mount volumes from the specified service(s)', action='append')
     set_parser.add_argument('--deployment-strategy', help='Container distribution strategy among nodes',
                             choices=['EMPTIEST_NODE', 'HIGH_AVAILABILITY', 'EVERY_NODE'])
+    set_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
     # tutum service start
     start_parser = service_subparser.add_parser('start', help='Start a stopped service',
                                                 description='Start a stopped service')
     start_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
+    start_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
     # tutum service stop
     stop_parser = service_subparser.add_parser('stop', help='Stop a running service',
                                                description='Stop a running service')
     stop_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
+    stop_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
     # tutum service terminate
     terminate_parser = service_subparser.add_parser('terminate', help='Terminate a service',
                                                     description='Terminate a service')
     terminate_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
+    terminate_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
 
 def add_container_parser(subparsers):
@@ -247,6 +265,8 @@ def add_container_parser(subparsers):
     redeploy_parser = container_subparser.add_parser('redeploy', help='Redeploy a running container',
                                                      description='Redeploy a running container')
     redeploy_parser.add_argument('identifier', help="service's UUID (either long or short) or name", nargs='+')
+    redeploy_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
     # tutum container ps
     ps_parser = container_subparser.add_parser('ps', help='List containers', description='List containers')
@@ -254,19 +274,26 @@ def add_container_parser(subparsers):
     ps_parser.add_argument('-s', '--status', help='filter containers by status',
                            choices=['Init', 'Stopped', 'Starting', 'Running', 'Stopping', 'Terminating', 'Terminated'])
     ps_parser.add_argument('--service', help="filter containers by service (UUID either long or short, or name)")
+    ps_parser.add_argument('--no-trunc', help="don't truncate output", action='store_true')
 
     # tutum container start
     start_parser = container_subparser.add_parser('start', help='Start a container', description='Start a container')
     start_parser.add_argument('identifier', help="container's UUID (either long or short) or name", nargs='+')
+    start_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
     # tutum container stop
     stop_parser = container_subparser.add_parser('stop', help='Stop a container', description='Stop a container')
     stop_parser.add_argument('identifier', help="container's UUID (either long or short) or name", nargs='+')
+    stop_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
     # tutum container terminate
     terminate_parser = container_subparser.add_parser('terminate', help='Terminate a container',
                                                       description='Terminate a container')
     terminate_parser.add_argument('identifier', help="container's UUID (either long or short) or name", nargs='+')
+    terminate_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
 
 def add_image_parser(subparsers):
@@ -292,6 +319,8 @@ def add_image_parser(subparsers):
     register_parser.add_argument('-d', '--description', help='Image description')
     register_parser.add_argument('-u', '--username', help='Username of the private registry')
     register_parser.add_argument('-p', '--password', help='Password of the private registry')
+    register_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
 
     # tutum image push
@@ -304,6 +333,8 @@ def add_image_parser(subparsers):
     rm_parser = image_subparser.add_parser('rm', help='Deregister a private image from Tutum',
                                            description='Deregister a private image from Tutum')
     rm_parser.add_argument('image_name', help='full image name, i.e. quay.io/tutum/test-repo', nargs='+')
+    rm_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
     # tutum image search
     search_parser = image_subparser.add_parser('search', help='Search for images in the Docker Index',
@@ -317,6 +348,8 @@ def add_image_parser(subparsers):
     update_parser.add_argument('-u', '--username', help='new username to authenticate with the registry')
     update_parser.add_argument('-p', '--password', help='new password to authenticate with the registry')
     update_parser.add_argument('-d', '--description', help='new image description')
+    update_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
 
 def add_node_parser(subparsers):
@@ -339,11 +372,15 @@ def add_node_parser(subparsers):
     # tutum node rm
     rm_parser = node_subparser.add_parser('rm', help='Remove a node', description='Remove a container')
     rm_parser.add_argument('identifier', help="node's UUID (either long or short)", nargs='+')
+    rm_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
     # tutum node upgrade
     upgrade_parser = node_subparser.add_parser('upgrade', help='Upgrade docker daemon on the node',
                                                description='Upgrade docker daemon to the latest version on the node')
     upgrade_parser.add_argument('identifier', help="node's UUID (either long or short)", nargs='+')
+    upgrade_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
 
 def add_nodecluster_parser(subparsers):
@@ -361,6 +398,8 @@ def add_nodecluster_parser(subparsers):
     create_parser.add_argument('provider', help='name of the provider')
     create_parser.add_argument('region', help='name of the region')
     create_parser.add_argument('nodetype', help='name of the node type')
+    create_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
     # tutum nodecluster inspect
     inspect_parser = nodecluster_subparser.add_parser('inspect', help='Inspect a nodecluster',
@@ -374,6 +413,8 @@ def add_nodecluster_parser(subparsers):
     # tutum nodecluster rm
     rm_parser = nodecluster_subparser.add_parser('rm', help='Remove node clusters', description='Remove node clusters')
     rm_parser.add_argument('identifier', help="node's UUID (either long or short)", nargs='+')
+    rm_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
     # tutum nodecluster scale
     scale_parser = nodecluster_subparser.add_parser('scale', help='Scale a running node cluster',
@@ -381,6 +422,8 @@ def add_nodecluster_parser(subparsers):
     scale_parser.add_argument('identifier', help="node cluster's UUID (either long or short) or name", nargs='+')
     scale_parser.add_argument("target_num_nodes", metavar="target-num-nodes",
                               help="target number of nodes to scale this node cluster to", type=int)
+    scale_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
     # tutum nodecluster provider
     provider_parser = nodecluster_subparser.add_parser('provider', help='Show all available infrastructure providers',
@@ -496,6 +539,15 @@ def add_stack_parser(subparsers):
                                                description='Create a new stack without deploying')
     create_parser.add_argument('-n', '--name', help='The name of the stack, which wil be shown in tutum')
     create_parser.add_argument('-f', '--file', help="the name of the Stackfile")
+    create_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
+
+    # tutum stack export
+    export_parser = stack_subparser.add_parser('export', help='Export the stack from tutum',
+                                           description='Export the stack from tutum')
+    export_parser.add_argument('identifier', help='UUID or name of the stack')
+    export_parser.add_argument('-f', '--file', help="the name of the file to export to")
+
 
     # tutum stack inspect
     inspect_parser = stack_subparser.add_parser('inspect', help='Inspect a stack', description='Inspect a stack')
@@ -509,28 +561,39 @@ def add_stack_parser(subparsers):
     redeploy_parser = stack_subparser.add_parser('redeploy', help='Redeploy a running stack',
                                                  description='Redeploy a running stack')
     redeploy_parser.add_argument('identifier', help="stack's UUID (either long or short) or name", nargs='+')
+    redeploy_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
     # tutum stack start
     start_parser = stack_subparser.add_parser('start', help='Start a stack', description='Start a stack')
     start_parser.add_argument('identifier', help="stack's UUID (either long or short) or name", nargs='+')
+    start_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
     # tutum stack stop
     stop_parser = stack_subparser.add_parser('stop', help='Stop a stack', description='Stop a stack')
     stop_parser.add_argument('identifier', help="stack's UUID (either long or short) or name", nargs='+')
+    stop_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
     # tutum stack terminate
     terminate_parser = stack_subparser.add_parser('terminate', help='Terminate a stack',
                                                   description='Terminate a stack')
     terminate_parser.add_argument('identifier', help="stack's UUID (either long or short) or name", nargs='+')
+    terminate_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
     # tutum stack up
     up_parser = stack_subparser.add_parser('up', help='Create and deploy a stack',
                                            description='Create and deploy a stack')
     up_parser.add_argument('-n', '--name', help='The name of the stack, which wil be shown in tutum')
     up_parser.add_argument('-f', '--file', help="the name of the Stackfile")
+    up_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
 
     # tutum stack update
     update_parser = stack_subparser.add_parser('update', help='Update a stack', description='Update a stack')
     update_parser.add_argument('identifier', help="stack's UUID (either long or short) or name")
     update_parser.add_argument('-f', '--file', help="the name of the Stackfile")
-
+    update_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
