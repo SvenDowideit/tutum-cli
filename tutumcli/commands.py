@@ -1128,6 +1128,22 @@ def nodecluster_scale(identifiers, target_num_nodes, sync):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
+def nodecluster_upgrade(identifiers, sync):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            nodecluster = utils.fetch_remote_nodecluster(identifier)
+            result = nodecluster.upgrade_docker()
+            utils.sync_action(nodecluster, sync)
+            if result:
+                print(nodecluster.uuid)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+
+        sys.exit(EXCEPTION_EXIT_CODE)
+
 def tag_add(identifiers, tags):
     has_exception = False
     for identifier in identifiers:

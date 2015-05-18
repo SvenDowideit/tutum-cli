@@ -439,6 +439,13 @@ def add_nodecluster_parser(subparsers):
     nodetype_parser.add_argument('-p', '--provider', help="filtered by provider name (e.g. digitalocean)")
     nodetype_parser.add_argument('-r', '--region', help="filtered by region name (e.g. ams1)")
 
+    # tutum nodecluster upgrade
+    upgrade_parser = nodecluster_subparser.add_parser('upgrade', help='Upgrade docker daemon on all the nodes in the node cluster',
+                                               description='Upgrade docker daemon on all the nodes in the node cluster')
+    upgrade_parser.add_argument('identifier', help="node's UUID (either long or short)", nargs='+')
+    upgrade_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
+
 
 def add_tag_parser(subparsers):
     # tutum tag

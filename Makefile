@@ -1,3 +1,7 @@
+test:prepare
+	venv/bin/pip install mock nose
+	venv/bin/python setup.py nosetests
+
 clean:
 	rm -rf venv build dist tutum.egg-info python-tutum*
 	rm -f *.tar.gz
@@ -6,7 +10,7 @@ clean:
 prepare:clean
 	set -ex
 	virtualenv venv
-	export SDK_VER=$(shell cat requirements.txt | grep python-tutum | grep -o '[0-9.]*') && curl -0L https://github.com/tutumcloud/python-tutum/archive/v$${SDK_VER}.tar.gz | tar -zxv && venv/bin/pip install python-tutum-$${SDK_VER}/. && rm -rf python-tutum-$${SDK_VER}
+	git clone -b staging https://github.com/tutumcloud/python-tutum.git && cd python-tutum && ../venv/bin/python setup.py install && cd .. && rm -rf python-tutum
 	venv/bin/pip install -r requirements.txt
 	venv/bin/pip install .
 
