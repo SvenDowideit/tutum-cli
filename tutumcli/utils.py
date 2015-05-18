@@ -333,20 +333,20 @@ def fetch_remote_nodecluster(identifier, raise_exceptions=True):
         raise e
 
 
-def get_uuids_of_webhookhandler(webhookhandler, identifiers):
+def get_uuids_of_trigger(trigger, identifiers):
     uuid_list = []
     for identifier in identifiers:
         if is_uuid4(identifier):
             uuid_list.append(identifier)
         else:
-            handlers = webhookhandler.list(uuid__startswith=identifier) or \
-                       webhookhandler.list(name=identifier)
+            handlers = trigger.list(uuid__startswith=identifier) or \
+                       trigger.list(name=identifier)
             for handler in handlers:
                 uuid = handler.get('uuid', "")
                 if uuid:
                     uuid_list.append(uuid)
     if not uuid_list:
-        raise ObjectNotFound("Cannot find a webhook handler with the identifier '%s'" % identifier)
+        raise ObjectNotFound("Cannot find a trigger with the identifier '%s'" % identifier)
     return uuid_list
 
 

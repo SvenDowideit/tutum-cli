@@ -502,30 +502,30 @@ def add_volumegroup_parser(subparsers):
     list_parser.add_argument('-q', '--quiet', help='print only long UUIDs', action='store_true')
 
 
-def add_webhookhandler_parser(subparsers):
-    # tutum webhook-handler
-    webhookhandler_parser = subparsers.add_parser('webhook-handler', help='Webhook-handler-related operations',
-                                                  description='Webhook-handler-related operations')
-    webhookhandler_subparser = webhookhandler_parser.add_subparsers(title='tutum webhook-handler commands',
-                                                                    dest='subcmd')
+def add_trigger_parser(subparsers):
+    # tutum trigger
+    trigger_parser = subparsers.add_parser('trigger', help='Trigger-related operations',
+                                                  description='Trigger-related operations')
+    trigger_subparser = trigger_parser.add_subparsers(title='tutum trigger commands', dest='subcmd')
 
-    # tutum webhook-handler create
-    create_parser = webhookhandler_subparser.add_parser('create', help='Create webhook handler to services',
-                                                        description='Create webhook handler to services')
-    create_parser.add_argument('-n', '--name', help="name of the webhook handler (optional)", action='append')
-    create_parser.add_argument('identifier', help="UUID or name of services", nargs='+')
+    # tutum trigger create
+    create_parser = trigger_subparser.add_parser('create', help='Create trigger to services',
+                                                        description='Create trigger to services')
+    create_parser.add_argument('-n', '--name', help="name of the trigger (optional)")
+    create_parser.add_argument('-o', '--operation', help="operation of the trigger(default:redeploy)")
+    create_parser.add_argument('identifier', help="UUID or name of services")
 
-    # tutum twebhook-handler list
-    list_parser = webhookhandler_subparser.add_parser('list', help='List all webhook handler associated with services',
-                                                      description='List all webhook handler associated with services')
-    list_parser.add_argument('identifier', help="UUID or name of services", nargs='+')
-    list_parser.add_argument('-q', '--quiet', help='print only webhook andler uuid', action='store_true')
+    # tutum ttrigger list
+    list_parser = trigger_subparser.add_parser('list', help='List all trigger associated with services',
+                                                      description='List all triggers associated with services')
+    list_parser.add_argument('identifier', help="UUID or name of services")
+    list_parser.add_argument('-q', '--quiet', help='print only trigger uuid', action='store_true')
 
-    # tutum webhook-handler delete
-    rm_parser = webhookhandler_subparser.add_parser('rm', help='Remove webhook handler to a service',
-                                                    description='Remove webhook handler to a service')
+    # tutum trigger delete
+    rm_parser = trigger_subparser.add_parser('rm', help='Remove trigger from a service',
+                                                    description='Remove trigger from a service')
     rm_parser.add_argument('identifier', help="UUID or name of services")
-    rm_parser.add_argument('webhookhandler', help="UUID or name of the webhook handler", nargs='+')
+    rm_parser.add_argument('trigger', help="UUID or name of the trigger", nargs='+')
 
 
 def add_stack_parser(subparsers):

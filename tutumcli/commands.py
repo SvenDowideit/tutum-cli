@@ -1344,59 +1344,53 @@ def volumegroup_inspect(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def webhookhandler_create(identifiers, names):
-    has_exception = False
-    for identifier in identifiers:
-        try:
-            service = utils.fetch_remote_service(identifier)
-            webhookhandler = tutum.WebhookHandler.fetch(service)
-            webhookhandler.add(names)
-            webhookhandler.save()
-            print(service.uuid)
-        except Exception as e:
-            print(e, file=sys.stderr)
-            has_exception = True
-    if has_exception:
-        sys.exit(EXCEPTION_EXIT_CODE)
-
-
-def webhookhandler_list(identifiers, quiet):
-    has_exception = False
-
-    headers = ["IDENTIFIER", "NAME", "UUID"]
-    data_list = []
-    uuid_list = []
-    for identifier in identifiers:
-        try:
-            service = utils.fetch_remote_service(identifier)
-            webhookhandler = tutum.WebhookHandler.fetch(service)
-            handlers = webhookhandler.list()
-            for handler in handlers:
-                data_list.append([identifier, handler.get('name', ''), handler.get('uuid', '')])
-                uuid_list.append(handler.get('uuid', ''))
-        except Exception as e:
-            print(e, file=sys.stderr)
-            data_list.append([identifier, '', ''])
-            uuid_list.append('')
-            has_exception = True
-    if quiet:
-        for uuid in uuid_list:
-            print(uuid)
-    else:
-        utils.tabulate_result(data_list, headers)
-    if has_exception:
-        sys.exit(EXCEPTION_EXIT_CODE)
-
-
-def webhookhandler_rm(identifier, webhook_identifiers):
+def trigger_create(identifier, name, operation):
     has_exception = False
     try:
         service = utils.fetch_remote_service(identifier)
-        webhookhandler = tutum.WebhookHandler.fetch(service)
-        uuid_list = utils.get_uuids_of_webhookhandler(webhookhandler, webhook_identifiers)
+        trigger = tutum.Trigger.fetch(service)
+        trigger.add(name, operation)
+        trigger.save()
+        print(service.uuid)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def trigger_list(identifier, quiet):
+    headers = ["UUID", "NAME", "OPERATION", "URL"]
+    data_list = []
+    uuid_list = []
+    try:
+        service = utils.fetch_remote_service(identifier)
+        trigger = tutum.Trigger.fetch(service)
+        triggers = trigger.list()
+        for t in triggers:
+            url = tutum.domain + t.get('url', '/')[1:]
+            data_list.append([t.get('uuid', '')[:8], t.get('name', ''), t.get('operation', ''), url])
+            uuid_list.append(t.get('uuid', ''))
+        if quiet:
+            for uuid in uuid_list:
+                print(uuid)
+        else:
+            if len(data_list) == 0:
+                data_list.append(['', '', '', ''])
+            utils.tabulate_result(data_list, headers)
+    except Exception as e:
+        print(e, file=sys.stderr)
+
+
+def trigger_rm(identifier, trigger_identifiers):
+    has_exception = False
+    try:
+        service = utils.fetch_remote_service(identifier)
+        trigger = tutum.Trigger.fetch(service)
+        uuid_list = utils.get_uuids_of_trigger(trigger, trigger_identifiers)
         try:
             for uuid in uuid_list:
-                webhookhandler.delete(uuid)
+                trigger.delete(uuid)
                 print(uuid)
         except Exception as e:
             print(e, file=sys.stderr)

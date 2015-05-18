@@ -37,7 +37,7 @@ def initialize_parser():
     parsers.add_tag_parser(subparsers)
     parsers.add_volume_parser(subparsers)
     parsers.add_volumegroup_parser(subparsers)
-    parsers.add_webhookhandler_parser(subparsers)
+    parsers.add_trigger_parser(subparsers)
     return parser
 
 
@@ -54,7 +54,7 @@ def patch_help_option(argv=sys.argv):
     if len(args) == 1:
         args.append('-h')
     elif len(args) == 2 and args[1] in ['service', 'build', 'container', 'image', 'node', 'nodecluster', 'tag',
-                                        'volume', 'volumegroup', 'webhook-handler', 'stack']:
+                                        'volume', 'volumegroup', 'trigger', 'stack']:
         args.append('-h')
     elif len(args) == 3:
         if args[1] == 'service' and args[2] in ['create', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
@@ -71,7 +71,7 @@ def patch_help_option(argv=sys.argv):
             args.append('-h')
         elif args[1] == 'tag' and args[2] in ['add', 'list', 'rm', 'set']:
             args.append('-h')
-        elif args[1] == 'webhook-handler' and args[2] in ['create', 'list', 'rm']:
+        elif args[1] == 'trigger' and args[2] in ['create', 'list', 'rm']:
             args.append('-h')
         elif args[1] == 'volume' and args[2] in ['inspect']:
             args.append('-h')
@@ -223,13 +223,13 @@ def dispatch_cmds(args):
             commands.volumegroup_list(args.quiet)
         if args.subcmd == 'inspect':
             commands.volumegroup_inspect(args.identifier)
-    elif args.cmd == 'webhook-handler':
+    elif args.cmd == 'trigger':
         if args.subcmd == 'create':
-            commands.webhookhandler_create(args.identifier, args.name)
+            commands.trigger_create(args.identifier, args.name, args.operation)
         elif args.subcmd == 'list':
-            commands.webhookhandler_list(args.identifier, args.quiet)
+            commands.trigger_list(args.identifier, args.quiet)
         elif args.subcmd == 'rm':
-            commands.webhookhandler_rm(args.identifier, args.webhookhandler)
+            commands.trigger_rm(args.identifier, args.trigger)
     elif args.cmd == 'stack':
         if args.subcmd == 'create':
             commands.stack_create(args.name, args.file, args.sync)
