@@ -463,11 +463,13 @@ class ServiceScaleTestCase(unittest.TestCase):
     def tearDown(self):
         sys.stdout = self.stdout
 
+
     @mock.patch('tutumcli.commands.tutum.Service.save')
     @mock.patch('tutumcli.commands.utils.fetch_remote_service')
     def test_service_scale(self, mock_fetch_remote_service, mock_save):
-        service = tutumcli.commands.tutum.Service()
+        service = mock.MagicMock(spec=tutumcli.commands.tutum.Service)
         service.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
+        service.is_dirty.side_effect = False
         mock_fetch_remote_service.return_value = service
         service_scale(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], 3, False)
 

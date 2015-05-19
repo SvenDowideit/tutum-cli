@@ -337,7 +337,8 @@ def service_scale(identifiers, target_num_containers, sync):
         try:
             service = utils.fetch_remote_service(identifier)
             service.target_num_containers = target_num_containers
-            result = service.save()
+            service.save()
+            result = service.scale()
             utils.sync_action(service, sync)
             if result:
                 print(service.uuid)
