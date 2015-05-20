@@ -583,9 +583,9 @@ def container_ps(quiet, status, service, no_trunc):
             if not no_trunc:
                 container_uuid = container_uuid[:8]
 
-                if len(run_command) > 20:
+                if run_command and len(run_command) > 20:
                     run_command = run_command[:17] + '...'
-                if len(ports_string) > 20:
+                if ports_string and len(ports_string) > 20:
                     ports_string = ports_string[:17] + '...'
                 node = node[:8]
 
