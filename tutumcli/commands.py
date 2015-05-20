@@ -12,6 +12,7 @@ import docker
 import yaml
 from tutum.api import auth
 from tutum.api import exceptions
+
 from exceptions import StreamOutputError, ObjectNotFound, NonUniqueIdentifier
 from tutumcli import utils
 
@@ -161,7 +162,9 @@ def service_logs(identifiers):
     for identifier in identifiers:
         try:
             service = utils.fetch_remote_service(identifier)
-            print(service.logs)
+            service.logs()
+        except KeyboardInterrupt:
+            pass
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -510,7 +513,9 @@ def container_logs(identifiers):
     for identifier in identifiers:
         try:
             container = utils.fetch_remote_container(identifier)
-            print(container.logs)
+            container.logs()
+        except KeyboardInterrupt:
+            pass
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -570,7 +575,6 @@ def container_ps(quiet, status, service, no_trunc):
                     ports_string += "%s:%d->" % (container.public_dns, port['outer_port'])
                 ports_string += "%d/%s" % (port['inner_port'], port['protocol'])
                 ports.append(ports_string)
-
 
             container_uuid = container.uuid
             run_command = container.run_command
@@ -1142,8 +1146,8 @@ def nodecluster_upgrade(identifiers, sync):
             print(e, file=sys.stderr)
             has_exception = True
     if has_exception:
-
         sys.exit(EXCEPTION_EXIT_CODE)
+
 
 def tag_add(identifiers, tags):
     has_exception = False
@@ -1565,12 +1569,12 @@ def stack_export(identifier, stackfile):
         stack = utils.fetch_remote_stack(identifier)
         content = stack.export()
         if content:
-            print (stackfile)
+            print(stackfile)
             if stackfile:
                 with open(stackfile, 'w') as outfile:
                     outfile.write(yaml.safe_dump(content, default_flow_style=False, allow_unicode=True))
             else:
-                print (yaml.safe_dump(content, default_flow_style=False, allow_unicode=True))
+                print(yaml.safe_dump(content, default_flow_style=False, allow_unicode=True))
 
     except Exception as e:
         print(e, file=sys.stderr)

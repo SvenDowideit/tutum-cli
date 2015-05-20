@@ -3,6 +3,7 @@ import logging
 import copy
 import sys
 import codecs
+
 import requests
 
 from . import __version__
@@ -77,7 +78,8 @@ def patch_help_option(argv=sys.argv):
             args.append('-h')
         elif args[1] == 'volumegroup' and args[2] in ['inspect']:
             args.append('-h')
-        elif args[1] == 'stack' and args[2] in ['inspect', 'redeploy', 'terminate', 'start', 'stop', 'update', 'export']:
+        elif args[1] == 'stack' and args[2] in ['inspect', 'redeploy', 'terminate', 'start', 'stop', 'update',
+                                                'export']:
             args.append('-h')
 
     if debug:
@@ -189,7 +191,8 @@ def dispatch_cmds(args):
             commands.node_byo()
     elif args.cmd == 'nodecluster':
         if args.subcmd == 'create':
-            commands.nodecluster_create(args.target_num_nodes, args.name, args.provider, args.region, args.nodetype, args.sync)
+            commands.nodecluster_create(args.target_num_nodes, args.name, args.provider, args.region, args.nodetype,
+                                        args.sync)
         elif args.subcmd == 'inspect':
             commands.nodecluster_inspect(args.identifier)
         elif args.subcmd == 'list':

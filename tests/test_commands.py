@@ -249,35 +249,6 @@ class ServiceInspectTestCase(unittest.TestCase):
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
 
-class ServiceLogsTestCase(unittest.TestCase):
-    def setUp(self):
-        self.stdout = sys.stdout
-        sys.stdout = self.buf = StringIO.StringIO()
-
-    def tearDown(self):
-        sys.stdout = self.stdout
-
-    @mock.patch('tutumcli.commands.utils.fetch_remote_service')
-    def test_service_logs(self, mock_fetch_remote_service):
-        log = 'Here is the log'
-        service = tutumcli.commands.tutum.Service
-        service.logs = log
-        mock_fetch_remote_service.return_value = service
-        service_logs(['test_id'])
-
-        self.assertEqual(log, self.buf.getvalue().strip())
-        self.buf.truncate(0)
-
-    @mock.patch('tutumcli.commands.sys.exit')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_service', side_effect=TutumApiError)
-    def test_service_logs_with_exception(self, mock_fetch_remote_service, mock_exit):
-        service = tutumcli.commands.tutum.Service()
-        mock_fetch_remote_service.return_value = service
-        service_logs(['test_id', 'test_id2'])
-
-        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
-
-
 class ServicePsTestCase(unittest.TestCase):
     def setUp(self):
         self.stdout = sys.stdout
@@ -695,35 +666,6 @@ class ContainerInspectTestCase(unittest.TestCase):
         container = tutumcli.commands.tutum.Container()
         mock_fetch_remote_container.return_value = container
         container_inspect(['test_id', 'test_id2'])
-
-        mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
-
-
-class ContainerLogsTestCase(unittest.TestCase):
-    def setUp(self):
-        self.stdout = sys.stdout
-        sys.stdout = self.buf = StringIO.StringIO()
-
-    def tearDown(self):
-        sys.stdout = self.stdout
-
-    @mock.patch('tutumcli.commands.utils.fetch_remote_container')
-    def test_container_logs(self, mock_fetch_remote_container):
-        log = 'Here is the log'
-        container = tutumcli.commands.tutum.Container
-        container.logs = log
-        mock_fetch_remote_container.return_value = container
-        container_logs(['test_id'])
-
-        self.assertEqual(log, self.buf.getvalue().strip())
-        self.buf.truncate(0)
-
-    @mock.patch('tutumcli.commands.sys.exit')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_container', side_effect=TutumApiError)
-    def test_container_logs_with_exception(self, mock_fetch_remote_container, mock_exit):
-        container = tutumcli.commands.tutum.Container()
-        mock_fetch_remote_container.return_value = container
-        container_logs(['test_id', 'test_id2'])
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 

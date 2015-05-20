@@ -6,16 +6,17 @@ import ssl
 import re
 import os
 import codecs
-import requests
 import sys
 import time
 
+import requests
 import yaml
 import ago
 import docker
 import tutum
 from dateutil import tz
 from tabulate import tabulate
+
 from tutumcli.exceptions import NonUniqueIdentifier, ObjectNotFound, BadParameter, DockerNotFound
 from exceptions import StreamOutputError
 from . import __version__
