@@ -6,12 +6,20 @@ import os
 import logging
 from os.path import join, expanduser, abspath
 import ConfigParser
+import select
+import termios
+import tty
+import signal
+import errno
+import urllib
 
+import websocket
 import tutum
 import docker
 import yaml
 from tutum.api import auth
 from tutum.api import exceptions
+from tutum import TutumAuthError, TutumApiError
 
 from exceptions import StreamOutputError, ObjectNotFound, NonUniqueIdentifier
 from tutumcli import utils
@@ -493,6 +501,87 @@ def service_terminate(identifiers, sync):
             has_exception = True
     if has_exception:
         sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def container_exec(identifier):
+    def invoke_shell(url):
+        shell = websocket.create_connection(url, timeout=10)
+
+        oldtty = termios.tcgetattr(sys.stdin)
+        old_handler = signal.getsignal(signal.SIGWINCH)
+        errorcode = 0
+
+        try:
+            tty.setraw(sys.stdin.fileno())
+            tty.setcbreak(sys.stdin.fileno())
+
+            while True:
+                try:
+                    r, w, e = select.select([shell.sock, sys.stdin], [], [shell.sock], 5)
+                    if sys.stdin in r:
+                        x = sys.stdin.read(1)
+                        if len(x) == 0:
+                            shell.send('\n')
+                        shell.send(x)
+
+                    if shell.sock in r:
+                        data = shell.recv()
+                        if not data:
+                            continue
+                        try:
+                            message = json.loads(data)
+                            if message.get("type") == "error":
+                                if message.get("data", {}).get("errorMessage") == "UNAUTHORIZED":
+                                    raise TutumAuthError
+                                else:
+                                    raise TutumApiError(message)
+                            streamType = message.get("streamType")
+                            if streamType == "stdout":
+                                sys.stdout.write(message.get("output"))
+                                sys.stdout.flush()
+                            elif streamType == "stderr":
+                                sys.stderr.write(message.get("output"))
+                                sys.stderr.flush()
+                        except TutumAuthError:
+                            raise
+                        except:
+                            sys.stdout.write(data)
+                            sys.stdout.flush()
+                except (select.error, IOError) as e:
+                    if e.args and e.args[0] == errno.EINTR:
+                        pass
+                    else:
+                        raise
+        except TutumAuthError:
+            sys.stderr.write("Not Authorized\r\n")
+            sys.stderr.flush()
+            errorcode = TUTUM_AUTH_ERROR_EXIT_CODE
+        except websocket.WebSocketException:
+            sys.stdout.write("Connection is already closed.\r\n")
+            sys.stdout.flush()
+        except Exception as e:
+            sys.stderr.write("%s\r\n" % e)
+            sys.stderr.flush()
+            errorcode = EXCEPTION_EXIT_CODE
+        finally:
+            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, oldtty)
+            signal.signal(signal.SIGWINCH, old_handler)
+            exit(errorcode)
+
+    try:
+        container = utils.fetch_remote_container(identifier)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+    if tutum.tutum_auth:
+        endpoint = "container/%s/exec/?auth=%s" % (container.uuid, urllib.quote_plus(tutum.tutum_auth))
+    else:
+        endpoint = "container/%s/exec/?user=%s&token=%s" % (container.uuid, tutum.user, tutum.apikey)
+    url = "/".join([tutum.stream_url.rstrip("/"), endpoint.lstrip('/')])
+
+    print(url)
+    invoke_shell(url)
 
 
 def container_inspect(identifiers):

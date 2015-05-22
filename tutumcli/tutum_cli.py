@@ -61,7 +61,7 @@ def patch_help_option(argv=sys.argv):
         if args[1] == 'service' and args[2] in ['create', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
                                                 'start', 'stop', 'terminate']:
             args.append('-h')
-        elif args[1] == 'container' and args[2] in ['inspect', 'logs', 'redeploy', 'start', 'stop',
+        elif args[1] == 'container' and args[2] in ['exec', 'inspect', 'logs', 'redeploy', 'start', 'stop',
                                                     'terminate']:
             args.append('-h')
         elif args[1] == 'image' and args[2] in ['register', 'push', 'rm', 'search', 'update']:
@@ -151,7 +151,9 @@ def dispatch_cmds(args):
         elif args.subcmd == 'terminate':
             commands.service_terminate(args.identifier, args.sync)
     elif args.cmd == 'container':
-        if args.subcmd == 'inspect':
+        if args.subcmd == 'exec':
+            commands.container_exec(args.identifier)
+        elif args.subcmd == 'inspect':
             commands.container_inspect(args.identifier)
         elif args.subcmd == 'logs':
             commands.container_logs(args.identifier)

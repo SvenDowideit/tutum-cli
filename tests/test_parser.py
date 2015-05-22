@@ -195,6 +195,10 @@ class CommandsDispatchTestCase(unittest.TestCase):
 
     @mock.patch('tutumcli.tutum_cli.commands')
     def test_container_dispatch(self, mock_cmds):
+        args = self.parser.parse_args(['container', 'exec', 'id'])
+        dispatch_cmds(args)
+        mock_cmds.container_exec.assert_called_with(args.identifier)
+
         args = self.parser.parse_args(['container', 'inspect', 'id'])
         dispatch_cmds(args)
         mock_cmds.container_inspect.assert_called_with(args.identifier)

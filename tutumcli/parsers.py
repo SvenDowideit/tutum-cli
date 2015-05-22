@@ -253,6 +253,11 @@ def add_container_parser(subparsers):
     container_subparser = container_parser.add_subparsers(title='tutum container commands', dest='subcmd')
 
     # tutum container inspect
+    exec_parser = container_subparser.add_parser('exec', help='Run a command in a running container',
+                                                 description='Run a command in a running container')
+    exec_parser.add_argument('identifier', help="container's UUID (either long or short) or name")
+
+    # tutum container inspect
     inspect_parser = container_subparser.add_parser('inspect', help='Inspect a container',
                                                     description='Inspect a container')
     inspect_parser.add_argument('identifier', help="container's UUID (either long or short) or name", nargs='+')
