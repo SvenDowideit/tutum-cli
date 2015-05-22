@@ -152,7 +152,7 @@ def dispatch_cmds(args):
             commands.service_terminate(args.identifier, args.sync)
     elif args.cmd == 'container':
         if args.subcmd == 'exec':
-            commands.container_exec(args.identifier)
+            commands.container_exec(args.identifier, args.command)
         elif args.subcmd == 'inspect':
             commands.container_inspect(args.identifier)
         elif args.subcmd == 'logs':

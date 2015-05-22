@@ -197,7 +197,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
     def test_container_dispatch(self, mock_cmds):
         args = self.parser.parse_args(['container', 'exec', 'id'])
         dispatch_cmds(args)
-        mock_cmds.container_exec.assert_called_with(args.identifier)
+        mock_cmds.container_exec.assert_called_with(args.identifier, args.command)
 
         args = self.parser.parse_args(['container', 'inspect', 'id'])
         dispatch_cmds(args)

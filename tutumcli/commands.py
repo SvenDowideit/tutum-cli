@@ -503,7 +503,7 @@ def service_terminate(identifiers, sync):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def container_exec(identifier):
+def container_exec(identifier, command):
     def invoke_shell(url):
         shell = websocket.create_connection(url, timeout=10)
 
@@ -578,9 +578,11 @@ def container_exec(identifier):
         endpoint = "container/%s/exec/?auth=%s" % (container.uuid, urllib.quote_plus(tutum.tutum_auth))
     else:
         endpoint = "container/%s/exec/?user=%s&token=%s" % (container.uuid, tutum.user, tutum.apikey)
-    url = "/".join([tutum.stream_url.rstrip("/"), endpoint.lstrip('/')])
 
-    print(url)
+    if command:
+        endpoint = "%s&command=%s" % (endpoint, urllib.quote_plus(" ".join(command)))
+
+    url = "/".join([tutum.stream_url.rstrip("/"), endpoint.lstrip('/')])
     invoke_shell(url)
 
 
