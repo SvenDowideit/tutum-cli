@@ -68,9 +68,9 @@ def add_service_parser(subparsers):
     create_parser.add_argument('--autodestroy', help='whether the containers should be terminated if '
                                                      'they stop (default: OFF)',
                                choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
-    create_parser.add_argument('--autoredeploy', help="whether the containers should be auto redeployed (default: OFF)."
-                                                      " It only applies to services that use an image stored in Tutum's "
-                                                      "registry", choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
+    create_parser.add_argument('--autoredeploy', help="whether the containers should be auto redeployed."
+                                                   " It only applies to services that use an image stored in Tutum's "
+                                                   "registry", action='store_true')
     create_parser.add_argument('--autorestart', help='whether the containers should be restarted if they stop '
                                                      '(default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     create_parser.add_argument('--role', help='Tutum API roles to grant the service, '
@@ -147,9 +147,9 @@ def add_service_parser(subparsers):
     run_parser.add_argument('--autodestroy', help='whether the containers should be terminated if '
                                                   'they stop (default: OFF)',
                             choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
-    run_parser.add_argument('--autoredeploy', help="whether the containers should be auto redeployed (default: OFF)."
+    run_parser.add_argument('--autoredeploy', help="whether the containers should be auto redeployed."
                                                    " It only applies to services that use an image stored in Tutum's "
-                                                   "registry", choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
+                                                   "registry", action='store_true')
     run_parser.add_argument('--autorestart', help='whether the containers should be restarted if they stop '
                                                   '(default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     run_parser.add_argument('--role', help='Tutum API roles to grant the service, '
@@ -207,9 +207,9 @@ def add_service_parser(subparsers):
     set_parser.add_argument('--autodestroy', help='whether the containers should be terminated if '
                                                   'they stop (default: OFF)',
                             choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
-    set_parser.add_argument('--autoredeploy', help="whether the containers should be auto redeployed (default: OFF)."
+    set_parser.add_argument('--autoredeploy', help="whether the containers should be auto redeployed."
                                                    " It only applies to services that use an image stored in Tutum's "
-                                                   "registry", choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
+                                                   "registry", action='store_true')
     set_parser.add_argument('--autorestart', help='whether the containers should be restarted if they stop '
                                                   '(default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     set_parser.add_argument('--role', help='Tutum API roles to grant the service, '
