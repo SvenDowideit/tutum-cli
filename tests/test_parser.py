@@ -137,7 +137,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
 
         args = self.parser.parse_args(['service', 'logs', 'id'])
         dispatch_cmds(args)
-        mock_cmds.service_logs.assert_called_with(args.identifier)
+        mock_cmds.service_logs.assert_called_with(args.identifier, None, False)
 
         args = self.parser.parse_args(['service', 'ps'])
         dispatch_cmds(args)
@@ -205,7 +205,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
 
         args = self.parser.parse_args(['container', 'logs', 'id'])
         dispatch_cmds(args)
-        mock_cmds.container_logs.assert_called_with(args.identifier)
+        mock_cmds.container_logs.assert_called_with(args.identifier, None, False)
 
         args = self.parser.parse_args(['container', 'ps'])
         dispatch_cmds(args)

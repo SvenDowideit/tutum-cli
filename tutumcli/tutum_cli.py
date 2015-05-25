@@ -114,7 +114,7 @@ def dispatch_cmds(args):
         elif args.subcmd == 'inspect':
             commands.service_inspect(args.identifier)
         elif args.subcmd == 'logs':
-            commands.service_logs(args.identifier)
+            commands.service_logs(args.identifier, args.tail, args.follow)
         elif args.subcmd == 'ps':
             commands.service_ps(args.quiet, args.status, args.stack)
         elif args.subcmd == 'redeploy':
@@ -156,7 +156,7 @@ def dispatch_cmds(args):
         elif args.subcmd == 'inspect':
             commands.container_inspect(args.identifier)
         elif args.subcmd == 'logs':
-            commands.container_logs(args.identifier)
+            commands.container_logs(args.identifier, args.tail, args.follow)
         elif args.subcmd == 'redeploy':
             commands.container_redeploy(args.identifier, args.sync)
         elif args.subcmd == 'ps':

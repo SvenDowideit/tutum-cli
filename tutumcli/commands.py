@@ -165,12 +165,12 @@ def service_inspect(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def service_logs(identifiers):
+def service_logs(identifiers, tail, follow):
     has_exception = False
     for identifier in identifiers:
         try:
             service = utils.fetch_remote_service(identifier)
-            service.logs()
+            service.logs(tail, follow)
         except KeyboardInterrupt:
             pass
         except Exception as e:
@@ -599,12 +599,12 @@ def container_inspect(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def container_logs(identifiers):
+def container_logs(identifiers, tail, follow):
     has_exception = False
     for identifier in identifiers:
         try:
             container = utils.fetch_remote_container(identifier)
-            container.logs()
+            container.logs(tail, follow)
         except KeyboardInterrupt:
             pass
         except Exception as e:
