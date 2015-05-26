@@ -26,6 +26,7 @@ class PatchHelpOptionTestCase(unittest.TestCase):
             ['tutum', 'service', 'terminate'],
             ['tutum', 'build'],
             ['tutum', 'container'],
+            ['tutum', 'container', 'exec'],
             ['tutum', 'container', 'inspect'],
             ['tutum', 'container', 'logs'],
             ['tutum', 'container', 'start'],
@@ -37,6 +38,9 @@ class PatchHelpOptionTestCase(unittest.TestCase):
             ['tutum', 'image', 'rm'],
             ['tutum', 'image', 'search'],
             ['tutum', 'image', 'update'],
+            ['tutum', 'push'],
+            ['tutum', 'run'],
+            ['tutum', 'exec'],
             ['tutum', 'node'],
             ['tutum', 'node', 'inspect'],
             ['tutum', 'node', 'rm'],
@@ -113,6 +117,41 @@ class CommandsDispatchTestCase(unittest.TestCase):
         mock_cmds.build.assert_called_with(args.tag, args.directory, args.sock)
 
     @mock.patch('tutumcli.tutum_cli.commands')
+    def test_run_dispatch(self, mock_cmds):
+        args = self.parser.parse_args(['run', 'mysql'])
+        dispatch_cmds(args)
+        mock_cmds.service_run.assert_called_with(image=args.image, name=args.name, cpu_shares=args.cpushares,
+                                                 memory=args.memory, target_num_containers=args.target_num_containers,
+                                                 privileged=args.privileged,
+                                                 run_command=args.run_command,
+                                                 entrypoint=args.entrypoint, expose=args.expose, publish=args.publish,
+                                                 envvars=args.env, envfiles=args.env_file, tag=args.tag,
+                                                 linked_to_service=args.link_service,
+                                                 autorestart=args.autorestart, autodestroy=args.autodestroy,
+                                                 autoredeploy=args.autoredeploy, roles=args.role,
+                                                 sequential=args.sequential,
+                                                 volume=args.volume, volumes_from=args.volumes_from,
+                                                 deployment_strategy=args.deployment_strategy, sync=args.sync)
+
+    @mock.patch('tutumcli.tutum_cli.commands')
+    def test_push_dispatch(self, mock_cmds):
+        args = self.parser.parse_args(['push', 'name'])
+        dispatch_cmds(args)
+        mock_cmds.image_push(args.name, args.public)
+
+    @mock.patch('tutumcli.tutum_cli.commands')
+    def test_exec_dispatch(self, mock_cmds):
+        args = self.parser.parse_args(['exec', 'command', 'mysql', '.'])
+        dispatch_cmds(args)
+        mock_cmds.container_exec.assert_called_with(args.identifier, args.command)
+
+    @mock.patch('tutumcli.tutum_cli.commands')
+    def test_up_dispatch(self, mock_cmds):
+        args = self.parser.parse_args(['up'])
+        dispatch_cmds(args)
+        mock_cmds.stack_up.assert_called_with(args.name, args.file, args.sync)
+
+    @mock.patch('tutumcli.tutum_cli.commands')
     def test_service_dispatch(self, mock_cmds):
         args = self.parser.parse_args(['service', 'create', 'mysql'])
         dispatch_cmds(args)
@@ -137,7 +176,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
 
         args = self.parser.parse_args(['service', 'logs', 'id'])
         dispatch_cmds(args)
-        mock_cmds.service_logs.assert_called_with(args.identifier)
+        mock_cmds.service_logs.assert_called_with(args.identifier, None, False)
 
         args = self.parser.parse_args(['service', 'ps'])
         dispatch_cmds(args)
@@ -195,13 +234,17 @@ class CommandsDispatchTestCase(unittest.TestCase):
 
     @mock.patch('tutumcli.tutum_cli.commands')
     def test_container_dispatch(self, mock_cmds):
+        args = self.parser.parse_args(['container', 'exec', 'id'])
+        dispatch_cmds(args)
+        mock_cmds.container_exec.assert_called_with(args.identifier, args.command)
+
         args = self.parser.parse_args(['container', 'inspect', 'id'])
         dispatch_cmds(args)
         mock_cmds.container_inspect.assert_called_with(args.identifier)
 
         args = self.parser.parse_args(['container', 'logs', 'id'])
         dispatch_cmds(args)
-        mock_cmds.container_logs.assert_called_with(args.identifier)
+        mock_cmds.container_logs.assert_called_with(args.identifier, None, False)
 
         args = self.parser.parse_args(['container', 'ps'])
         dispatch_cmds(args)

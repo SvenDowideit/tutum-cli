@@ -6,12 +6,21 @@ import os
 import logging
 from os.path import join, expanduser, abspath
 import ConfigParser
+import select
+import termios
+import tty
+import signal
+import errno
+import urllib
 
+import websocket
 import tutum
 import docker
 import yaml
 from tutum.api import auth
 from tutum.api import exceptions
+from tutum import TutumAuthError, TutumApiError
+
 from exceptions import StreamOutputError, ObjectNotFound, NonUniqueIdentifier
 from tutumcli import utils
 
@@ -156,12 +165,14 @@ def service_inspect(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def service_logs(identifiers):
+def service_logs(identifiers, tail, follow):
     has_exception = False
     for identifier in identifiers:
         try:
             service = utils.fetch_remote_service(identifier)
-            print(service.logs)
+            service.logs(tail, follow)
+        except KeyboardInterrupt:
+            pass
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -337,7 +348,8 @@ def service_scale(identifiers, target_num_containers, sync):
         try:
             service = utils.fetch_remote_service(identifier)
             service.target_num_containers = target_num_containers
-            result = service.save()
+            service.save()
+            result = service.scale()
             utils.sync_action(service, sync)
             if result:
                 print(service.uuid)
@@ -491,6 +503,103 @@ def service_terminate(identifiers, sync):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
+def container_exec(identifier, command):
+    def invoke_shell(url):
+        shell = websocket.create_connection(url, timeout=10)
+
+        oldtty = termios.tcgetattr(sys.stdin)
+        old_handler = signal.getsignal(signal.SIGWINCH)
+        errorcode = 0
+
+        try:
+            tty.setraw(sys.stdin.fileno())
+            tty.setcbreak(sys.stdin.fileno())
+
+            while True:
+                try:
+                    r, w, e = select.select([shell.sock, sys.stdin], [], [shell.sock], 5)
+                    if sys.stdin in r:
+                        x = sys.stdin.read(1)
+                        if len(x) == 0:
+                            shell.send('\n')
+                        shell.send(x)
+
+                    if shell.sock in r:
+                        data = shell.recv()
+                        if not data:
+                            continue
+                        try:
+                            message = json.loads(data)
+                            if message.get("type") == "error":
+                                if message.get("data", {}).get("errorMessage") == "UNAUTHORIZED":
+                                    raise TutumAuthError
+                                else:
+                                    raise TutumApiError(message)
+                            streamType = message.get("streamType")
+                            if streamType == "stdout":
+                                sys.stdout.write(message.get("output"))
+                                sys.stdout.flush()
+                            elif streamType == "stderr":
+                                sys.stderr.write(message.get("output"))
+                                sys.stderr.flush()
+                        except TutumAuthError:
+                            raise
+                        except:
+                            sys.stdout.write(data)
+                            sys.stdout.flush()
+                except (select.error, IOError) as e:
+                    if e.args and e.args[0] == errno.EINTR:
+                        pass
+                    else:
+                        raise
+        except TutumAuthError:
+            sys.stderr.write("Not Authorized\r\n")
+            sys.stderr.flush()
+            errorcode = TUTUM_AUTH_ERROR_EXIT_CODE
+        except websocket.WebSocketConnectionClosedException:
+            pass
+        except websocket.WebSocketException:
+            sys.stderr.write("Connection is already closed.\r\n")
+            sys.stderr.flush()
+            errorcode = EXCEPTION_EXIT_CODE
+        except Exception as e:
+            sys.stderr.write("%s\r\n" % e)
+            sys.stderr.flush()
+            errorcode = EXCEPTION_EXIT_CODE
+        finally:
+            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, oldtty)
+            signal.signal(signal.SIGWINCH, old_handler)
+            exit(errorcode)
+
+    try:
+        container = utils.fetch_remote_container(identifier)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+    if tutum.tutum_auth:
+        endpoint = "container/%s/exec/?auth=%s" % (container.uuid, urllib.quote_plus(tutum.tutum_auth))
+    else:
+        endpoint = "container/%s/exec/?user=%s&token=%s" % (container.uuid, tutum.user, tutum.apikey)
+
+    if command:
+        escaped_cmd = []
+        for c in command:
+            if r'"' in c:
+                c = c.replace(r'"', r'\"')
+            if " " in c:
+                c = '"%s"' % c
+            escaped_cmd.append(c)
+
+        escaped_cmd = " ".join(escaped_cmd)
+        cli_log.debug("escaped command: %s" % escaped_cmd)
+        endpoint = "%s&command=%s" % (endpoint, urllib.quote_plus(escaped_cmd))
+
+    url = "/".join([tutum.stream_url.rstrip("/"), endpoint.lstrip('/')])
+    cli_log.debug("websocket url: %s" % url)
+    invoke_shell(url)
+
+
 def container_inspect(identifiers):
     has_exception = False
     for identifier in identifiers:
@@ -504,12 +613,14 @@ def container_inspect(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def container_logs(identifiers):
+def container_logs(identifiers, tail, follow):
     has_exception = False
     for identifier in identifiers:
         try:
             container = utils.fetch_remote_container(identifier)
-            print(container.logs)
+            container.logs(tail, follow)
+        except KeyboardInterrupt:
+            pass
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
@@ -570,7 +681,6 @@ def container_ps(quiet, status, service, no_trunc):
                 ports_string += "%d/%s" % (port['inner_port'], port['protocol'])
                 ports.append(ports_string)
 
-
             container_uuid = container.uuid
             run_command = container.run_command
             ports_string = ", ".join(ports)
@@ -578,9 +688,9 @@ def container_ps(quiet, status, service, no_trunc):
             if not no_trunc:
                 container_uuid = container_uuid[:8]
 
-                if len(run_command) > 20:
+                if run_command and len(run_command) > 20:
                     run_command = run_command[:17] + '...'
-                if len(ports_string) > 20:
+                if ports_string and len(ports_string) > 20:
                     ports_string = ports_string[:17] + '...'
                 node = node[:8]
 
@@ -1128,6 +1238,22 @@ def nodecluster_scale(identifiers, target_num_nodes, sync):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
+def nodecluster_upgrade(identifiers, sync):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            nodecluster = utils.fetch_remote_nodecluster(identifier)
+            result = nodecluster.upgrade_docker()
+            utils.sync_action(nodecluster, sync)
+            if result:
+                print(nodecluster.uuid)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
 def tag_add(identifiers, tags):
     has_exception = False
     for identifier in identifiers:
@@ -1344,59 +1470,53 @@ def volumegroup_inspect(identifiers):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def webhookhandler_create(identifiers, names):
-    has_exception = False
-    for identifier in identifiers:
-        try:
-            service = utils.fetch_remote_service(identifier)
-            webhookhandler = tutum.WebhookHandler.fetch(service)
-            webhookhandler.add(names)
-            webhookhandler.save()
-            print(service.uuid)
-        except Exception as e:
-            print(e, file=sys.stderr)
-            has_exception = True
-    if has_exception:
-        sys.exit(EXCEPTION_EXIT_CODE)
-
-
-def webhookhandler_list(identifiers, quiet):
-    has_exception = False
-
-    headers = ["IDENTIFIER", "NAME", "UUID"]
-    data_list = []
-    uuid_list = []
-    for identifier in identifiers:
-        try:
-            service = utils.fetch_remote_service(identifier)
-            webhookhandler = tutum.WebhookHandler.fetch(service)
-            handlers = webhookhandler.list()
-            for handler in handlers:
-                data_list.append([identifier, handler.get('name', ''), handler.get('uuid', '')])
-                uuid_list.append(handler.get('uuid', ''))
-        except Exception as e:
-            print(e, file=sys.stderr)
-            data_list.append([identifier, '', ''])
-            uuid_list.append('')
-            has_exception = True
-    if quiet:
-        for uuid in uuid_list:
-            print(uuid)
-    else:
-        utils.tabulate_result(data_list, headers)
-    if has_exception:
-        sys.exit(EXCEPTION_EXIT_CODE)
-
-
-def webhookhandler_rm(identifier, webhook_identifiers):
+def trigger_create(identifier, name, operation):
     has_exception = False
     try:
         service = utils.fetch_remote_service(identifier)
-        webhookhandler = tutum.WebhookHandler.fetch(service)
-        uuid_list = utils.get_uuids_of_webhookhandler(webhookhandler, webhook_identifiers)
+        trigger = tutum.Trigger.fetch(service)
+        trigger.add(name, operation)
+        trigger.save()
+        print(service.uuid)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def trigger_list(identifier, quiet):
+    headers = ["UUID", "NAME", "OPERATION", "URL"]
+    data_list = []
+    uuid_list = []
+    try:
+        service = utils.fetch_remote_service(identifier)
+        trigger = tutum.Trigger.fetch(service)
+        triggers = trigger.list()
+        for t in triggers:
+            url = tutum.domain + t.get('url', '/')[1:]
+            data_list.append([t.get('uuid', '')[:8], t.get('name', ''), t.get('operation', ''), url])
+            uuid_list.append(t.get('uuid', ''))
+        if quiet:
+            for uuid in uuid_list:
+                print(uuid)
+        else:
+            if len(data_list) == 0:
+                data_list.append(['', '', '', ''])
+            utils.tabulate_result(data_list, headers)
+    except Exception as e:
+        print(e, file=sys.stderr)
+
+
+def trigger_rm(identifier, trigger_identifiers):
+    has_exception = False
+    try:
+        service = utils.fetch_remote_service(identifier)
+        trigger = tutum.Trigger.fetch(service)
+        uuid_list = utils.get_uuids_of_trigger(trigger, trigger_identifiers)
         try:
             for uuid in uuid_list:
-                webhookhandler.delete(uuid)
+                trigger.delete(uuid)
                 print(uuid)
         except Exception as e:
             print(e, file=sys.stderr)
@@ -1554,12 +1674,12 @@ def stack_export(identifier, stackfile):
         stack = utils.fetch_remote_stack(identifier)
         content = stack.export()
         if content:
-            print (stackfile)
+            print(stackfile)
             if stackfile:
                 with open(stackfile, 'w') as outfile:
                     outfile.write(yaml.safe_dump(content, default_flow_style=False, allow_unicode=True))
             else:
-                print (yaml.safe_dump(content, default_flow_style=False, allow_unicode=True))
+                print(yaml.safe_dump(content, default_flow_style=False, allow_unicode=True))
 
     except Exception as e:
         print(e, file=sys.stderr)

@@ -3,6 +3,7 @@ import logging
 import copy
 import sys
 import codecs
+
 import requests
 
 from . import __version__
@@ -28,16 +29,20 @@ def initialize_parser():
     parsers.add_build_parser(subparsers)
     parsers.add_container_parser(subparsers)
     parsers.add_event_parser(subparsers)
+    parsers.add_exec_parser(subparsers)
     parsers.add_image_parser(subparsers)
     parsers.add_login_parser(subparsers)
     parsers.add_node_parser(subparsers)
     parsers.add_nodecluster_parser(subparsers)
+    parsers.add_push_parser(subparsers)
+    parsers.add_run_parser(subparsers)
     parsers.add_service_parser(subparsers)
     parsers.add_stack_parser(subparsers)
     parsers.add_tag_parser(subparsers)
     parsers.add_volume_parser(subparsers)
     parsers.add_volumegroup_parser(subparsers)
-    parsers.add_webhookhandler_parser(subparsers)
+    parsers.add_trigger_parser(subparsers)
+    parsers.add_up_parser(subparsers)
     return parser
 
 
@@ -53,31 +58,32 @@ def patch_help_option(argv=sys.argv):
 
     if len(args) == 1:
         args.append('-h')
-    elif len(args) == 2 and args[1] in ['service', 'build', 'container', 'image', 'node', 'nodecluster', 'tag',
-                                        'volume', 'volumegroup', 'webhook-handler', 'stack']:
+    elif len(args) == 2 and args[1] in ['service', 'build', 'container', 'image', 'exec', 'node', 'nodecluster', 'tag',
+                                        'volume', 'volumegroup', 'trigger', 'stack', 'push', 'run']:
         args.append('-h')
     elif len(args) == 3:
         if args[1] == 'service' and args[2] in ['create', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
                                                 'start', 'stop', 'terminate']:
             args.append('-h')
-        elif args[1] == 'container' and args[2] in ['inspect', 'logs', 'redeploy', 'start', 'stop',
+        elif args[1] == 'container' and args[2] in ['exec', 'inspect', 'logs', 'redeploy', 'start', 'stop',
                                                     'terminate']:
             args.append('-h')
         elif args[1] == 'image' and args[2] in ['register', 'push', 'rm', 'search', 'update']:
             args.append('-h')
         elif args[1] == 'node' and args[2] in ['inspect', 'rm', 'upgrade']:
             args.append('-h')
-        elif args[1] == 'nodecluster' and args[2] in ['create', 'inspect', 'rm', 'scale']:
+        elif args[1] == 'nodecluster' and args[2] in ['create', 'inspect', 'rm', 'scale', 'upgrade']:
             args.append('-h')
         elif args[1] == 'tag' and args[2] in ['add', 'list', 'rm', 'set']:
             args.append('-h')
-        elif args[1] == 'webhook-handler' and args[2] in ['create', 'list', 'rm']:
+        elif args[1] == 'trigger' and args[2] in ['create', 'list', 'rm']:
             args.append('-h')
         elif args[1] == 'volume' and args[2] in ['inspect']:
             args.append('-h')
         elif args[1] == 'volumegroup' and args[2] in ['inspect']:
             args.append('-h')
-        elif args[1] == 'stack' and args[2] in ['inspect', 'redeploy', 'terminate', 'start', 'stop', 'update', 'export']:
+        elif args[1] == 'stack' and args[2] in ['inspect', 'redeploy', 'terminate', 'start', 'stop', 'update',
+                                                'export']:
             args.append('-h')
 
     if debug:
@@ -97,6 +103,21 @@ def dispatch_cmds(args):
         commands.build(args.tag, args.directory, args.sock)
     elif args.cmd == 'event':
         commands.event()
+    elif args.cmd == 'exec':
+        commands.container_exec(args.identifier, args.command)
+    elif args.cmd == 'push':
+        commands.image_push(args.name, args.public)
+    elif args.cmd == 'run':
+        commands.service_run(image=args.image, name=args.name, cpu_shares=args.cpushares,
+                                 memory=args.memory, privileged=args.privileged,
+                                 target_num_containers=args.target_num_containers, run_command=args.run_command,
+                                 entrypoint=args.entrypoint, expose=args.expose, publish=args.publish, envvars=args.env,
+                                 envfiles=args.env_file,
+                                 tag=args.tag, linked_to_service=args.link_service,
+                                 autorestart=args.autorestart, autodestroy=args.autodestroy,
+                                 autoredeploy=args.autoredeploy, roles=args.role,
+                                 sequential=args.sequential, volume=args.volume, volumes_from=args.volumes_from,
+                                 deployment_strategy=args.deployment_strategy, sync=args.sync)
     elif args.cmd == 'service':
         if args.subcmd == 'create':
             commands.service_create(image=args.image, name=args.name, cpu_shares=args.cpushares,
@@ -112,7 +133,7 @@ def dispatch_cmds(args):
         elif args.subcmd == 'inspect':
             commands.service_inspect(args.identifier)
         elif args.subcmd == 'logs':
-            commands.service_logs(args.identifier)
+            commands.service_logs(args.identifier, args.tail, args.follow)
         elif args.subcmd == 'ps':
             commands.service_ps(args.quiet, args.status, args.stack)
         elif args.subcmd == 'redeploy':
@@ -149,10 +170,12 @@ def dispatch_cmds(args):
         elif args.subcmd == 'terminate':
             commands.service_terminate(args.identifier, args.sync)
     elif args.cmd == 'container':
-        if args.subcmd == 'inspect':
+        if args.subcmd == 'exec':
+            commands.container_exec(args.identifier, args.command)
+        elif args.subcmd == 'inspect':
             commands.container_inspect(args.identifier)
         elif args.subcmd == 'logs':
-            commands.container_logs(args.identifier)
+            commands.container_logs(args.identifier, args.tail, args.follow)
         elif args.subcmd == 'redeploy':
             commands.container_redeploy(args.identifier, args.sync)
         elif args.subcmd == 'ps':
@@ -189,7 +212,8 @@ def dispatch_cmds(args):
             commands.node_byo()
     elif args.cmd == 'nodecluster':
         if args.subcmd == 'create':
-            commands.nodecluster_create(args.target_num_nodes, args.name, args.provider, args.region, args.nodetype, args.sync)
+            commands.nodecluster_create(args.target_num_nodes, args.name, args.provider, args.region, args.nodetype,
+                                        args.sync)
         elif args.subcmd == 'inspect':
             commands.nodecluster_inspect(args.identifier)
         elif args.subcmd == 'list':
@@ -204,6 +228,8 @@ def dispatch_cmds(args):
             commands.nodecluster_rm(args.identifier, args.sync)
         elif args.subcmd == 'scale':
             commands.nodecluster_scale(args.identifier, args.target_num_nodes, args.sync)
+        elif args.subcmd == 'upgrade':
+            commands.nodecluster_upgrade(args.identifier, args.sync)
     elif args.cmd == 'tag':
         if args.subcmd == 'add':
             commands.tag_add(args.identifier, args.tag)
@@ -223,13 +249,13 @@ def dispatch_cmds(args):
             commands.volumegroup_list(args.quiet)
         if args.subcmd == 'inspect':
             commands.volumegroup_inspect(args.identifier)
-    elif args.cmd == 'webhook-handler':
+    elif args.cmd == 'trigger':
         if args.subcmd == 'create':
-            commands.webhookhandler_create(args.identifier, args.name)
+            commands.trigger_create(args.identifier, args.name, args.operation)
         elif args.subcmd == 'list':
-            commands.webhookhandler_list(args.identifier, args.quiet)
+            commands.trigger_list(args.identifier, args.quiet)
         elif args.subcmd == 'rm':
-            commands.webhookhandler_rm(args.identifier, args.webhookhandler)
+            commands.trigger_rm(args.identifier, args.trigger)
     elif args.cmd == 'stack':
         if args.subcmd == 'create':
             commands.stack_create(args.name, args.file, args.sync)
@@ -251,7 +277,8 @@ def dispatch_cmds(args):
             commands.stack_update(args.identifier, args.file, args.sync)
         elif args.subcmd == 'export':
             commands.stack_export(args.identifier, args.file)
-
+    elif args.cmd == 'up':
+        commands.stack_up(args.name, args.file, args.sync)
 
 def main():
     parser = initialize_parser()
