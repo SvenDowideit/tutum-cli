@@ -26,6 +26,7 @@ class PatchHelpOptionTestCase(unittest.TestCase):
             ['tutum', 'service', 'terminate'],
             ['tutum', 'build'],
             ['tutum', 'container'],
+            ['tutum', 'container', 'exec'],
             ['tutum', 'container', 'inspect'],
             ['tutum', 'container', 'logs'],
             ['tutum', 'container', 'start'],
@@ -37,6 +38,7 @@ class PatchHelpOptionTestCase(unittest.TestCase):
             ['tutum', 'image', 'rm'],
             ['tutum', 'image', 'search'],
             ['tutum', 'image', 'update'],
+            ['tutum', 'exec'],
             ['tutum', 'node'],
             ['tutum', 'node', 'inspect'],
             ['tutum', 'node', 'rm'],
@@ -111,6 +113,12 @@ class CommandsDispatchTestCase(unittest.TestCase):
         args = self.parser.parse_args(['build', '-t', 'mysql', '.'])
         dispatch_cmds(args)
         mock_cmds.build.assert_called_with(args.tag, args.directory, args.sock)
+
+    @mock.patch('tutumcli.tutum_cli.commands')
+    def test_exec_dispatch(self, mock_cmds):
+        args = self.parser.parse_args(['exec', 'command', 'mysql', '.'])
+        dispatch_cmds(args)
+        mock_cmds.container_exec.assert_called_with(args.identifier, args.command)
 
     @mock.patch('tutumcli.tutum_cli.commands')
     def test_service_dispatch(self, mock_cmds):

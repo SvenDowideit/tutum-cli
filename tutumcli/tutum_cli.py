@@ -29,6 +29,7 @@ def initialize_parser():
     parsers.add_build_parser(subparsers)
     parsers.add_container_parser(subparsers)
     parsers.add_event_parser(subparsers)
+    parsers.add_exec_parser(subparsers)
     parsers.add_image_parser(subparsers)
     parsers.add_login_parser(subparsers)
     parsers.add_node_parser(subparsers)
@@ -54,7 +55,7 @@ def patch_help_option(argv=sys.argv):
 
     if len(args) == 1:
         args.append('-h')
-    elif len(args) == 2 and args[1] in ['service', 'build', 'container', 'image', 'node', 'nodecluster', 'tag',
+    elif len(args) == 2 and args[1] in ['service', 'build', 'container', 'image', 'exec', 'node', 'nodecluster', 'tag',
                                         'volume', 'volumegroup', 'trigger', 'stack']:
         args.append('-h')
     elif len(args) == 3:
@@ -99,6 +100,8 @@ def dispatch_cmds(args):
         commands.build(args.tag, args.directory, args.sock)
     elif args.cmd == 'event':
         commands.event()
+    elif args.cmd == 'exec':
+        commands.container_exec(args.identifier, args.command)
     elif args.cmd == 'service':
         if args.subcmd == 'create':
             commands.service_create(image=args.image, name=args.name, cpu_shares=args.cpushares,

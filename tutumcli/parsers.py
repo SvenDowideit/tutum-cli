@@ -25,6 +25,13 @@ def add_event_parser(subparsers):
                           description='Get real time tutum events')
 
 
+def add_exec_parser(subparsers):
+    # tutum exec
+    exec_parser = subparsers.add_parser('exec', help='Run a command in a running container',
+                                                 description='Run a command in a running container')
+    exec_parser.add_argument('identifier', help="container's UUID (either long or short) or name")
+    exec_parser.add_argument('command', help="the command to run (default: sh)", nargs=argparse.REMAINDER)
+
 def add_service_parser(subparsers):
     def str2bool(v):
         return v.lower() in ("yes", "true", "t", "1", "y")
