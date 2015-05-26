@@ -586,6 +586,9 @@ def container_exec(identifier, command):
         endpoint = "%s&command=%s" % (endpoint, urllib.quote_plus(" ".join(command)))
 
     url = "/".join([tutum.stream_url.rstrip("/"), endpoint.lstrip('/')])
+
+    cli_log.debug(url)
+
     invoke_shell(url)
 
 
