@@ -24,6 +24,73 @@ def add_event_parser(subparsers):
     subparsers.add_parser('event', help='Get real time tutum events',
                           description='Get real time tutum events')
 
+def add_push_parser(subparsers):
+    # tutum push
+    push_parser = subparsers.add_parser('push', help='Push a local image to Tutum private registry',
+                                             description='Push a local image to Tutum private registry')
+    push_parser.add_argument('name', help='name of the image to push')
+    push_parser.add_argument('--public', help='push image to public registry', action='store_true')
+
+def add_run_parser(subparsers):
+    # tutum run
+    run_parser = subparsers.add_parser('run', help='Create and run a new service',
+                                              description='Create and run a new service', )
+    run_parser.add_argument('image', help='the name of the image used to deploy this service')
+    run_parser.add_argument('-n', '--name', help='a human-readable name for the service '
+                                                 '(default: image_tag without namespace)')
+    run_parser.add_argument('--cpushares', help='Relative weight for CPU Shares', type=int)
+    run_parser.add_argument('--memory', help='RAM memory hard limit in MB', type=int)
+    run_parser.add_argument('--privileged', help='Give extended privileges to this container', action='store_true')
+    run_parser.add_argument('-t', '--target-num-containers',
+                            help='the number of containers to run for this service (default: 1)', type=int)
+    run_parser.add_argument('-r', '--run-command',
+                            help='the command used to start the service containers '
+                                 '(default: as defined in the image)')
+    run_parser.add_argument('--entrypoint',
+                            help='the command prefix used to start the service containers '
+                                 '(default: as defined in the image)')
+    run_parser.add_argument('-p', '--publish', help="Publish a container's port to the host. "
+                                                    "Format: [hostPort:]containerPort[/protocol], i.e. \"80:80/tcp\"",
+                            action='append')
+    run_parser.add_argument('--expose', help='Expose a port from the container without publishing it to your host',
+                            action='append', type=int)
+    run_parser.add_argument('-e', '--env',
+                            help='set environment variables i.e. "ENVVAR=foo" '
+                                 '(default: as defined in the image, plus any link- or role-generated variables)',
+                            action='append')
+    run_parser.add_argument('--env-file', help='read in a line delimited file of environment variables',
+                            action='append')
+    run_parser.add_argument('--tag', help="the tag name being added to the service", action='append')
+    run_parser.add_argument('--link-service',
+                            help="Add link to another service (name:alias) or (uuid:alias)", action='append')
+    run_parser.add_argument('--autodestroy', help='whether the containers should be terminated if '
+                                                  'they stop (default: OFF)',
+                            choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
+    run_parser.add_argument('--autoredeploy', help="whether the containers should be auto redeployed."
+                                                   " It only applies to services that use an image stored in Tutum's "
+                                                   "registry", action='store_true')
+    run_parser.add_argument('--autorestart', help='whether the containers should be restarted if they stop '
+                                                  '(default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
+    run_parser.add_argument('--role', help='Tutum API roles to grant the service, '
+                                           'i.e. "global" (default: none, possible values: "global")', action='append')
+    run_parser.add_argument('--sequential', help='whether the containers should be launched and scaled sequentially',
+                            action='store_true')
+    run_parser.add_argument('-v', '--volume', help='Bind mount a volume (e.g., from the host: -v /host:/container, '
+                                                   'from Docker: -v /container)', action='append')
+    run_parser.add_argument('--volumes-from', help='Mount volumes from the specified service(s)', action='append')
+    run_parser.add_argument('--deployment-strategy', help='Container distribution strategy among nodes',
+                            choices=['EMPTIEST_NODE', 'HIGH_AVAILABILITY', 'EVERY_NODE'])
+    run_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                            action='store_true')
+
+def add_up_parser(subparsers):
+    # tutum up
+    up_parser = subparsers.add_parser('up', help='Create and deploy a stack',
+                                           description='Create and deploy a stack')
+    up_parser.add_argument('-n', '--name', help='The name of the stack, which wil be shown in tutum')
+    up_parser.add_argument('-f', '--file', help="the name of the Stackfile")
+    up_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                           action='store_true')
 
 def add_exec_parser(subparsers):
     # tutum exec
