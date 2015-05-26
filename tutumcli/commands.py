@@ -556,9 +556,12 @@ def container_exec(identifier, command):
             sys.stderr.write("Not Authorized\r\n")
             sys.stderr.flush()
             errorcode = TUTUM_AUTH_ERROR_EXIT_CODE
+        except websocket.WebSocketConnectionClosedException:
+            pass
         except websocket.WebSocketException:
-            sys.stdout.write("Connection is already closed.\r\n")
-            sys.stdout.flush()
+            sys.stderr.write("Connection is already closed.\r\n")
+            sys.stderr.flush()
+            errorcode = EXCEPTION_EXIT_CODE
         except Exception as e:
             sys.stderr.write("%s\r\n" % e)
             sys.stderr.flush()
