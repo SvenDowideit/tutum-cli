@@ -583,12 +583,20 @@ def container_exec(identifier, command):
         endpoint = "container/%s/exec/?user=%s&token=%s" % (container.uuid, tutum.user, tutum.apikey)
 
     if command:
-        endpoint = "%s&command=%s" % (endpoint, urllib.quote_plus(" ".join(command)))
+        escaped_cmd = []
+        for c in command:
+            if r'"' in c:
+                c = c.replace(r'"', r'\"')
+            if " " in c:
+                c = '"%s"' % c
+            escaped_cmd.append(c)
+
+        escaped_cmd = " ".join(escaped_cmd)
+        cli_log.debug("escaped command: %s" % escaped_cmd)
+        endpoint = "%s&command=%s" % (endpoint, urllib.quote_plus(escaped_cmd))
 
     url = "/".join([tutum.stream_url.rstrip("/"), endpoint.lstrip('/')])
-
-    cli_log.debug(url)
-
+    cli_log.debug("websocket url: %s" % url)
     invoke_shell(url)
 
 
