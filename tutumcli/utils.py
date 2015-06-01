@@ -17,8 +17,8 @@ import tutum
 from dateutil import tz
 from tabulate import tabulate
 
-from tutumcli.exceptions import NonUniqueIdentifier, ObjectNotFound, BadParameter, DockerNotFound
-from exceptions import StreamOutputError
+from exceptions import BadParameter, DockerNotFound, StreamOutputError
+from tutum import ObjectNotFound
 from . import __version__
 
 
@@ -94,7 +94,7 @@ def get_docker_client():
         docker_client = docker.Client(base_url=base_url, tls=tls_config, version='auto')
         docker_client.version()
         return docker_client
-    except Exception as e:
+    except Exception:
         raise DockerNotFound("Cannot connect to docker (is it running?)")
 
 
@@ -175,165 +175,6 @@ def stream_output(output, stream):
     return all_events
 
 
-def fetch_remote_container(identifier, raise_exceptions=True):
-    try:
-        if is_uuid4(identifier):
-            try:
-                return tutum.Container.fetch(identifier)
-            except Exception:
-                raise ObjectNotFound("Cannot find a container with the identifier '%s'" % identifier)
-        else:
-            objects_same_identifier = tutum.Container.list(uuid__startswith=identifier) or \
-                                      tutum.Container.list(name=identifier)
-            if len(objects_same_identifier) == 1:
-                uuid = objects_same_identifier[0].uuid
-                return tutum.Container.fetch(uuid)
-            elif len(objects_same_identifier) == 0:
-                raise ObjectNotFound("Cannot find a container with the identifier '%s'" % identifier)
-            raise NonUniqueIdentifier("More than one container has the same identifier, please use the long uuid")
-
-    except (NonUniqueIdentifier, ObjectNotFound) as e:
-        if not raise_exceptions:
-            return e
-        raise e
-
-
-def fetch_remote_service(identifier, raise_exceptions=True):
-    try:
-        if is_uuid4(identifier):
-            try:
-                return tutum.Service.fetch(identifier)
-            except Exception:
-                raise ObjectNotFound("Cannot find a service with the identifier '%s'" % identifier)
-        else:
-            objects_same_identifier = tutum.Service.list(uuid__startswith=identifier) or \
-                                      tutum.Service.list(name=identifier)
-
-            if len(objects_same_identifier) == 1:
-                uuid = objects_same_identifier[0].uuid
-                return tutum.Service.fetch(uuid)
-            elif len(objects_same_identifier) == 0:
-                raise ObjectNotFound("Cannot find a service with the identifier '%s'" % identifier)
-            raise NonUniqueIdentifier("More than one service has the same identifier, please use the long uuid")
-    except (NonUniqueIdentifier, ObjectNotFound) as e:
-        if not raise_exceptions:
-            return e
-        raise e
-
-
-def fetch_remote_stack(identifier, raise_exceptions=True):
-    try:
-        if is_uuid4(identifier):
-            try:
-                return tutum.Stack.fetch(identifier)
-            except Exception:
-                raise ObjectNotFound("Cannot find a stack with the identifier '%s'" % identifier)
-        else:
-            objects_same_identifier = tutum.Stack.list(uuid__startswith=identifier) or \
-                                      tutum.Stack.list(name=identifier)
-            if len(objects_same_identifier) == 1:
-                uuid = objects_same_identifier[0].uuid
-                return tutum.Stack.fetch(uuid)
-            elif len(objects_same_identifier) == 0:
-                raise ObjectNotFound("Cannot find a stack with the identifier '%s'" % identifier)
-            raise NonUniqueIdentifier("More than one stack has the same identifier, please use the long uuid")
-
-    except (NonUniqueIdentifier, ObjectNotFound) as e:
-        if not raise_exceptions:
-            return e
-        raise e
-
-
-def fetch_remote_volume(identifier, raise_exceptions=True):
-    try:
-        if is_uuid4(identifier):
-            try:
-                return tutum.Volume.fetch(identifier)
-            except Exception:
-                raise ObjectNotFound("Cannot find a volume with the identifier '%s'" % identifier)
-        else:
-            objects_same_identifier = tutum.Volume.list(uuid__startswith=identifier)
-            if len(objects_same_identifier) == 1:
-                uuid = objects_same_identifier[0].uuid
-                return tutum.Volume.fetch(uuid)
-            elif len(objects_same_identifier) == 0:
-                raise ObjectNotFound("Cannot find a volume with the identifier '%s'" % identifier)
-            raise NonUniqueIdentifier("More than one volume has the same identifier, please use the long uuid")
-
-    except (NonUniqueIdentifier, ObjectNotFound) as e:
-        if not raise_exceptions:
-            return e
-        raise e
-
-
-def fetch_remote_volumegroup(identifier, raise_exceptions=True):
-    try:
-        if is_uuid4(identifier):
-            try:
-                return tutum.VolumeGroup.fetch(identifier)
-            except Exception:
-                raise ObjectNotFound("Cannot find a volume with the identifier '%s'" % identifier)
-        else:
-            objects_same_identifier = tutum.VolumeGroup.list(uuid__startswith=identifier) or \
-                                      tutum.VolumeGroup.list(name=identifier)
-            if len(objects_same_identifier) == 1:
-                uuid = objects_same_identifier[0].uuid
-                return tutum.VolumeGroup.fetch(uuid)
-            elif len(objects_same_identifier) == 0:
-                raise ObjectNotFound("Cannot find a volume with the identifier '%s'" % identifier)
-            raise NonUniqueIdentifier("More than one volume has the same identifier, please use the long uuid")
-
-    except (NonUniqueIdentifier, ObjectNotFound) as e:
-        if not raise_exceptions:
-            return e
-        raise e
-
-
-def fetch_remote_node(identifier, raise_exceptions=True):
-    try:
-        if is_uuid4(identifier):
-            try:
-                return tutum.Node.fetch(identifier)
-            except Exception:
-                raise ObjectNotFound("Cannot find a node with the identifier '%s'" % identifier)
-        else:
-            objects_same_identifier = tutum.Node.list(uuid__startswith=identifier)
-            if len(objects_same_identifier) == 1:
-                uuid = objects_same_identifier[0].uuid
-                return tutum.Node.fetch(uuid)
-            elif len(objects_same_identifier) == 0:
-                raise ObjectNotFound("Cannot find a node with the identifier '%s'" % identifier)
-            raise NonUniqueIdentifier("More than one node has the same identifier, please use the long uuid")
-
-    except (NonUniqueIdentifier, ObjectNotFound) as e:
-        if not raise_exceptions:
-            return e
-        raise e
-
-
-def fetch_remote_nodecluster(identifier, raise_exceptions=True):
-    try:
-        if is_uuid4(identifier):
-            try:
-                return tutum.NodeCluster.fetch(identifier)
-            except Exception:
-                raise ObjectNotFound("Cannot find a node cluster with the identifier '%s'" % identifier)
-        else:
-            objects_same_identifier = tutum.NodeCluster.list(uuid__startswith=identifier) or \
-                                      tutum.NodeCluster.list(name=identifier)
-            if len(objects_same_identifier) == 1:
-                uuid = objects_same_identifier[0].uuid
-                return tutum.NodeCluster.fetch(uuid)
-            elif len(objects_same_identifier) == 0:
-                raise ObjectNotFound("Cannot find a node cluster with the identifier '%s'" % identifier)
-            raise NonUniqueIdentifier("More than one node cluster has the same identifier, please use the long uuid")
-
-    except (NonUniqueIdentifier, ObjectNotFound) as e:
-        if not raise_exceptions:
-            return e
-        raise e
-
-
 def get_uuids_of_trigger(trigger, identifiers):
     uuid_list = []
     for identifier in identifiers:
@@ -347,7 +188,7 @@ def get_uuids_of_trigger(trigger, identifiers):
                 if uuid:
                     uuid_list.append(uuid)
     if not uuid_list:
-        raise ObjectNotFound("Cannot find a trigger with the identifier '%s'" % identifier)
+        raise ObjectNotFound("Cannot find a trigger with the identifier '%s'" % identifiers)
     return uuid_list
 
 
@@ -512,7 +353,7 @@ def parse_volumes_from(volumes_from):
 
     for identifier in volumes_from:
         binding = {}
-        service = fetch_remote_service(identifier)
+        service = tutum.Utils.fetch_remote_service(identifier)
         binding["volumes_from"] = service.resource_uri
         bindings.append(binding)
     return bindings

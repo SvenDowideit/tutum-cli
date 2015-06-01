@@ -219,7 +219,7 @@ class ServiceInspectTestCase(unittest.TestCase):
         sys.stdout = self.stdout
 
     @mock.patch('tutumcli.commands.tutum.Service.get_all_attributes')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_service')
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_service')
     def test_service_inspect(self, mock_fetch_remote_service, mock_get_all_attributes):
         output = '''{
   "key": [
@@ -240,7 +240,7 @@ class ServiceInspectTestCase(unittest.TestCase):
         self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.sys.exit')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_service', side_effect=TutumApiError)
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_service', side_effect=TutumApiError)
     def test_service_inspect_with_exception(self, mock_fetch_remote_service, mock_exit):
         service = tutumcli.commands.tutum.Service()
         mock_fetch_remote_service.return_value = service
@@ -436,7 +436,7 @@ class ServiceScaleTestCase(unittest.TestCase):
 
 
     @mock.patch('tutumcli.commands.tutum.Service.save')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_service')
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_service')
     def test_service_scale(self, mock_fetch_remote_service, mock_save):
         service = mock.MagicMock(spec=tutumcli.commands.tutum.Service)
         service.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
@@ -450,7 +450,7 @@ class ServiceScaleTestCase(unittest.TestCase):
         self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.sys.exit')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_service', side_effect=TutumApiError)
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_service', side_effect=TutumApiError)
     def test_service_scale_with_exception(self, mock_fetch_remote_service, mock_exit):
         service_scale(['test_id'], 3, False)
 
@@ -466,7 +466,7 @@ class ServiceSetTestCase(unittest.TestCase):
         sys.stdout = self.stdout
 
     @mock.patch('tutumcli.commands.tutum.Service.save')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_service')
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_service')
     def test_service_set(self, mock_fetch_remote_service, mock_save):
         service = tutumcli.commands.tutum.Service()
         exposed_ports = [80]
@@ -503,7 +503,7 @@ class ServiceSetTestCase(unittest.TestCase):
         self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.sys.exit')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_service', side_effect=TutumApiError)
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_service', side_effect=TutumApiError)
     def test_service_set_with_exception(self, mock_fetch_remote_service, mock_exit):
         service = tutumcli.commands.tutum.Service()
         exposed_ports = [80]
@@ -528,7 +528,7 @@ class ServiceStartTestCase(unittest.TestCase):
         sys.stdout = self.stdout
 
     @mock.patch('tutumcli.commands.tutum.Service.start')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_service')
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_service')
     def test_service_start(self, mock_fetch_remote_service, mock_start):
         service = tutumcli.commands.tutum.Service()
         service.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
@@ -540,7 +540,7 @@ class ServiceStartTestCase(unittest.TestCase):
         self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.sys.exit')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_service', side_effect=TutumApiError)
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_service', side_effect=TutumApiError)
     def test_service_start_with_exception(self, mock_fetch_remote_service, mock_exit):
         service_start(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
@@ -556,7 +556,7 @@ class ServiceStopTestCase(unittest.TestCase):
         sys.stdout = self.stdout
 
     @mock.patch('tutumcli.commands.tutum.Service.stop')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_service')
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_service')
     def test_service_stop(self, mock_fetch_remote_service, mock_stop):
         service = tutumcli.commands.tutum.Service()
         service.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
@@ -568,7 +568,7 @@ class ServiceStopTestCase(unittest.TestCase):
         self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.sys.exit')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_service', side_effect=TutumApiError)
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_service', side_effect=TutumApiError)
     def test_service_stop_with_exception(self, mock_fetch_remote_service, mock_exit):
         service_start(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
@@ -584,7 +584,7 @@ class ServiceTerminateTestCase(unittest.TestCase):
         sys.stdout = self.stdout
 
     @mock.patch('tutumcli.commands.tutum.Service.delete')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_service')
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_service')
     def test_service_teminate(self, mock_fetch_remote_service, mock_delete):
         service = tutumcli.commands.tutum.Service()
         service.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
@@ -596,7 +596,7 @@ class ServiceTerminateTestCase(unittest.TestCase):
         self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.sys.exit')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_service', side_effect=TutumApiError)
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_service', side_effect=TutumApiError)
     def test_service_terminate_with_exception(self, mock_fetch_remote_service, mock_exit):
         service_terminate(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
@@ -612,7 +612,7 @@ class ServiceRedeployTestCase(unittest.TestCase):
         sys.stdout = self.stdout
 
     @mock.patch('tutumcli.commands.tutum.Service.redeploy')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_service')
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_service')
     def test_service_redeploy(self, mock_fetch_remote_service, mock_redeploy):
         service = tutumcli.commands.tutum.Service()
         service.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
@@ -624,7 +624,7 @@ class ServiceRedeployTestCase(unittest.TestCase):
         self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.sys.exit')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_service', side_effect=TutumApiError)
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_service', side_effect=TutumApiError)
     def test_service_redeploy_with_exception(self, mock_fetch_remote_service, mock_exit):
         service_redeploy(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
@@ -640,7 +640,7 @@ class ContainerInspectTestCase(unittest.TestCase):
         sys.stdout = self.stdout
 
     @mock.patch('tutumcli.commands.tutum.Container.get_all_attributes')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_container')
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_container')
     def test_container_inspect(self, mock_fetch_remote_container, mock_get_all_attributes):
         output = '''{
   "key": [
@@ -661,7 +661,7 @@ class ContainerInspectTestCase(unittest.TestCase):
         self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.sys.exit')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_container', side_effect=TutumApiError)
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_container', side_effect=TutumApiError)
     def test_container_inspect_with_exception(self, mock_fetch_remote_container, mock_exit):
         container = tutumcli.commands.tutum.Container()
         mock_fetch_remote_container.return_value = container
@@ -796,7 +796,7 @@ class ContainerStartTestCase(unittest.TestCase):
         sys.stdout = self.stdout
 
     @mock.patch('tutumcli.commands.tutum.Container.start')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_container')
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_container')
     def test_container_start(self, mock_fetch_remote_container, mock_start):
         container = tutumcli.commands.tutum.Container()
         container.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
@@ -808,7 +808,7 @@ class ContainerStartTestCase(unittest.TestCase):
         self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.sys.exit')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_container', side_effect=TutumApiError)
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_container', side_effect=TutumApiError)
     def test_container_start_with_exception(self, mock_fetch_remote_container, mock_exit):
         container_start(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
@@ -824,7 +824,7 @@ class ContainerStopTestCase(unittest.TestCase):
         sys.stdout = self.stdout
 
     @mock.patch('tutumcli.commands.tutum.Container.stop')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_container')
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_container')
     def test_container_stop(self, mock_fetch_remote_container, mock_stop):
         container = tutumcli.commands.tutum.Container()
         container.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
@@ -836,7 +836,7 @@ class ContainerStopTestCase(unittest.TestCase):
         self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.sys.exit')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_container', side_effect=TutumApiError)
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_container', side_effect=TutumApiError)
     def test_container_stop_with_exception(self, mock_fetch_remote_container, mock_exit):
         container_start(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
@@ -852,7 +852,7 @@ class ContainerTerminateTestCase(unittest.TestCase):
         sys.stdout = self.stdout
 
     @mock.patch('tutumcli.commands.tutum.Container.delete')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_container')
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_container')
     def test_container_teminate(self, mock_fetch_remote_container, mock_delete):
         container = tutumcli.commands.tutum.Container()
         container.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
@@ -864,7 +864,7 @@ class ContainerTerminateTestCase(unittest.TestCase):
         self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.sys.exit')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_container', side_effect=TutumApiError)
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_container', side_effect=TutumApiError)
     def test_container_terminate_with_exception(self, mock_fetch_remote_container, mock_exit):
         container_terminate(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
@@ -880,7 +880,7 @@ class ContainerRedeployTestCase(unittest.TestCase):
         sys.stdout = self.stdout
 
     @mock.patch('tutumcli.commands.tutum.Container.redeploy')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_container')
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_container')
     def test_container_redeploy(self, mock_fetch_remote_container, mock_redeploy):
         container = tutumcli.commands.tutum.Container()
         container.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
@@ -892,7 +892,7 @@ class ContainerRedeployTestCase(unittest.TestCase):
         self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.sys.exit')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_container', side_effect=TutumApiError)
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_container', side_effect=TutumApiError)
     def test_container_redeploy_with_exception(self, mock_fetch_remote_container, mock_exit):
         container_redeploy(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
@@ -1165,7 +1165,7 @@ class NodeInspectTestCase(unittest.TestCase):
 
     @mock.patch('tutumcli.commands.tutum.Node.get_all_attributes')
     @mock.patch('tutumcli.commands.tutum.Node.fetch')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_node')
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_node')
     def test_node_inspect(self, mock_fetch_remote_node, mock_fetch, mock_get_all_attributes):
         output = '''{
   "key": [
@@ -1188,7 +1188,7 @@ class NodeInspectTestCase(unittest.TestCase):
         self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.sys.exit')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_node', side_effect=TutumApiError)
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_node', side_effect=TutumApiError)
     def test_node_inspect_with_exception(self, mock_fetch_remote_node, mock_exit):
         node = tutumcli.commands.tutum.Node()
         mock_fetch_remote_node.return_value = node
@@ -1206,7 +1206,7 @@ class NodeRmTestCase(unittest.TestCase):
         sys.stdout = self.stdout
 
     @mock.patch('tutumcli.commands.tutum.Node.delete')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_node')
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_node')
     def test_node_teminate(self, mock_fetch_remote_node, mock_delete):
         node = tutumcli.commands.tutum.Node()
         node.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
@@ -1218,7 +1218,7 @@ class NodeRmTestCase(unittest.TestCase):
         self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.sys.exit')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_node', side_effect=TutumApiError)
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_node', side_effect=TutumApiError)
     def test_node_terminate_with_exception(self, mock_fetch_remote_node, mock_exit):
         node_rm(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
@@ -1312,7 +1312,7 @@ class NodeClusterInspectTestCase(unittest.TestCase):
 
     @mock.patch('tutumcli.commands.tutum.NodeCluster.get_all_attributes')
     @mock.patch('tutumcli.commands.tutum.NodeCluster.fetch')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_nodecluster')
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_nodecluster')
     def test_nodecluster_inspect(self, mock_fetch_remote_node_cluster, mock_fetch, mock_get_all_attributes):
         output = '''{
   "key": [
@@ -1335,7 +1335,7 @@ class NodeClusterInspectTestCase(unittest.TestCase):
         self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.sys.exit')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_nodecluster', side_effect=TutumApiError)
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_nodecluster', side_effect=TutumApiError)
     def test_nodecluster_inspect_with_exception(self, mock_fetch_remote_nodecluster, mock_exit):
         nodecluster = tutumcli.commands.tutum.NodeCluster()
         mock_fetch_remote_nodecluster.return_value = nodecluster
@@ -1353,7 +1353,7 @@ class NodeClusterRmTestCase(unittest.TestCase):
         sys.stdout = self.stdout
 
     @mock.patch('tutumcli.commands.tutum.NodeCluster.delete')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_nodecluster')
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_nodecluster')
     def test_nodecluster_rm(self, mock_fetch_remote_nodecluster, mock_delete):
         nodecluster = tutumcli.commands.tutum.NodeCluster()
         nodecluster.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
@@ -1365,7 +1365,7 @@ class NodeClusterRmTestCase(unittest.TestCase):
         self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.sys.exit')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_nodecluster', side_effect=TutumApiError)
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_nodecluster', side_effect=TutumApiError)
     def test_nodecluster_rm_with_exception(self, mock_fetch_remote_nodecluster, mock_exit):
         nodecluster_rm(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
 
@@ -1381,7 +1381,7 @@ class NodeClusterScaleTestCase(unittest.TestCase):
         sys.stdout = self.stdout
 
     @mock.patch('tutumcli.commands.tutum.NodeCluster.save')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_nodecluster')
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_nodecluster')
     def test_nodecluster_scale(self, mock_fetch_remote_nodecluster, mock_save):
         nodecluster = tutumcli.commands.tutum.NodeCluster()
         nodecluster.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
@@ -1394,7 +1394,7 @@ class NodeClusterScaleTestCase(unittest.TestCase):
         self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.sys.exit')
-    @mock.patch('tutumcli.commands.utils.fetch_remote_nodecluster', side_effect=TutumApiError)
+    @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_nodecluster', side_effect=TutumApiError)
     def test_nodecluster_scale_with_exception(self, mock_fetch_remote_nodecluster, mock_exit):
         nodecluster_scale(['test_id'], 3, False)
 
