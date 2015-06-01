@@ -520,6 +520,11 @@ def container_exec(identifier, command):
                     r, w, e = select.select([shell.sock, sys.stdin], [], [shell.sock], 5)
                     if sys.stdin in r:
                         x = sys.stdin.read(1)
+                        # read arrows
+                        if x == '\x1b':
+                            x += sys.stdin.read(1)
+                            if x[1] == '[':
+                                x += sys.stdin.read(1)
                         if len(x) == 0:
                             shell.send('\n')
                         shell.send(x)
