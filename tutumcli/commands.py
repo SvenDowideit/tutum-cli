@@ -19,9 +19,9 @@ import docker
 import yaml
 from tutum.api import auth
 from tutum.api import exceptions
-from tutum import TutumAuthError, TutumApiError
+from tutum import TutumAuthError, TutumApiError, ObjectNotFound, NonUniqueIdentifier
 
-from exceptions import StreamOutputError, ObjectNotFound, NonUniqueIdentifier
+from exceptions import StreamOutputError
 from tutumcli import utils
 
 
@@ -156,7 +156,7 @@ def service_inspect(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
-            service = utils.fetch_remote_service(identifier)
+            service = tutum.Utils.fetch_remote_service(identifier)
             print(json.dumps(service.get_all_attributes(), indent=2))
         except Exception as e:
             print(e, file=sys.stderr)
@@ -169,7 +169,7 @@ def service_logs(identifiers, tail, follow):
     has_exception = False
     for identifier in identifiers:
         try:
-            service = utils.fetch_remote_service(identifier)
+            service = tutum.Utils.fetch_remote_service(identifier)
             service.logs(tail, follow)
         except KeyboardInterrupt:
             pass
@@ -186,7 +186,7 @@ def service_ps(quiet, status, stack):
 
         stack_resource_uri = None
         if stack:
-            s = utils.fetch_remote_stack(stack, raise_exceptions=False)
+            s = tutum.Utils.fetch_remote_stack(stack, raise_exceptions=False)
             if isinstance(s, NonUniqueIdentifier):
                 raise NonUniqueIdentifier("Identifier %s matches more than one stack, please use UUID instead" % stack)
             if isinstance(s, ObjectNotFound):
@@ -233,7 +233,7 @@ def service_redeploy(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
-            service = utils.fetch_remote_service(identifier)
+            service = tutum.Utils.fetch_remote_service(identifier)
             result = service.redeploy()
             utils.sync_action(service, sync)
             if result:
@@ -346,7 +346,7 @@ def service_scale(identifiers, target_num_containers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
-            service = utils.fetch_remote_service(identifier)
+            service = tutum.Utils.fetch_remote_service(identifier)
             service.target_num_containers = target_num_containers
             service.save()
             result = service.scale()
@@ -366,7 +366,7 @@ def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_c
     has_exception = False
     for identifier in identifiers:
         try:
-            service = utils.fetch_remote_service(identifier, raise_exceptions=True)
+            service = tutum.Utils.fetch_remote_service(identifier, raise_exceptions=True)
             if service is not None:
                 if image:
                     service.image = image
@@ -459,7 +459,7 @@ def service_start(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
-            service = utils.fetch_remote_service(identifier)
+            service = tutum.Utils.fetch_remote_service(identifier)
             result = service.start()
             utils.sync_action(service, sync)
             if result:
@@ -475,7 +475,7 @@ def service_stop(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
-            service = utils.fetch_remote_service(identifier)
+            service = tutum.Utils.fetch_remote_service(identifier)
             result = service.stop()
             utils.sync_action(service, sync)
             if result:
@@ -491,7 +491,7 @@ def service_terminate(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
-            service = utils.fetch_remote_service(identifier)
+            service = tutum.Utils.fetch_remote_service(identifier)
             result = service.delete()
             utils.sync_action(service, sync)
             if result:
@@ -520,6 +520,11 @@ def container_exec(identifier, command):
                     r, w, e = select.select([shell.sock, sys.stdin], [], [shell.sock], 5)
                     if sys.stdin in r:
                         x = sys.stdin.read(1)
+                        # read arrows
+                        if x == '\x1b':
+                            x += sys.stdin.read(1)
+                            if x[1] == '[':
+                                x += sys.stdin.read(1)
                         if len(x) == 0:
                             shell.send('\n')
                         shell.send(x)
@@ -572,7 +577,7 @@ def container_exec(identifier, command):
             exit(errorcode)
 
     try:
-        container = utils.fetch_remote_container(identifier)
+        container = tutum.Utils.fetch_remote_container(identifier)
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
@@ -604,7 +609,7 @@ def container_inspect(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
-            container = utils.fetch_remote_container(identifier)
+            container = tutum.Utils.fetch_remote_container(identifier)
             print(json.dumps(container.get_all_attributes(), indent=2))
         except Exception as e:
             print(e, file=sys.stderr)
@@ -617,7 +622,7 @@ def container_logs(identifiers, tail, follow):
     has_exception = False
     for identifier in identifiers:
         try:
-            container = utils.fetch_remote_container(identifier)
+            container = tutum.Utils.fetch_remote_container(identifier)
             container.logs(tail, follow)
         except KeyboardInterrupt:
             pass
@@ -632,7 +637,7 @@ def container_redeploy(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
-            container = utils.fetch_remote_container(identifier)
+            container = tutum.Utils.fetch_remote_container(identifier)
             result = container.redeploy()
             utils.sync_action(container, sync)
             if result:
@@ -650,7 +655,7 @@ def container_ps(quiet, status, service, no_trunc):
 
         service_resrouce_uri = None
         if service:
-            s = utils.fetch_remote_service(service, raise_exceptions=False)
+            s = tutum.Utils.fetch_remote_service(service, raise_exceptions=False)
             if isinstance(s, NonUniqueIdentifier):
                 raise NonUniqueIdentifier(
                     "Identifier %s matches more than one service, please use UUID instead" % service)
@@ -721,7 +726,7 @@ def container_start(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
-            container = utils.fetch_remote_container(identifier)
+            container = tutum.Utils.fetch_remote_container(identifier)
             result = container.start()
             utils.sync_action(container, sync)
             if result:
@@ -737,7 +742,7 @@ def container_stop(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
-            container = utils.fetch_remote_container(identifier)
+            container = tutum.Utils.fetch_remote_container(identifier)
             result = container.stop()
             utils.sync_action(container, sync)
             if result:
@@ -753,7 +758,7 @@ def container_terminate(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
-            container = utils.fetch_remote_container(identifier)
+            container = tutum.Utils.fetch_remote_container(identifier)
             result = container.delete()
             utils.sync_action(container, sync)
             if result:
@@ -1009,7 +1014,7 @@ def node_inspect(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
-            node = utils.fetch_remote_node(identifier)
+            node = tutum.Utils.fetch_remote_node(identifier)
             print(json.dumps(tutum.Node.fetch(node.uuid).get_all_attributes(), indent=2))
         except Exception as e:
             print(e, file=sys.stderr)
@@ -1022,7 +1027,7 @@ def node_rm(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
-            node = utils.fetch_remote_node(identifier)
+            node = tutum.Utils.fetch_remote_node(identifier)
             result = node.delete()
             utils.sync_action(node, sync)
             if result:
@@ -1038,7 +1043,7 @@ def node_upgrade(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
-            node = utils.fetch_remote_node(identifier)
+            node = tutum.Utils.fetch_remote_node(identifier)
             result = node.upgrade_docker()
             utils.sync_action(node, sync)
             if result:
@@ -1083,7 +1088,7 @@ def nodecluster_list(quiet):
             try:
                 node_type = tutum.NodeType.fetch(nodecluster.node_type.strip("/").split("api/v1/nodetype/")[-1]).label
                 region = tutum.Region.fetch(nodecluster.region.strip("/").split("api/v1/region/")[-1]).label
-            except Exception as e:
+            except Exception:
                 pass
 
             data_list.append([nodecluster.name,
@@ -1111,7 +1116,7 @@ def nodecluster_inspect(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
-            nodecluster = utils.fetch_remote_nodecluster(identifier)
+            nodecluster = tutum.Utils.fetch_remote_nodecluster(identifier)
             print(json.dumps(tutum.NodeCluster.fetch(nodecluster.uuid).get_all_attributes(), indent=2))
         except Exception as e:
             print(e, file=sys.stderr)
@@ -1209,7 +1214,7 @@ def nodecluster_rm(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
-            nodecluster = utils.fetch_remote_nodecluster(identifier)
+            nodecluster = tutum.Utils.fetch_remote_nodecluster(identifier)
             result = nodecluster.delete()
             utils.sync_action(nodecluster, sync)
             if result:
@@ -1225,7 +1230,7 @@ def nodecluster_scale(identifiers, target_num_nodes, sync):
     has_exception = False
     for identifier in identifiers:
         try:
-            nodecluster = utils.fetch_remote_nodecluster(identifier)
+            nodecluster = tutum.Utils.fetch_remote_nodecluster(identifier)
             nodecluster.target_num_nodes = target_num_nodes
             result = nodecluster.save()
             utils.sync_action(nodecluster, sync)
@@ -1242,7 +1247,7 @@ def nodecluster_upgrade(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
-            nodecluster = utils.fetch_remote_nodecluster(identifier)
+            nodecluster = tutum.Utils.fetch_remote_nodecluster(identifier)
             result = nodecluster.upgrade_docker()
             utils.sync_action(nodecluster, sync)
             if result:
@@ -1259,13 +1264,13 @@ def tag_add(identifiers, tags):
     for identifier in identifiers:
         try:
             try:
-                obj = utils.fetch_remote_service(identifier)
+                obj = tutum.Utils.fetch_remote_service(identifier)
             except ObjectNotFound:
                 try:
-                    obj = utils.fetch_remote_nodecluster(identifier)
+                    obj = tutum.Utils.fetch_remote_nodecluster(identifier)
                 except ObjectNotFound:
                     try:
-                        obj = utils.fetch_remote_node(identifier)
+                        obj = tutum.Utils.fetch_remote_node(identifier)
                     except ObjectNotFound:
                         raise ObjectNotFound(
                             "Identifier '%s' does not match any service, node or nodecluster" % identifier)
@@ -1289,11 +1294,11 @@ def tag_list(identifiers, quiet):
     tags_list = []
     for identifier in identifiers:
         try:
-            obj = utils.fetch_remote_service(identifier, raise_exceptions=False)
+            obj = tutum.Utils.fetch_remote_service(identifier, raise_exceptions=False)
             if isinstance(obj, ObjectNotFound):
-                obj = utils.fetch_remote_nodecluster(identifier, raise_exceptions=False)
+                obj = tutum.Utils.fetch_remote_nodecluster(identifier, raise_exceptions=False)
                 if isinstance(obj, ObjectNotFound):
-                    obj = utils.fetch_remote_node(identifier, raise_exceptions=False)
+                    obj = tutum.Utils.fetch_remote_node(identifier, raise_exceptions=False)
                     if isinstance(obj, ObjectNotFound):
                         raise ObjectNotFound(
                             "Identifier '%s' does not match any service, node or nodecluster" % identifier)
@@ -1334,13 +1339,13 @@ def tag_rm(identifiers, tags):
     for identifier in identifiers:
         try:
             try:
-                obj = utils.fetch_remote_service(identifier)
+                obj = tutum.Utils.fetch_remote_service(identifier)
             except ObjectNotFound:
                 try:
-                    obj = utils.fetch_remote_nodecluster(identifier)
+                    obj = tutum.Utils.fetch_remote_nodecluster(identifier)
                 except ObjectNotFound:
                     try:
-                        obj = utils.fetch_remote_node(identifier)
+                        obj = tutum.Utils.fetch_remote_node(identifier)
                     except ObjectNotFound:
                         raise ObjectNotFound(
                             "Identifier '%s' does not match any service, node or nodecluster" % identifier)
@@ -1365,13 +1370,13 @@ def tag_set(identifiers, tags):
     for identifier in identifiers:
         try:
             try:
-                obj = utils.fetch_remote_service(identifier)
+                obj = tutum.Utils.fetch_remote_service(identifier)
             except ObjectNotFound:
                 try:
-                    obj = utils.fetch_remote_nodecluster(identifier)
+                    obj = tutum.Utils.fetch_remote_nodecluster(identifier)
                 except ObjectNotFound:
                     try:
-                        obj = utils.fetch_remote_node(identifier)
+                        obj = tutum.Utils.fetch_remote_node(identifier)
                     except ObjectNotFound:
                         raise ObjectNotFound(
                             "Identifier '%s' does not match any service, node or nodecluster" % identifier)
@@ -1423,7 +1428,7 @@ def volume_inspect(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
-            volume = utils.fetch_remote_volume(identifier)
+            volume = tutum.Utils.fetch_remote_volume(identifier)
             print(json.dumps(volume.get_all_attributes(), indent=2))
         except Exception as e:
             print(e, file=sys.stderr)
@@ -1461,7 +1466,7 @@ def volumegroup_inspect(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
-            volumegroup = utils.fetch_remote_volumegroup(identifier)
+            volumegroup = tutum.Utils.fetch_remote_volumegroup(identifier)
             print(json.dumps(volumegroup.get_all_attributes(), indent=2))
         except Exception as e:
             print(e, file=sys.stderr)
@@ -1473,7 +1478,7 @@ def volumegroup_inspect(identifiers):
 def trigger_create(identifier, name, operation):
     has_exception = False
     try:
-        service = utils.fetch_remote_service(identifier)
+        service = tutum.Utils.fetch_remote_service(identifier)
         trigger = tutum.Trigger.fetch(service)
         trigger.add(name, operation)
         trigger.save()
@@ -1490,7 +1495,7 @@ def trigger_list(identifier, quiet):
     data_list = []
     uuid_list = []
     try:
-        service = utils.fetch_remote_service(identifier)
+        service = tutum.Utils.fetch_remote_service(identifier)
         trigger = tutum.Trigger.fetch(service)
         triggers = trigger.list()
         for t in triggers:
@@ -1511,7 +1516,7 @@ def trigger_list(identifier, quiet):
 def trigger_rm(identifier, trigger_identifiers):
     has_exception = False
     try:
-        service = utils.fetch_remote_service(identifier)
+        service = tutum.Utils.fetch_remote_service(identifier)
         trigger = tutum.Trigger.fetch(service)
         uuid_list = utils.get_uuids_of_trigger(trigger, trigger_identifiers)
         try:
@@ -1557,7 +1562,7 @@ def stack_inspect(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
-            stack = utils.fetch_remote_stack(identifier)
+            stack = tutum.Utils.fetch_remote_stack(identifier)
             print(json.dumps(stack.get_all_attributes(), indent=2))
         except Exception as e:
             print(e, file=sys.stderr)
@@ -1597,7 +1602,7 @@ def stack_redeploy(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
-            stack = utils.fetch_remote_stack(identifier)
+            stack = tutum.Utils.fetch_remote_stack(identifier)
             result = stack.redeploy()
             utils.sync_action(stack, sync)
             if result:
@@ -1613,7 +1618,7 @@ def stack_start(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
-            stack = utils.fetch_remote_stack(identifier)
+            stack = tutum.Utils.fetch_remote_stack(identifier)
             result = stack.start()
             utils.sync_action(stack, sync)
             if result:
@@ -1629,7 +1634,7 @@ def stack_stop(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
-            stack = utils.fetch_remote_stack(identifier)
+            stack = tutum.Utils.fetch_remote_stack(identifier)
             result = stack.stop()
             utils.sync_action(stack, sync)
             if result:
@@ -1645,7 +1650,7 @@ def stack_terminate(identifiers, sync):
     has_exception = False
     for identifier in identifiers:
         try:
-            stack = utils.fetch_remote_stack(identifier)
+            stack = tutum.Utils.fetch_remote_stack(identifier)
             result = stack.delete()
             utils.sync_action(stack, sync)
             if result:
@@ -1659,7 +1664,7 @@ def stack_terminate(identifiers, sync):
 
 def stack_update(identifier, stackfile, sync):
     try:
-        stack = utils.load_stack_file(name=None, stackfile=stackfile, stack=utils.fetch_remote_stack(identifier))
+        stack = utils.load_stack_file(name=None, stackfile=stackfile, stack=tutum.Utils.fetch_remote_stack(identifier))
         result = stack.save()
         utils.sync_action(stack, sync)
         if result:
@@ -1671,7 +1676,7 @@ def stack_update(identifier, stackfile, sync):
 
 def stack_export(identifier, stackfile):
     try:
-        stack = utils.fetch_remote_stack(identifier)
+        stack = tutum.Utils.fetch_remote_stack(identifier)
         content = stack.export()
         if content:
             print(stackfile)
