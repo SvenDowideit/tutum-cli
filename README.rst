@@ -26,29 +26,34 @@ Now you can start using it:
     $ tutum
     
     usage: tutum [-h] [-v]
-                 {build,container,image,login,node,nodecluster,service,stack,tag,volume,volumegroup,webhook-handler}
-                 ...
+        {build,container,event,exec,image,login,node,nodecluster,push,run,service,stack,tag,volume,volumegroup,trigger,up}
+        ...
 
     Tutum's CLI
-
+    
     optional arguments:
       -h, --help            show this help message and exit
       -v, --version         show program's version number and exit
-
+    
     Tutum's CLI commands:
-      {build,container,image,login,node,nodecluster,service,stack,tag,volume,volumegroup,webhook-handler}
+      {build,container,event,exec,image,login,node,nodecluster,push,run,service,stack,tag,volume,volumegroup,trigger,up}
         build               Build an image using tutum/builder
         container           Container-related operations
+        event               Get real time tutum events
+        exec                Run a command in a running container
         image               Image-related operations
         login               Login into Tutum
         node                Node-related operations
         nodecluster         NodeCluster-related operations
+        push                Push a local image to Tutum private registry
+        run                 Create and run a new service
         service             Service-related operations
         stack               Stack-related operations
         tag                 Tag-related operations
         volume              Volume-related operations
         volumegroup         VolumeGroup-related operations
-        webhook-handler     Webhook-handler-related operations
+        trigger             Trigger-related operations
+        up                  Create and deploy a stack
 
 
 
@@ -66,13 +71,13 @@ will not persist by default:
 
 .. sourcecode:: bash
 
-    docker run -e TUTUM_USER=username -e TUTUM_APIKEY=apikey tutum/cli service
+    docker run -it -e TUTUM_USER=username -e TUTUM_APIKEY=apikey tutum/cli service
 
 To make things easier, you might want to use an ``alias`` for it:
 
 .. sourcecode:: bash
 
-    alias tutum="docker run -e TUTUM_USER=username -e TUTUM_APIKEY=apikey tutum/cli"
+    alias tutum="docker run -it -e TUTUM_USER=username -e TUTUM_APIKEY=apikey --rm tutum/cli"
     tutum service
 
 
