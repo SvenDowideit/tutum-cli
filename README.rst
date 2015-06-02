@@ -71,14 +71,20 @@ will not persist by default:
 
 .. sourcecode:: bash
 
-    docker run -it -e TUTUM_USER=username -e TUTUM_APIKEY=apikey tutum/cli service
+    docker run -it -e TUTUM_USER=username -e TUTUM_APIKEY=apikey tutum/cli
 
 To make things easier, you might want to use an ``alias`` for it:
 
 .. sourcecode:: bash
 
     alias tutum="docker run -it -e TUTUM_USER=username -e TUTUM_APIKEY=apikey --rm tutum/cli"
+    
+Then, you can run commands like:
+
+.. sourcecode:: bash
+
     tutum service
+    tutum exec
 
 
 Authentication
