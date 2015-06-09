@@ -6,10 +6,6 @@ import os
 import logging
 from os.path import join, expanduser, abspath
 import ConfigParser
-import select
-import termios
-import tty
-import signal
 import errno
 import urllib
 
@@ -504,6 +500,15 @@ def service_terminate(identifiers, sync):
 
 
 def container_exec(identifier, command):
+    try:
+        import termios
+        import tty
+        import select
+        import signal
+    except ImportError:
+        print ("tutum exec is not supported on this operating system", file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
     def invoke_shell(url):
         shell = websocket.create_connection(url, timeout=10)
 
