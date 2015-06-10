@@ -4,6 +4,7 @@ import copy
 import sys
 import codecs
 
+import tutum
 import requests
 
 from . import __version__
@@ -16,6 +17,8 @@ requests.packages.urllib3.disable_warnings()
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 
 logging.basicConfig()
+
+tutum.user_agent = "tutum-cli/%s" % __version__
 
 
 def initialize_parser():

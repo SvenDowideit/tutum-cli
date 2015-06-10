@@ -50,7 +50,7 @@ def login(username, password, email):
             with open(join(expanduser('~'), TUTUM_FILE), 'w') as cfgfile:
                 config.write(cfgfile)
             print("Login succeeded!")
-    except exceptions.TutumAuthError:
+    except TutumAuthError:
         registered, text = utils.try_register(username, password, email)
         if registered:
             print(text)
