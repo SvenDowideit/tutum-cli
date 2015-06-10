@@ -424,28 +424,8 @@ def inject_env_var(services):
 def sync_action(obj, sync):
     action_uri = getattr(obj, "tutum_action_uri", "")
     if sync and action_uri:
-        last_state = None
-        while True:
-            try:
-                action = tutum.Utils.fetch_by_resource_uri(action_uri)
-                if last_state != action.state:
-                    if last_state:
-                        sys.stdout.write('\n')
-                    sys.stdout.write(action.state)
-                    last_state = action.state
-                else:
-                    sys.stdout.write('.')
-                if action.state.lower() == "success" or action.state.lower() == "failed":
-                    sys.stdout.write('\n')
-                    break
-                sys.stdout.flush()
-                time.sleep(4)
-            except tutum.TutumApiError as e:
-                print(e, file=sys.stderr)
-                continue
-            except Exception as e:
-                print(e, file=sys.stderr)
-                break
+        action = tutum.Utils.fetch_by_resource_uri(action_uri)
+        action.logs(tail=None, follow=False, log_handler=action_log_handler)
 
 
 def container_service_log_handler(message):
