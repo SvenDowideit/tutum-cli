@@ -1261,6 +1261,28 @@ def nodecluster_upgrade(identifiers, sync):
     if has_exception:
         sys.exit(EXCEPTION_EXIT_CODE)
 
+def nodecluster_az(quiet):
+    try:
+        headers = ["NANE", "AVAIABLE", "RESOURCE URI"]
+        az_list = tutum.AZ.list()
+        data_list = []
+        long_uuid_list = []
+        for az in az_list:
+            data_list.append([az.name, "Yes" if az.available else "No", az.resource_uri])
+            long_uuid_list.append(az.name)
+
+        if len(data_list) == 0:
+            data_list.append(["", "", "", "", ""])
+
+        if quiet:
+            for uuid in long_uuid_list:
+                print(uuid)
+        else:
+            utils.tabulate_result(data_list, headers)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
 
 def tag_add(identifiers, tags):
     has_exception = False

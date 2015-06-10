@@ -235,6 +235,8 @@ def dispatch_cmds(args):
             commands.nodecluster_show_types(args.provider, args.region)
         elif args.subcmd == 'rm':
             commands.nodecluster_rm(args.identifier, args.sync)
+        elif args.subcmd == 'az':
+            commands.nodecluster_az(args.quiet)
         elif args.subcmd == 'scale':
             commands.nodecluster_scale(args.identifier, args.target_num_nodes, args.sync)
         elif args.subcmd == 'upgrade':

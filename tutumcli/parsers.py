@@ -557,6 +557,10 @@ def add_nodecluster_parser(subparsers):
     nodetype_parser.add_argument('-p', '--provider', help="filtered by provider name (e.g. digitalocean)")
     nodetype_parser.add_argument('-r', '--region', help="filtered by region name (e.g. ams1)")
 
+    # tutum nodecluster az
+    az_parser = nodecluster_subparser.add_parser('az', help='Show all available availability zones')
+    az_parser.add_argument('-q', '--quiet', help='print only avaialbity zone name', action='store_true')
+
     # tutum nodecluster upgrade
     upgrade_parser = nodecluster_subparser.add_parser('upgrade',
                                                       help='Upgrade docker daemon on all the nodes in the node cluster',
