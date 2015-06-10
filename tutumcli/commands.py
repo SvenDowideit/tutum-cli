@@ -14,12 +14,10 @@ import tutum
 import docker
 import yaml
 from tutum.api import auth
-from tutum.api import exceptions
-from tutum import TutumAuthError, TutumApiError, ObjectNotFound, NonUniqueIdentifier
+from tutum import TutumApiError, TutumAuthError, ObjectNotFound, NonUniqueIdentifier
 
 from exceptions import StreamOutputError
 from tutumcli import utils
-
 
 TUTUM_FILE = '.tutum'
 AUTH_SECTION = 'auth'
@@ -166,7 +164,7 @@ def service_logs(identifiers, tail, follow):
     for identifier in identifiers:
         try:
             service = tutum.Utils.fetch_remote_service(identifier)
-            service.logs(tail, follow)
+            service.logs(tail, follow, utils.container_service_log_handler)
         except KeyboardInterrupt:
             pass
         except Exception as e:
@@ -506,7 +504,7 @@ def container_exec(identifier, command):
         import select
         import signal
     except ImportError:
-        print ("tutum exec is not supported on this operating system", file=sys.stderr)
+        print("tutum exec is not supported on this operating system", file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
 
     def invoke_shell(url):
@@ -628,7 +626,7 @@ def container_logs(identifiers, tail, follow):
     for identifier in identifiers:
         try:
             container = tutum.Utils.fetch_remote_container(identifier)
-            container.logs(tail, follow)
+            container.logs(tail, follow, utils.container_service_log_handler)
         except KeyboardInterrupt:
             pass
         except Exception as e:
@@ -1693,4 +1691,61 @@ def stack_export(identifier, stackfile):
 
     except Exception as e:
         print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def action_inspect(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            volumegroup = tutum.Utils.fetch_remote_action(identifier)
+            print(json.dumps(volumegroup.get_all_attributes(), indent=2))
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def action_list(quiet, last):
+    try:
+        headers = ["UUID", "ACTION", "START", "END", "TARGET", "IP", "LOCATION"]
+        action_list = tutum.Action.list(25 if not last else last)
+        data_list = []
+        long_uuid_list = []
+        for action in action_list:
+            terms = action.object.strip("/").split("/", 3)
+            target = terms[3] if len(terms) == 4 else ""
+            data_list.append([action.uuid[:8],
+                              action.action,
+                              utils.get_humanize_local_datetime_from_utc_datetime_string(action.start_date),
+                              utils.get_humanize_local_datetime_from_utc_datetime_string(action.end_date),
+                              target, action.ip, action.location])
+            long_uuid_list.append(action.uuid)
+
+        if len(data_list) == 0:
+            data_list.append(["", "", "", "", ""])
+
+        if quiet:
+            for uuid in long_uuid_list:
+                print(uuid)
+        else:
+            utils.tabulate_result(data_list, headers)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def action_logs(identifiers, tail, follow):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            action = tutum.Utils.fetch_remote_action(identifier)
+            action.logs(tail, follow, utils.action_log_handler)
+        except KeyboardInterrupt:
+            pass
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
         sys.exit(EXCEPTION_EXIT_CODE)

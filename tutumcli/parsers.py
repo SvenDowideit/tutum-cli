@@ -24,17 +24,19 @@ def add_event_parser(subparsers):
     subparsers.add_parser('event', help='Get real time tutum events',
                           description='Get real time tutum events')
 
+
 def add_push_parser(subparsers):
     # tutum push
     push_parser = subparsers.add_parser('push', help='Push a local image to Tutum private registry',
-                                             description='Push a local image to Tutum private registry')
+                                        description='Push a local image to Tutum private registry')
     push_parser.add_argument('name', help='name of the image to push')
     push_parser.add_argument('--public', help='push image to public registry', action='store_true')
+
 
 def add_run_parser(subparsers):
     # tutum run
     run_parser = subparsers.add_parser('run', help='Create and run a new service',
-                                              description='Create and run a new service', )
+                                       description='Create and run a new service', )
     run_parser.add_argument('image', help='the name of the image used to deploy this service')
     run_parser.add_argument('-n', '--name', help='a human-readable name for the service '
                                                  '(default: image_tag without namespace)')
@@ -83,21 +85,49 @@ def add_run_parser(subparsers):
     run_parser.add_argument('--sync', help='block the command until the async operation has finished',
                             action='store_true')
 
+
 def add_up_parser(subparsers):
     # tutum up
     up_parser = subparsers.add_parser('up', help='Create and deploy a stack',
-                                           description='Create and deploy a stack')
+                                      description='Create and deploy a stack')
     up_parser.add_argument('-n', '--name', help='The name of the stack, which wil be shown in tutum')
     up_parser.add_argument('-f', '--file', help="the name of the Stackfile")
     up_parser.add_argument('--sync', help='block the command until the async operation has finished',
                            action='store_true')
 
+
 def add_exec_parser(subparsers):
     # tutum exec
     exec_parser = subparsers.add_parser('exec', help='Run a command in a running container',
-                                                 description='Run a command in a running container')
+                                        description='Run a command in a running container')
     exec_parser.add_argument('identifier', help="container's UUID (either long or short) or name")
     exec_parser.add_argument('command', help="the command to run (default: sh)", nargs=argparse.REMAINDER)
+
+
+def add_action_parser(subparsers):
+    # tutum action
+    action_parser = subparsers.add_parser('action', help='Action-related operations',
+                                          description='Action-related operations')
+    action_subparser = action_parser.add_subparsers(title='tutum action commands', dest='subcmd')
+
+    # tutum action inspect
+    inspect_parser = action_subparser.add_parser('inspect', help="Get all details from an action",
+                                                 description="Get all details from an action")
+    inspect_parser.add_argument('identifier', help="action's UUID (either long or short)", nargs='+')
+
+    # tutum action list
+    list_parser = action_subparser.add_parser('list', help='List actions', description='List actions')
+    list_parser.add_argument('-q', '--quiet', help='print only action uuid', action='store_true')
+    list_parser.add_argument('-l', '--last', help='Output the last number of actions (default:25)', type=int)
+
+    # tutum action logs
+    logs_parser = action_subparser.add_parser('logs', help='Get logs from an action',
+                                              description='Get logs from an action')
+    logs_parser.add_argument('identifier', help="service's UUID (either long or short)", nargs='+')
+    logs_parser.add_argument('-f', '--follow', help='follow log output', action='store_true')
+    logs_parser.add_argument('-t', '--tail', help='Output the specified number of lines at the end of logs '
+                                                  '(defaults: 300)', type=int)
+
 
 def add_service_parser(subparsers):
     def str2bool(v):
@@ -143,8 +173,8 @@ def add_service_parser(subparsers):
                                                      'they stop (default: OFF)',
                                choices=['OFF', 'ON_SUCCESS', 'ALWAYS'])
     create_parser.add_argument('--autoredeploy', help="whether the containers should be auto redeployed."
-                                                   " It only applies to services that use an image stored in Tutum's "
-                                                   "registry", action='store_true')
+                                                      " It only applies to services that use an image stored in Tutum's "
+                                                      "registry", action='store_true')
     create_parser.add_argument('--autorestart', help='whether the containers should be restarted if they stop '
                                                      '(default: OFF)', choices=['OFF', 'ON_FAILURE', 'ALWAYS'])
     create_parser.add_argument('--role', help='Tutum API roles to grant the service, '
@@ -181,7 +211,6 @@ def add_service_parser(subparsers):
                            choices=['Init', 'Stopped', 'Starting', 'Running', 'Stopping', 'Terminating', 'Terminated',
                                     'Scaling', 'Partly running', 'Not running', 'Redeploying'])
     ps_parser.add_argument('--stack', help="filter services by stack (UUID either long or short, or name)")
-
 
     # tutum service redeploy
     redeploy_parser = service_subparser.add_parser('redeploy', help='Redeploy a running service',

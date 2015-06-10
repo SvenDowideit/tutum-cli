@@ -17,8 +17,9 @@ import tutum
 from dateutil import tz
 from tabulate import tabulate
 
-from exceptions import BadParameter, DockerNotFound, StreamOutputError
 from tutum import ObjectNotFound
+
+from exceptions import BadParameter, DockerNotFound, StreamOutputError
 from . import __version__
 
 
@@ -447,3 +448,27 @@ def sync_action(obj, sync):
                 break
 
 
+def container_service_log_handler(message):
+    try:
+        msg = json.loads(message)
+        out = sys.stdout
+        if msg.get("streamType", None) == "stderr":
+            out = sys.stderr
+
+        log = msg["log"]
+        source = msg.get("source", None)
+        if source:
+            log = " | ".join([source, log])
+        out.write(log)
+        out.flush()
+    except:
+        pass
+
+
+def action_log_handler(message):
+    try:
+        msg = json.loads(message)
+        if msg.get("type") == "log":
+            print(msg.get("log", ""))
+    except:
+        pass
