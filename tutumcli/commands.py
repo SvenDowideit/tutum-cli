@@ -508,7 +508,9 @@ def container_exec(identifier, command):
         sys.exit(EXCEPTION_EXIT_CODE)
 
     def invoke_shell(url):
-        shell = websocket.create_connection(url, timeout=10)
+        header = {'User-Agent': tutum.user_agent}
+        cli_log.info("websocket: %s %s" % (url, header))
+        shell = websocket.create_connection(url, timeout=10, header=header)
 
         oldtty = termios.tcgetattr(sys.stdin)
         old_handler = signal.getsignal(signal.SIGWINCH)
@@ -604,7 +606,6 @@ def container_exec(identifier, command):
         endpoint = "%s&command=%s" % (endpoint, urllib.quote_plus(escaped_cmd))
 
     url = "/".join([tutum.stream_url.rstrip("/"), endpoint.lstrip('/')])
-    cli_log.debug("websocket url: %s" % url)
     invoke_shell(url)
 
 
