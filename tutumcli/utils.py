@@ -195,17 +195,16 @@ def get_uuids_of_trigger(trigger, identifiers):
 
 def parse_links(links, target):
     def _format_link(_link):
-        link_regexp = re.compile(r'(^[a-zA-Z0-9_-]+\.)?[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+$')
+        link_regexp = re.compile(r'^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)?:[a-zA-Z0-9_-]+$')
         match = link_regexp.match(_link)
         if match:
             temp = _link.split(":", 1)
             return {target: temp[0], 'name': temp[1]}
-        raise BadParameter("Link variable argument %s does not match with ([stack.]name:alias)."
+        raise BadParameter("Link variable argument %s does not match with (service_name[.stack_name]:alias)."
                            " Example: mysql:db" % _link)
-
     return [_format_link(link) for link in links] if links else []
 
-
+exit
 def parse_published_ports(port_list):
     def _get_port_dict(_port):
         port_regexp = re.compile('^([0-9]{1,5}:)?([0-9]{1,5})(/tcp|/udp)?$')
