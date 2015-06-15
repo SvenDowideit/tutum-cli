@@ -425,7 +425,7 @@ def sync_action(obj, sync):
     action_uri = getattr(obj, "tutum_action_uri", "")
     if sync and action_uri:
         action = tutum.Utils.fetch_by_resource_uri(action_uri)
-        action.logs(tail=None, follow=False, log_handler=action_log_handler)
+        action.logs(tail=None, follow=True, log_handler=action_log_handler)
 
 
 def container_service_log_handler(message):
