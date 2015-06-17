@@ -7,7 +7,6 @@ import re
 import os
 import codecs
 import sys
-import time
 
 import requests
 import yaml
@@ -15,6 +14,7 @@ import ago
 import docker
 import tutum
 from dateutil import tz
+
 from tabulate import tabulate
 
 from tutum import ObjectNotFound
@@ -202,9 +202,13 @@ def parse_links(links, target):
             return {target: temp[0], 'name': temp[1]}
         raise BadParameter("Link variable argument %s does not match with (service_name[.stack_name]:alias)."
                            " Example: mysql:db" % _link)
+
     return [_format_link(link) for link in links] if links else []
 
+
 exit
+
+
 def parse_published_ports(port_list):
     def _get_port_dict(_port):
         port_regexp = re.compile('^([0-9]{1,5}:)?([0-9]{1,5})(/tcp|/udp)?$')

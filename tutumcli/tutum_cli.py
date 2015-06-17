@@ -68,7 +68,7 @@ def patch_help_option(argv=sys.argv):
     elif len(args) == 3:
         if args[1] == 'action' and args[2] in ['inspect', 'logs']:
             args.append('-h')
-        elif args[1] == 'service' and args[2] in ['create', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
+        elif args[1] == 'service' and args[2] in ['create', 'env', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
                                                   'start', 'stop', 'terminate']:
             args.append('-h')
         elif args[1] == 'container' and args[2] in ['exec', 'inspect', 'logs', 'redeploy', 'start', 'stop',
@@ -91,6 +91,10 @@ def patch_help_option(argv=sys.argv):
         elif args[1] == 'stack' and args[2] in ['inspect', 'redeploy', 'terminate', 'start', 'stop', 'update',
                                                 'export']:
             args.append('-h')
+    elif len(args) == 4:
+        if args[1] == 'service' and args[2] == 'env':
+            if args[3] in ['add', 'remove', 'update']:
+                args.append('-h')
     if debug:
         args.insert(1, '--debug')
     return args[1:]
@@ -181,6 +185,20 @@ def dispatch_cmds(args):
             commands.service_stop(args.identifier, args.sync)
         elif args.subcmd == 'terminate':
             commands.service_terminate(args.identifier, args.sync)
+        elif args.subcmd == 'env':
+            if args.envsubcmd == 'add':
+                commands.service_env_add(args.identifier, envvars=args.env, envfiles=args.env_file,
+                                         redeploy=args.redeploy, sync=args.sync)
+            elif args.envsubcmd == 'list':
+                commands.service_env_list(args.identifier, args.quiet, args.user, args.image, args.tutum)
+            elif args.envsubcmd == 'remove':
+                commands.service_env_remove(args.identifier, names=args.name, redeploy=args.redeploy, sync=args.sync)
+            elif args.envsubcmd == 'set':
+                commands.service_env_set(args.identifier, envvars=args.env, envfiles=args.env_file,
+                                         redeploy=args.redeploy, sync=args.sync)
+            elif args.envsubcmd == 'update':
+                commands.service_env_update(args.identifier, envvars=args.env, envfiles=args.env_file,
+                                            redeploy=args.redeploy, sync=args.sync)
     elif args.cmd == 'container':
         if args.subcmd == 'exec':
             commands.container_exec(args.identifier, args.command)
