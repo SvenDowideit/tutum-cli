@@ -1,4 +1,4 @@
-python-tutum==0.15.1.1
+python-tutum==0.16.0
 PyYAML==3.10
 ago==0.0.6
 python-dateutil==2.2
