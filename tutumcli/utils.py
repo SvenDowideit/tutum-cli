@@ -206,9 +206,6 @@ def parse_links(links, target):
     return [_format_link(link) for link in links] if links else []
 
 
-exit
-
-
 def parse_published_ports(port_list):
     def _get_port_dict(_port):
         port_regexp = re.compile('^([0-9]{1,5}:)?([0-9]{1,5})(/tcp|/udp)?$')
@@ -424,11 +421,39 @@ def inject_env_var(services):
     return services
 
 
+# def sync_action(obj, sync):
+#     action_uri = getattr(obj, "tutum_action_uri", "")
+#     if sync and action_uri:
+#         action = tutum.Utils.fetch_by_resource_uri(action_uri)
+#         action.logs(tail=None, follow=True, log_handler=action_log_handler)
+
 def sync_action(obj, sync):
+    import time
     action_uri = getattr(obj, "tutum_action_uri", "")
     if sync and action_uri:
-        action = tutum.Utils.fetch_by_resource_uri(action_uri)
-        action.logs(tail=None, follow=True, log_handler=action_log_handler)
+        last_state = None
+        while True:
+            try:
+                action = tutum.Utils.fetch_by_resource_uri(action_uri)
+                if last_state != action.state:
+                    if last_state:
+                        sys.stdout.write('\n')
+                    sys.stdout.write(action.state)
+                    last_state = action.state
+                else:
+                    sys.stdout.write('.')
+                if action.state.lower() == "success" or action.state.lower() == "failed":
+                    sys.stdout.write('\n')
+                    break
+                sys.stdout.flush()
+                time.sleep(4)
+            except tutum.TutumApiError as e:
+                print(e, file=sys.stderr)
+                continue
+            except Exception as e:
+                print(e, file=sys.stderr)
+                break
+
 
 
 def container_service_log_handler(message):
