@@ -7,7 +7,6 @@ import re
 import os
 import codecs
 import sys
-import time
 
 import requests
 import yaml
@@ -15,10 +14,12 @@ import ago
 import docker
 import tutum
 from dateutil import tz
+
 from tabulate import tabulate
 
-from exceptions import BadParameter, DockerNotFound, StreamOutputError
 from tutum import ObjectNotFound
+
+from exceptions import BadParameter, DockerNotFound, StreamOutputError
 from . import __version__
 
 
@@ -194,12 +195,12 @@ def get_uuids_of_trigger(trigger, identifiers):
 
 def parse_links(links, target):
     def _format_link(_link):
-        link_regexp = re.compile('^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+$')
+        link_regexp = re.compile(r'^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)?:[a-zA-Z0-9_-]+$')
         match = link_regexp.match(_link)
         if match:
             temp = _link.split(":", 1)
             return {target: temp[0], 'name': temp[1]}
-        raise BadParameter("Link variable argument %s does not match with (name:alias)."
+        raise BadParameter("Link variable argument %s does not match with (service_name[.stack_name]:alias)."
                            " Example: mysql:db" % _link)
 
     return [_format_link(link) for link in links] if links else []
@@ -420,7 +421,14 @@ def inject_env_var(services):
     return services
 
 
+# def sync_action(obj, sync):
+#     action_uri = getattr(obj, "tutum_action_uri", "")
+#     if sync and action_uri:
+#         action = tutum.Utils.fetch_by_resource_uri(action_uri)
+#         action.logs(tail=None, follow=True, log_handler=action_log_handler)
+
 def sync_action(obj, sync):
+    import time
     action_uri = getattr(obj, "tutum_action_uri", "")
     if sync and action_uri:
         last_state = None
@@ -447,3 +455,28 @@ def sync_action(obj, sync):
                 break
 
 
+
+def container_service_log_handler(message):
+    try:
+        msg = json.loads(message)
+        out = sys.stdout
+        if msg.get("streamType", None) == "stderr":
+            out = sys.stderr
+
+        log = msg["log"]
+        source = msg.get("source", None)
+        if source:
+            log = " | ".join([source, log])
+        out.write(log)
+        out.flush()
+    except:
+        pass
+
+
+def action_log_handler(message):
+    try:
+        msg = json.loads(message)
+        if msg.get("type") == "log":
+            print(msg.get("log", ""))
+    except:
+        pass

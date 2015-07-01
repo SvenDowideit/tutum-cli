@@ -4,6 +4,7 @@ import copy
 import sys
 import codecs
 
+import tutum
 import requests
 
 from . import __version__
@@ -11,12 +12,13 @@ from tutumcli import parsers
 from tutumcli import commands
 from tutumcli.exceptions import InternalError
 
-
 requests.packages.urllib3.disable_warnings()
 
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 
 logging.basicConfig()
+
+tutum.user_agent = "tutum-cli/%s" % __version__
 
 
 def initialize_parser():
@@ -26,6 +28,7 @@ def initialize_parser():
     parser.add_argument('--debug', action='store_true', help=argparse.SUPPRESS)
     subparsers = parser.add_subparsers(title="Tutum's CLI commands", dest='cmd')
     # Command Parsers
+    parsers.add_action_parser(subparsers)
     parsers.add_build_parser(subparsers)
     parsers.add_container_parser(subparsers)
     parsers.add_event_parser(subparsers)
@@ -58,12 +61,15 @@ def patch_help_option(argv=sys.argv):
 
     if len(args) == 1:
         args.append('-h')
-    elif len(args) == 2 and args[1] in ['service', 'build', 'container', 'image', 'exec', 'node', 'nodecluster', 'tag',
-                                        'volume', 'volumegroup', 'trigger', 'stack', 'push', 'run']:
+    elif len(args) == 2 and args[1] in ['action', 'service', 'build', 'container', 'image', 'exec', 'node',
+                                        'nodecluster', 'tag', 'volume', 'volumegroup', 'trigger',
+                                        'stack', 'push', 'run']:
         args.append('-h')
     elif len(args) == 3:
-        if args[1] == 'service' and args[2] in ['create', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
-                                                'start', 'stop', 'terminate']:
+        if args[1] == 'action' and args[2] in ['inspect', 'logs']:
+            args.append('-h')
+        elif args[1] == 'service' and args[2] in ['create', 'env', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
+                                                  'start', 'stop', 'terminate']:
             args.append('-h')
         elif args[1] == 'container' and args[2] in ['exec', 'inspect', 'logs', 'redeploy', 'start', 'stop',
                                                     'terminate']:
@@ -85,7 +91,10 @@ def patch_help_option(argv=sys.argv):
         elif args[1] == 'stack' and args[2] in ['inspect', 'redeploy', 'terminate', 'start', 'stop', 'update',
                                                 'export']:
             args.append('-h')
-
+    elif len(args) == 4:
+        if args[1] == 'service' and args[2] == 'env':
+            if args[3] in ['add', 'remove', 'update']:
+                args.append('-h')
     if debug:
         args.insert(1, '--debug')
     return args[1:]
@@ -99,6 +108,13 @@ def dispatch_cmds(args):
         cli_log.setLevel(logging.DEBUG)
     if args.cmd == 'login':
         commands.login(args.username, args.password, args.email)
+    elif args.cmd == 'action':
+        if args.subcmd == 'inspect':
+            commands.action_inspect(args.identifier)
+        elif args.subcmd == 'list':
+            commands.action_list(args.quiet, args.last)
+        elif args.subcmd == 'logs':
+            commands.action_logs(args.identifier, args.tail, args.follow)
     elif args.cmd == 'build':
         commands.build(args.tag, args.directory, args.sock)
     elif args.cmd == 'event':
@@ -109,15 +125,15 @@ def dispatch_cmds(args):
         commands.image_push(args.name, args.public)
     elif args.cmd == 'run':
         commands.service_run(image=args.image, name=args.name, cpu_shares=args.cpushares,
-                                 memory=args.memory, privileged=args.privileged,
-                                 target_num_containers=args.target_num_containers, run_command=args.run_command,
-                                 entrypoint=args.entrypoint, expose=args.expose, publish=args.publish, envvars=args.env,
-                                 envfiles=args.env_file,
-                                 tag=args.tag, linked_to_service=args.link_service,
-                                 autorestart=args.autorestart, autodestroy=args.autodestroy,
-                                 autoredeploy=args.autoredeploy, roles=args.role,
-                                 sequential=args.sequential, volume=args.volume, volumes_from=args.volumes_from,
-                                 deployment_strategy=args.deployment_strategy, sync=args.sync)
+                             memory=args.memory, privileged=args.privileged,
+                             target_num_containers=args.target_num_containers, run_command=args.run_command,
+                             entrypoint=args.entrypoint, expose=args.expose, publish=args.publish, envvars=args.env,
+                             envfiles=args.env_file,
+                             tag=args.tag, linked_to_service=args.link_service,
+                             autorestart=args.autorestart, autodestroy=args.autodestroy,
+                             autoredeploy=args.autoredeploy, roles=args.role,
+                             sequential=args.sequential, volume=args.volume, volumes_from=args.volumes_from,
+                             deployment_strategy=args.deployment_strategy, sync=args.sync)
     elif args.cmd == 'service':
         if args.subcmd == 'create':
             commands.service_create(image=args.image, name=args.name, cpu_shares=args.cpushares,
@@ -169,6 +185,20 @@ def dispatch_cmds(args):
             commands.service_stop(args.identifier, args.sync)
         elif args.subcmd == 'terminate':
             commands.service_terminate(args.identifier, args.sync)
+        elif args.subcmd == 'env':
+            if args.envsubcmd == 'add':
+                commands.service_env_add(args.identifier, envvars=args.env, envfiles=args.env_file,
+                                         redeploy=args.redeploy, sync=args.sync)
+            elif args.envsubcmd == 'list':
+                commands.service_env_list(args.identifier, args.quiet, args.user, args.image, args.tutum)
+            elif args.envsubcmd == 'remove':
+                commands.service_env_remove(args.identifier, names=args.name, redeploy=args.redeploy, sync=args.sync)
+            elif args.envsubcmd == 'set':
+                commands.service_env_set(args.identifier, envvars=args.env, envfiles=args.env_file,
+                                         redeploy=args.redeploy, sync=args.sync)
+            elif args.envsubcmd == 'update':
+                commands.service_env_update(args.identifier, envvars=args.env, envfiles=args.env_file,
+                                            redeploy=args.redeploy, sync=args.sync)
     elif args.cmd == 'container':
         if args.subcmd == 'exec':
             commands.container_exec(args.identifier, args.command)
@@ -226,6 +256,8 @@ def dispatch_cmds(args):
             commands.nodecluster_show_types(args.provider, args.region)
         elif args.subcmd == 'rm':
             commands.nodecluster_rm(args.identifier, args.sync)
+        elif args.subcmd == 'az':
+            commands.nodecluster_az(args.quiet)
         elif args.subcmd == 'scale':
             commands.nodecluster_scale(args.identifier, args.target_num_nodes, args.sync)
         elif args.subcmd == 'upgrade':
@@ -279,6 +311,7 @@ def dispatch_cmds(args):
             commands.stack_export(args.identifier, args.file)
     elif args.cmd == 'up':
         commands.stack_up(args.name, args.file, args.sync)
+
 
 def main():
     parser = initialize_parser()

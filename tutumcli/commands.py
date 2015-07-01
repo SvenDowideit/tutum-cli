@@ -6,10 +6,6 @@ import os
 import logging
 from os.path import join, expanduser, abspath
 import ConfigParser
-import select
-import termios
-import tty
-import signal
 import errno
 import urllib
 
@@ -17,13 +13,13 @@ import websocket
 import tutum
 import docker
 import yaml
+
 from tutum.api import auth
-from tutum.api import exceptions
-from tutum import TutumAuthError, TutumApiError, ObjectNotFound, NonUniqueIdentifier
+
+from tutum import TutumApiError, TutumAuthError, ObjectNotFound, NonUniqueIdentifier
 
 from exceptions import StreamOutputError
 from tutumcli import utils
-
 
 TUTUM_FILE = '.tutum'
 AUTH_SECTION = 'auth'
@@ -56,7 +52,7 @@ def login(username, password, email):
             with open(join(expanduser('~'), TUTUM_FILE), 'w') as cfgfile:
                 config.write(cfgfile)
             print("Login succeeded!")
-    except exceptions.TutumAuthError:
+    except TutumAuthError:
         registered, text = utils.try_register(username, password, email)
         if registered:
             print(text)
@@ -170,7 +166,7 @@ def service_logs(identifiers, tail, follow):
     for identifier in identifiers:
         try:
             service = tutum.Utils.fetch_remote_service(identifier)
-            service.logs(tail, follow)
+            service.logs(tail, follow, utils.container_service_log_handler)
         except KeyboardInterrupt:
             pass
         except Exception as e:
@@ -223,7 +219,8 @@ def service_ps(quiet, status, stack):
             utils.tabulate_result(data_list, headers)
             if has_unsynchronized_service:
                 print(
-                    "\n(*) Please note that this service needs to be redeployed to have its configuration changes applied")
+                    "\n(*) Please note that this service needs to be redeployed to "
+                    "have its configuration changes applied")
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
@@ -442,6 +439,7 @@ def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_c
                     if redeploy:
                         print("Redeploying Service ...")
                         result2 = service.redeploy()
+                        utils.sync_action(service, sync)
                         if result2:
                             print(service.uuid)
                     else:
@@ -504,8 +502,19 @@ def service_terminate(identifiers, sync):
 
 
 def container_exec(identifier, command):
+    try:
+        import termios
+        import tty
+        import select
+        import signal
+    except ImportError:
+        print("tutum exec is not supported on this operating system", file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
     def invoke_shell(url):
-        shell = websocket.create_connection(url, timeout=10)
+        header = {'User-Agent': tutum.user_agent}
+        cli_log.info("websocket: %s %s" % (url, header))
+        shell = websocket.create_connection(url, timeout=10, header=header)
 
         oldtty = termios.tcgetattr(sys.stdin)
         old_handler = signal.getsignal(signal.SIGWINCH)
@@ -601,7 +610,6 @@ def container_exec(identifier, command):
         endpoint = "%s&command=%s" % (endpoint, urllib.quote_plus(escaped_cmd))
 
     url = "/".join([tutum.stream_url.rstrip("/"), endpoint.lstrip('/')])
-    cli_log.debug("websocket url: %s" % url)
     invoke_shell(url)
 
 
@@ -623,7 +631,7 @@ def container_logs(identifiers, tail, follow):
     for identifier in identifiers:
         try:
             container = tutum.Utils.fetch_remote_container(identifier)
-            container.logs(tail, follow)
+            container.logs(tail, follow, utils.container_service_log_handler)
         except KeyboardInterrupt:
             pass
         except Exception as e:
@@ -1259,6 +1267,29 @@ def nodecluster_upgrade(identifiers, sync):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
+def nodecluster_az(quiet):
+    try:
+        headers = ["NANE", "AVAIABLE", "RESOURCE URI"]
+        az_list = tutum.AZ.list()
+        data_list = []
+        long_uuid_list = []
+        for az in az_list:
+            data_list.append([az.name, "Yes" if az.available else "No", az.resource_uri])
+            long_uuid_list.append(az.name)
+
+        if len(data_list) == 0:
+            data_list.append(["", "", "", "", ""])
+
+        if quiet:
+            for uuid in long_uuid_list:
+                print(uuid)
+        else:
+            utils.tabulate_result(data_list, headers)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
 def tag_add(identifiers, tags):
     has_exception = False
     for identifier in identifiers:
@@ -1688,4 +1719,265 @@ def stack_export(identifier, stackfile):
 
     except Exception as e:
         print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def action_inspect(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            volumegroup = tutum.Utils.fetch_remote_action(identifier)
+            print(json.dumps(volumegroup.get_all_attributes(), indent=2))
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def action_list(quiet, last):
+    try:
+        headers = ["UUID", "ACTION", "START", "END", "TARGET", "IP", "LOCATION"]
+        action_list = tutum.Action.list(25 if not last else last)
+        data_list = []
+        long_uuid_list = []
+        for action in action_list:
+            terms = action.object.strip("/").split("/", 3)
+            target = terms[3] if len(terms) == 4 else ""
+            data_list.append([action.uuid[:8],
+                              action.action,
+                              utils.get_humanize_local_datetime_from_utc_datetime_string(action.start_date),
+                              utils.get_humanize_local_datetime_from_utc_datetime_string(action.end_date),
+                              target, action.ip, action.location])
+            long_uuid_list.append(action.uuid)
+
+        if len(data_list) == 0:
+            data_list.append(["", "", "", "", ""])
+
+        if quiet:
+            for uuid in long_uuid_list:
+                print(uuid)
+        else:
+            utils.tabulate_result(data_list, headers)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def action_logs(identifiers, tail, follow):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            action = tutum.Utils.fetch_remote_action(identifier)
+            action.logs(tail, follow, utils.action_log_handler)
+        except KeyboardInterrupt:
+            pass
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def service_env_add(identifiers, envvars, envfiles, redeploy, sync):
+    has_exception = False
+    input_envvars = utils.parse_envvars(envvars, envfiles)
+    if not input_envvars:
+        print("Environment variables cannot be empty.", file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+    for identifier in identifiers:
+        try:
+            service = tutum.Utils.fetch_remote_service(identifier)
+            existing_envvar_keys = [env["key"] for env in service.calculated_envvars]
+            new_envvars = []
+            for envvar in input_envvars:
+                if envvar["key"] not in existing_envvar_keys:
+                    new_envvars.append(envvar)
+                else:
+                    print("Failed to add environment variable: \"%s\" alreasy exist in service %s" %
+                          (envvar["key"], identifier), file=sys.stderr)
+                    has_exception = True
+
+            if not new_envvars:
+                print("No environment variables need to be added to service %s" % identifier, file=sys.stderr)
+                sys.exit(EXCEPTION_EXIT_CODE)
+
+            existing_envvars = [{"key": env["key"], "value": env["value"]} for env in service.calculated_envvars
+                                if env["origin"] == "user"]
+            new_envvars.extend(existing_envvars)
+            service.container_envvars = new_envvars
+            result = service.save()
+            utils.sync_action(service, sync)
+            if result:
+                if redeploy:
+                    print("Redeploying Service ...")
+                    result2 = service.redeploy()
+                    utils.sync_action(service, sync)
+                    if result2:
+                        print(service.uuid)
+                else:
+                    print(service.uuid)
+                    print("Service must be redeployed to have its configuration changes applied.")
+                    print("To redeploy execute: $ tutum service redeploy", identifier)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def service_env_list(identifier, quiet, origin_user, origin_image, origin_tutum):
+    has_exception = False
+    try:
+        service = tutum.Utils.fetch_remote_service(identifier)
+        headers = ["ORIGIN", "KEY", "VALUE"]
+        data_list = []
+        key_value_list = []
+        origin_all = not origin_user and not origin_image and not origin_tutum
+        for envvars in service.calculated_envvars:
+            if origin_all or \
+                    (origin_user and envvars["origin"] == "user") or \
+                    (origin_image and envvars["origin"] == "image") or \
+                    (origin_tutum and envvars["origin"] == "tutum"):
+                data_list.append([envvars["origin"], envvars["key"], envvars["value"]])
+                key_value_list.append("%s=%s" % (envvars["key"], envvars["value"]))
+
+        if len(data_list) == 0:
+            data_list.append(["", "", ""])
+
+        if quiet:
+            for uuid in key_value_list:
+                print(uuid)
+        else:
+            utils.tabulate_result(data_list, headers)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def service_env_remove(identifiers, names, redeploy, sync):
+    has_exception = False
+    if not names:
+        print("Names of the environment variables cannot be empty.", file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+    for identifier in identifiers:
+        try:
+            service = tutum.Utils.fetch_remote_service(identifier)
+            existing_envvar_keys = [env["key"] for env in service.calculated_envvars if env["origin"] == "user"]
+
+            names_to_be_removed = []
+
+            for name in names:
+                if name not in existing_envvar_keys:
+                    print("Failed to remove environment variable: \"%s\" is not a user defined environment "
+                          "in service %s" % (name, identifier), file=sys.stderr)
+                else:
+                    names_to_be_removed.append(name)
+
+            new_envvars = [{"key": env["key"], "value": env["value"]} for env in service.calculated_envvars
+                           if env["origin"] == "user" and env["key"] not in names_to_be_removed]
+
+            if not names_to_be_removed:
+                print("No environment variables need to be removed from service %s" % identifier, file=sys.stderr)
+                sys.exit(EXCEPTION_EXIT_CODE)
+
+            service.container_envvars = new_envvars
+            result = service.save()
+            utils.sync_action(service, sync)
+            if result:
+                if redeploy:
+                    print("Redeploying Service ...")
+                    result2 = service.redeploy()
+                    utils.sync_action(service, sync)
+                    if result2:
+                        print(service.uuid)
+                else:
+                    print(service.uuid)
+                    print("Service must be redeployed to have its configuration changes applied.")
+                    print("To redeploy execute: $ tutum service redeploy", identifier)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def service_env_set(identifiers, envvars, envfiles, redeploy, sync):
+    has_exception = False
+    input_envvars = utils.parse_envvars(envvars, envfiles)
+    if not input_envvars:
+        print("Environment variables cannot be empty.", file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+    for identifier in identifiers:
+        try:
+            service = tutum.Utils.fetch_remote_service(identifier)
+            service.container_envvars = input_envvars
+            result = service.save()
+            utils.sync_action(service, sync)
+            if result:
+                if redeploy:
+                    print("Redeploying Service ...")
+                    result2 = service.redeploy()
+                    utils.sync_action(service, sync)
+                    if result2:
+                        print(service.uuid)
+                else:
+                    print(service.uuid)
+                    print("Service must be redeployed to have its configuration changes applied.")
+                    print("To redeploy execute: $ tutum service redeploy", identifier)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def service_env_update(identifiers, envvars, envfiles, redeploy, sync):
+    has_exception = False
+    input_envvars = utils.parse_envvars(envvars, envfiles)
+    if not input_envvars:
+        print("Environment variables cannot be empty.", file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+    for identifier in identifiers:
+        try:
+            service = tutum.Utils.fetch_remote_service(identifier)
+            existing_envvar_keys = [env["key"] for env in service.calculated_envvars]
+            new_envvars = []
+            for envvar in input_envvars:
+                if envvar["key"] in existing_envvar_keys:
+                    new_envvars.append(envvar)
+                else:
+                    print("Failed to update environment variable: \"%s\" does not exist in service %s" %
+                          (envvar["key"], identifier), file=sys.stderr)
+                    has_exception = True
+
+            if not new_envvars:
+                print("No environment variables need to be updated in service %s" % identifier, file=sys.stderr)
+                sys.exit(EXCEPTION_EXIT_CODE)
+
+            new_envvar_keys = [env["key"] for env in new_envvars]
+            existing_envvars = [{"key": env["key"], "value": env["value"]} for env in service.calculated_envvars
+                                if env["origin"] == "user" and env["key"] not in new_envvar_keys]
+
+            new_envvars.extend(existing_envvars)
+            service.container_envvars = new_envvars
+            result = service.save()
+            utils.sync_action(service, sync)
+            if result:
+                if redeploy:
+                    print("Redeploying Service ...")
+                    result2 = service.redeploy()
+                    utils.sync_action(service, sync)
+                    if result2:
+                        print(service.uuid)
+                else:
+                    print(service.uuid)
+                    print("Service must be redeployed to have its configuration changes applied.")
+                    print("To redeploy execute: $ tutum service redeploy", identifier)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
         sys.exit(EXCEPTION_EXIT_CODE)

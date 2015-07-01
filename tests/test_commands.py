@@ -5,7 +5,6 @@ import StringIO
 import uuid
 
 import mock
-from tutum.api.exceptions import *
 from tutumcli.commands import *
 import tutumcli
 
@@ -434,7 +433,6 @@ class ServiceScaleTestCase(unittest.TestCase):
     def tearDown(self):
         sys.stdout = self.stdout
 
-
     @mock.patch('tutumcli.commands.tutum.Service.save')
     @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_service')
     def test_service_scale(self, mock_fetch_remote_service, mock_save):
@@ -778,7 +776,6 @@ CONTAINER2  8B4CFE51-03BB-42D6-825E-3B533888D8CD  \u25fc Stopped  test/container
         self.assertEqual(output, self.buf.getvalue().strip())
         self.buf.truncate(0)
 
-
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.tutum.Container.list', side_effect=TutumApiError)
     def test_container_ps_with_exception(self, mock_list, mock_exit):
@@ -956,7 +953,6 @@ class ImageRegister(unittest.TestCase):
         self.raw_input_holder = __builtin__.raw_input
         self.stdout = sys.stdout
         sys.stdout = self.buf = StringIO.StringIO()
-
 
     def tearDown(self):
         sys.stdout = self.stdout
@@ -1261,7 +1257,6 @@ class NodeClusterListTestCase(unittest.TestCase):
         nodetype2.label = '512MB'
         self.nodetypelist = [nodetype1, nodetype2]
 
-
     def tearDown(self):
         sys.stdout = self.stdout
 
@@ -1279,7 +1274,6 @@ newyork3  a4c1e712  San Francisco 1  512MB               Provisioning           
 
         self.assertEqual(output, self.buf.getvalue().strip())
         self.buf.truncate(0)
-
 
     @mock.patch('tutumcli.commands.tutum.Region.fetch')
     @mock.patch('tutumcli.commands.tutum.NodeType.fetch')
@@ -1620,7 +1614,6 @@ class NodeClusterCreateTestCase(unittest.TestCase):
     def tearDown(self):
         sys.stdout = self.stdout
 
-
     @mock.patch('tutumcli.commands.tutum.NodeCluster.deploy')
     @mock.patch('tutumcli.commands.tutum.NodeCluster.save')
     @mock.patch('tutumcli.commands.tutum.NodeCluster.create')
@@ -1639,7 +1632,6 @@ class NodeClusterCreateTestCase(unittest.TestCase):
                                        node_type=nodetype_uri)
         self.assertEqual(nodecluster.uuid, self.buf.getvalue().strip())
         self.buf.truncate(0)
-
 
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.tutum.NodeCluster.create', side_effect=TutumApiError)

@@ -3,7 +3,6 @@ import unittest
 import __builtin__
 
 import mock
-from tutum.api.exceptions import *
 import tutumcli
 from tutumcli.utils import *
 from tutumcli.exceptions import *
@@ -132,7 +131,6 @@ class TryRegisterTestCase(unittest.TestCase):
 
     def tearDown(self):
         __builtin__.raw_input = self.raw_input_holder
-
 
     @mock.patch('tutumcli.utils.requests.post')
     def test_try_register_success(self, mock_post):

@@ -232,6 +232,30 @@ class CommandsDispatchTestCase(unittest.TestCase):
         dispatch_cmds(args)
         mock_cmds.service_terminate.assert_called_with(args.identifier, args.sync)
 
+        args = self.parser.parse_args(['service', 'env', 'add', 'id', '--env', 'abc=abc'])
+        dispatch_cmds(args)
+        mock_cmds.service_env_add.assert_called_with(args.identifier, envvars=args.env, envfiles=args.env_file,
+                                                     redeploy=args.redeploy, sync=args.sync)
+
+        args = self.parser.parse_args(['service', 'env', 'set', 'id', '--env', 'abc=abc'])
+        dispatch_cmds(args)
+        mock_cmds.service_env_set.assert_called_with(args.identifier, envvars=args.env, envfiles=args.env_file,
+                                                     redeploy=args.redeploy, sync=args.sync)
+
+        args = self.parser.parse_args(['service', 'env', 'update', 'id', '--env', 'abc=abc'])
+        dispatch_cmds(args)
+        mock_cmds.service_env_update.assert_called_with(args.identifier, envvars=args.env, envfiles=args.env_file,
+                                                        redeploy=args.redeploy, sync=args.sync)
+
+        args = self.parser.parse_args(['service', 'env', 'remove', 'id', '--name', 'abc'])
+        dispatch_cmds(args)
+        mock_cmds.service_env_remove.assert_called_with(args.identifier, names=args.name,
+                                                        redeploy=args.redeploy, sync=args.sync)
+
+        args = self.parser.parse_args(['service', 'env', 'list', 'id'])
+        dispatch_cmds(args)
+        mock_cmds.service_env_list.assert_called_with(args.identifier, args.quiet, args.user, args.image, args.tutum)
+
     @mock.patch('tutumcli.tutum_cli.commands')
     def test_container_dispatch(self, mock_cmds):
         args = self.parser.parse_args(['container', 'exec', 'id'])
