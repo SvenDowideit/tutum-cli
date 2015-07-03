@@ -77,8 +77,8 @@ To make things easier, you might want to use an ``alias`` for it:
 
 .. sourcecode:: bash
 
-    alias tutum="docker run -it -e TUTUM_USER=username -e TUTUM_APIKEY=apikey --rm tutum/cli"
-    
+    alias tutum="docker run -it -v /usr/bin/docker:/usr/bin/docker -v /var/run/docker.sock:/var/run/docker.sock -e TUTUM_USER=username -e TUTUM_APIKEY=apikey --rm tutum/cli"
+
 Then, you can run commands like:
 
 .. sourcecode:: bash
