@@ -1,6 +1,6 @@
 test:prepare
-	venv/bin/pip install mock nose
-	venv/bin/python setup.py nosetests
+	venv/bin/pip install mock==0.8.0
+	venv/bin/python setup.py test
 
 clean:
 	rm -rf venv build dist tutum.egg-info python-tutum*
@@ -13,13 +13,8 @@ prepare:clean
 	git clone -b staging https://github.com/tutumcloud/python-tutum.git && cd python-tutum && ../venv/bin/python setup.py install && cd .. && rm -rf python-tutum
 	venv/bin/pip install -r requirements.txt
 	venv/bin/pip install .
-
-test:prepare
-	venv/bin/pip install mock nose
-	venv/bin/python setup.py nosetests
-
 retest:
-	venv/bin/python setup.py nosetests
+	venv/bin/python setup.py test
 
 certs:
 	curl http://ci.kennethreitz.org/job/ca-bundle/lastSuccessfulBuild/artifact/cacerts.pem -o cacert.pem
