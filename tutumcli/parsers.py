@@ -84,6 +84,7 @@ def add_run_parser(subparsers):
                             choices=['EMPTIEST_NODE', 'HIGH_AVAILABILITY', 'EVERY_NODE'])
     run_parser.add_argument('--sync', help='block the command until the async operation has finished',
                             action='store_true')
+    run_parser.add_argument('--net', help='Set the Network mode for the container')
 
 
 def add_up_parser(subparsers):
@@ -190,6 +191,8 @@ def add_service_parser(subparsers):
                                choices=['EMPTIEST_NODE', 'HIGH_AVAILABILITY', 'EVERY_NODE'])
     create_parser.add_argument('--sync', help='block the command until the async operation has finished',
                                action='store_true')
+    create_parser.add_argument('--net', help='Set the Network mode for the container')
+
 
     # tutum service env
     env_parser = service_subparser.add_parser('env', help="Service environment variables related operations",
@@ -338,6 +341,7 @@ def add_service_parser(subparsers):
                             choices=['EMPTIEST_NODE', 'HIGH_AVAILABILITY', 'EVERY_NODE'])
     run_parser.add_argument('--sync', help='block the command until the async operation has finished',
                             action='store_true')
+    run_parser.add_argument('--net', help='Set the Network mode for the container')
 
     # tutum service scale
     scale_parser = service_subparser.add_parser('scale', help='Scale a running service',
@@ -403,6 +407,7 @@ def add_service_parser(subparsers):
                             choices=['EMPTIEST_NODE', 'HIGH_AVAILABILITY', 'EVERY_NODE'])
     set_parser.add_argument('--sync', help='block the command until the async operation has finished',
                             action='store_true')
+    set_parser.add_argument('--net', help='Set the Network mode for the container')
 
     # tutum service start
     start_parser = service_subparser.add_parser('start', help='Start a stopped service',

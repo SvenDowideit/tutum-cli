@@ -13,9 +13,7 @@ import websocket
 import tutum
 import docker
 import yaml
-
 from tutum.api import auth
-
 from tutum import TutumApiError, TutumAuthError, ObjectNotFound, NonUniqueIdentifier
 
 from exceptions import StreamOutputError
@@ -244,7 +242,7 @@ def service_redeploy(identifiers, sync):
 
 def service_create(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
                    expose, publish, envvars, envfiles, tag, linked_to_service, autorestart, autodestroy, autoredeploy,
-                   roles, sequential, volume, volumes_from, deployment_strategy, sync):
+                   roles, sequential, volume, volumes_from, deployment_strategy, sync, net):
     try:
         ports = utils.parse_published_ports(publish)
 
@@ -280,7 +278,7 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
                                        linked_to_service=links_service,
                                        autorestart=autorestart, autodestroy=autodestroy, autoredeploy=autoredeploy,
                                        roles=roles, sequential_deployment=sequential, tags=tags, bindings=bindings,
-                                       deployment_strategy=deployment_strategy)
+                                       deployment_strategy=deployment_strategy, network=net)
         result = service.save()
         utils.sync_action(service, sync)
         if result:
@@ -292,7 +290,7 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
 
 def service_run(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
                 expose, publish, envvars, envfiles, tag, linked_to_service, autorestart, autodestroy, autoredeploy,
-                roles, sequential, volume, volumes_from, deployment_strategy, sync):
+                roles, sequential, volume, volumes_from, deployment_strategy, sync, net):
     try:
         ports = utils.parse_published_ports(publish)
 
@@ -328,7 +326,7 @@ def service_run(image, name, cpu_shares, memory, privileged, target_num_containe
                                        linked_to_service=links_service,
                                        autorestart=autorestart, autodestroy=autodestroy, autoredeploy=autoredeploy,
                                        roles=roles, sequential_deployment=sequential, tags=tags, bindings=bindings,
-                                       deployment_strategy=deployment_strategy)
+                                       deployment_strategy=deployment_strategy, network=net)
         service.save()
         result = service.start()
         utils.sync_action(service, sync)
@@ -359,7 +357,7 @@ def service_scale(identifiers, target_num_containers, sync):
 
 def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
                 expose, publish, envvars, envfiles, tag, linked_to_service, autorestart, autodestroy, autoredeploy,
-                roles, sequential, redeploy, volume, volumes_from, deployment_strategy, sync):
+                roles, sequential, redeploy, volume, volumes_from, deployment_strategy, sync, net):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -432,6 +430,9 @@ def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_c
 
                 if deployment_strategy:
                     service.deployment_strategy = deployment_strategy
+
+                if net:
+                    service.network = net
 
                 result = service.save()
                 utils.sync_action(service, sync)

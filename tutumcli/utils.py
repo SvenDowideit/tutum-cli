@@ -14,9 +14,7 @@ import ago
 import docker
 import tutum
 from dateutil import tz
-
 from tabulate import tabulate
-
 from tutum import ObjectNotFound
 
 from exceptions import BadParameter, DockerNotFound, StreamOutputError
@@ -429,6 +427,7 @@ def inject_env_var(services):
 
 def sync_action(obj, sync):
     import time
+
     action_uri = getattr(obj, "tutum_action_uri", "")
     if sync and action_uri:
         last_state = None
@@ -453,7 +452,6 @@ def sync_action(obj, sync):
             except Exception as e:
                 print(e, file=sys.stderr)
                 break
-
 
 
 def container_service_log_handler(message):

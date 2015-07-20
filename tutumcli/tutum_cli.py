@@ -133,7 +133,7 @@ def dispatch_cmds(args):
                              autorestart=args.autorestart, autodestroy=args.autodestroy,
                              autoredeploy=args.autoredeploy, roles=args.role,
                              sequential=args.sequential, volume=args.volume, volumes_from=args.volumes_from,
-                             deployment_strategy=args.deployment_strategy, sync=args.sync)
+                             deployment_strategy=args.deployment_strategy, sync=args.sync, net=args.net)
     elif args.cmd == 'service':
         if args.subcmd == 'create':
             commands.service_create(image=args.image, name=args.name, cpu_shares=args.cpushares,
@@ -145,7 +145,7 @@ def dispatch_cmds(args):
                                     autorestart=args.autorestart, autodestroy=args.autodestroy,
                                     autoredeploy=args.autoredeploy, roles=args.role,
                                     sequential=args.sequential, volume=args.volume, volumes_from=args.volumes_from,
-                                    deployment_strategy=args.deployment_strategy, sync=args.sync)
+                                    deployment_strategy=args.deployment_strategy, sync=args.sync, net=args.net)
         elif args.subcmd == 'inspect':
             commands.service_inspect(args.identifier)
         elif args.subcmd == 'logs':
@@ -164,7 +164,7 @@ def dispatch_cmds(args):
                                  autorestart=args.autorestart, autodestroy=args.autodestroy,
                                  autoredeploy=args.autoredeploy, roles=args.role,
                                  sequential=args.sequential, volume=args.volume, volumes_from=args.volumes_from,
-                                 deployment_strategy=args.deployment_strategy, sync=args.sync)
+                                 deployment_strategy=args.deployment_strategy, sync=args.sync, net=args.net)
         elif args.subcmd == 'scale':
             commands.service_scale(args.identifier, args.target_num_containers, args.sync)
         elif args.subcmd == 'set':
@@ -178,7 +178,7 @@ def dispatch_cmds(args):
                                  autoredeploy=args.autoredeploy, roles=args.role,
                                  sequential=args.sequential, redeploy=args.redeploy,
                                  volume=args.volume, volumes_from=args.volumes_from,
-                                 deployment_strategy=args.deployment_strategy, sync=args.sync)
+                                 deployment_strategy=args.deployment_strategy, sync=args.sync, net=args.net)
         elif args.subcmd == 'start':
             commands.service_start(args.identifier, args.sync)
         elif args.subcmd == 'stop':
