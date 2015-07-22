@@ -278,7 +278,7 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
                                        linked_to_service=links_service,
                                        autorestart=autorestart, autodestroy=autodestroy, autoredeploy=autoredeploy,
                                        roles=roles, sequential_deployment=sequential, tags=tags, bindings=bindings,
-                                       deployment_strategy=deployment_strategy, network=net)
+                                       deployment_strategy=deployment_strategy, net=net)
         result = service.save()
         utils.sync_action(service, sync)
         if result:
@@ -326,7 +326,7 @@ def service_run(image, name, cpu_shares, memory, privileged, target_num_containe
                                        linked_to_service=links_service,
                                        autorestart=autorestart, autodestroy=autodestroy, autoredeploy=autoredeploy,
                                        roles=roles, sequential_deployment=sequential, tags=tags, bindings=bindings,
-                                       deployment_strategy=deployment_strategy, network=net)
+                                       deployment_strategy=deployment_strategy, net=net)
         service.save()
         result = service.start()
         utils.sync_action(service, sync)
@@ -432,7 +432,7 @@ def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_c
                     service.deployment_strategy = deployment_strategy
 
                 if net:
-                    service.network = net
+                    service.net = net
 
                 result = service.save()
                 utils.sync_action(service, sync)

@@ -159,7 +159,7 @@ class ServiceCreateTestCase(unittest.TestCase):
                                        linked_to_service=utils.parse_links(linked_to_service, 'to_service'),
                                        autorestart='OFF', autodestroy='OFF', autoredeploy='OFF',
                                        roles='poweruser', sequential_deployment=True, tags=[], bindings=[],
-                                       deployment_strategy=None, network="host")
+                                       deployment_strategy=None, net="host")
         mock_save.assert_called()
         mock_start.assert_not_called()
         self.assertEqual(service.uuid, self.buf.getvalue().strip())
@@ -189,7 +189,7 @@ class ServiceCreateTestCase(unittest.TestCase):
                                        linked_to_service=utils.parse_links(linked_to_service, 'to_service'),
                                        autorestart='OFF', autodestroy='OFF', autoredeploy='OFF',
                                        roles='poweruser', sequential_deployment=True, tags=[], bindings=[],
-                                       deployment_strategy=None, network="host")
+                                       deployment_strategy=None, net="host")
         mock_save.assert_called()
         mock_start.assert_not_called()
         self.assertEqual(service.uuid, self.buf.getvalue().strip())
@@ -373,7 +373,7 @@ class ServiceRunTestCase(unittest.TestCase):
                                        linked_to_service=utils.parse_links(linked_to_service, 'to_service'),
                                        autorestart='OFF', autodestroy='OFF', autoredeploy='OFF',
                                        roles='poweruser', sequential_deployment=True, tags=[], bindings=[],
-                                       deployment_strategy=None, network="host")
+                                       deployment_strategy=None, net="host")
         mock_save.assert_called()
         mock_start.assert_called()
         self.assertEqual(service.uuid, self.buf.getvalue().strip())
@@ -405,7 +405,7 @@ class ServiceRunTestCase(unittest.TestCase):
                                        linked_to_service=utils.parse_links(linked_to_service, 'to_service'),
                                        autorestart='OFF', autodestroy='OFF', autoredeploy='OFF',
                                        roles='poweruser', sequential_deployment=True, tags=[], bindings=[],
-                                       deployment_strategy=None, network="host")
+                                       deployment_strategy=None, net="host")
         mock_save.assert_called()
         mock_start.assert_called()
         self.assertEqual(service.uuid, self.buf.getvalue().strip())
@@ -498,7 +498,7 @@ class ServiceSetTestCase(unittest.TestCase):
         self.assertEqual('OFF', service.autoredeploy)
         self.assertEqual('poweruser', service.roles)
         self.assertEqual(True, service.sequential_deployment)
-        self.assertEqual("host", service.network)
+        self.assertEqual("host", service.net)
         self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.sys.exit')
