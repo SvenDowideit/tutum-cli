@@ -132,7 +132,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                  sequential=args.sequential,
                                                  volume=args.volume, volumes_from=args.volumes_from,
                                                  deployment_strategy=args.deployment_strategy, sync=args.sync,
-                                                 net=args.net)
+                                                 net=args.net, pid=args.pid)
 
     @mock.patch('tutumcli.tutum_cli.commands')
     def test_push_dispatch(self, mock_cmds):
@@ -170,7 +170,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                     sequential=args.sequential,
                                                     volume=args.volume, volumes_from=args.volumes_from,
                                                     deployment_strategy=args.deployment_strategy, sync=args.sync,
-                                                    net=args.net)
+                                                    net=args.net, pid=args.pid)
 
         args = self.parser.parse_args(['service', 'inspect', 'id'])
         dispatch_cmds(args)
@@ -202,7 +202,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                  sequential=args.sequential,
                                                  volume=args.volume, volumes_from=args.volumes_from,
                                                  deployment_strategy=args.deployment_strategy, sync=args.sync,
-                                                 net=args.net)
+                                                 net=args.net, pid=args.pid)
 
         args = self.parser.parse_args(['service', 'scale', 'id', '3'])
         dispatch_cmds(args)
@@ -222,7 +222,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                  sequential=args.sequential, redeploy=args.redeploy,
                                                  volume=args.volume, volumes_from=args.volumes_from,
                                                  deployment_strategy=args.deployment_strategy, sync=args.sync,
-                                                 net=args.net)
+                                                 net=args.net, pid=args.pid)
 
         args = self.parser.parse_args(['service', 'start', 'id'])
         dispatch_cmds(args)

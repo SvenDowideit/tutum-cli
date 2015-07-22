@@ -242,7 +242,7 @@ def service_redeploy(identifiers, sync):
 
 def service_create(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
                    expose, publish, envvars, envfiles, tag, linked_to_service, autorestart, autodestroy, autoredeploy,
-                   roles, sequential, volume, volumes_from, deployment_strategy, sync, net):
+                   roles, sequential, volume, volumes_from, deployment_strategy, sync, net, pid):
     try:
         ports = utils.parse_published_ports(publish)
 
@@ -278,7 +278,7 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
                                        linked_to_service=links_service,
                                        autorestart=autorestart, autodestroy=autodestroy, autoredeploy=autoredeploy,
                                        roles=roles, sequential_deployment=sequential, tags=tags, bindings=bindings,
-                                       deployment_strategy=deployment_strategy, net=net)
+                                       deployment_strategy=deployment_strategy, net=net, pid=pid)
         result = service.save()
         utils.sync_action(service, sync)
         if result:
@@ -290,7 +290,7 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
 
 def service_run(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
                 expose, publish, envvars, envfiles, tag, linked_to_service, autorestart, autodestroy, autoredeploy,
-                roles, sequential, volume, volumes_from, deployment_strategy, sync, net):
+                roles, sequential, volume, volumes_from, deployment_strategy, sync, net, pid):
     try:
         ports = utils.parse_published_ports(publish)
 
@@ -326,7 +326,7 @@ def service_run(image, name, cpu_shares, memory, privileged, target_num_containe
                                        linked_to_service=links_service,
                                        autorestart=autorestart, autodestroy=autodestroy, autoredeploy=autoredeploy,
                                        roles=roles, sequential_deployment=sequential, tags=tags, bindings=bindings,
-                                       deployment_strategy=deployment_strategy, net=net)
+                                       deployment_strategy=deployment_strategy, net=net, pid=pid)
         service.save()
         result = service.start()
         utils.sync_action(service, sync)
@@ -357,7 +357,7 @@ def service_scale(identifiers, target_num_containers, sync):
 
 def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
                 expose, publish, envvars, envfiles, tag, linked_to_service, autorestart, autodestroy, autoredeploy,
-                roles, sequential, redeploy, volume, volumes_from, deployment_strategy, sync, net):
+                roles, sequential, redeploy, volume, volumes_from, deployment_strategy, sync, net, pid):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -433,6 +433,9 @@ def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_c
 
                 if net:
                     service.net = net
+
+                if pid:
+                    service.pid = pid
 
                 result = service.save()
                 utils.sync_action(service, sync)

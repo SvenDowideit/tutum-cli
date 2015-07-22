@@ -85,6 +85,7 @@ def add_run_parser(subparsers):
     run_parser.add_argument('--sync', help='block the command until the async operation has finished',
                             action='store_true')
     run_parser.add_argument('--net', help='Set the Network mode for the container')
+    run_parser.add_argument('--pid', help="PID namespace to use")
 
 
 def add_up_parser(subparsers):
@@ -192,7 +193,7 @@ def add_service_parser(subparsers):
     create_parser.add_argument('--sync', help='block the command until the async operation has finished',
                                action='store_true')
     create_parser.add_argument('--net', help='Set the Network mode for the container')
-
+    create_parser.add_argument('--pid', help="PID namespace to use")
 
     # tutum service env
     env_parser = service_subparser.add_parser('env', help="Service environment variables related operations",
@@ -342,6 +343,7 @@ def add_service_parser(subparsers):
     run_parser.add_argument('--sync', help='block the command until the async operation has finished',
                             action='store_true')
     run_parser.add_argument('--net', help='Set the Network mode for the container')
+    run_parser.add_argument('--pid', help="PID namespace to use")
 
     # tutum service scale
     scale_parser = service_subparser.add_parser('scale', help='Scale a running service',
@@ -408,6 +410,7 @@ def add_service_parser(subparsers):
     set_parser.add_argument('--sync', help='block the command until the async operation has finished',
                             action='store_true')
     set_parser.add_argument('--net', help='Set the Network mode for the container')
+    set_parser.add_argument('--pid', help="PID namespace to use")
 
     # tutum service start
     start_parser = service_subparser.add_parser('start', help='Start a stopped service',
