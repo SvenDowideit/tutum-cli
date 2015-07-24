@@ -904,11 +904,20 @@ class ImageListTestCase(unittest.TestCase):
         sys.stdout = self.buf = StringIO.StringIO()
 
         image1 = tutumcli.commands.tutum.Image()
-        image1.name = 'image_name_1'
-        image1.description = 'image_desc_1'
+        image1.name = 'r-staging.tutum.co/admin/tutum-app'
+        image1.in_use = False
+        image1.description = ''
+        image1.is_private_image = True
+        image1.build_source = True
+        image1.tags = ["1"]
         image2 = tutumcli.commands.tutum.Image()
-        image2.name = 'image_name_2'
-        image2.description = 'image_desc_2'
+        image2.name = 'r-staging.tutum.co/admin/python-quickstart'
+        image2.description = ''
+        image2.in_use = False
+        image2.is_private_image = True
+        image2.build_source = True
+        image2.tags = ["2"]
+
         self.imagelist = [image1, image2]
 
     def tearDown(self):
@@ -916,36 +925,28 @@ class ImageListTestCase(unittest.TestCase):
 
     @mock.patch('tutumcli.commands.tutum.Image.list')
     def test_image_list(self, mock_list):
-        output = u'''NAME          DESCRIPTION
-image_name_1  image_desc_1
-image_name_2  image_desc_2'''
+        output = u'''NAME                                          #TAG  IN_USE    PRIVATE    TUTUM_BUILD    DESCRIPTION
+r-staging.tutum.co/admin/tutum-app               1  no        yes        yes
+r-staging.tutum.co/admin/python-quickstart       1  no        yes        yes'''
         mock_list.return_value = self.imagelist
-        image_list(False, False, False)
+        image_list(False, False, False, False, False, False)
 
         self.assertEqual(output, self.buf.getvalue().strip())
         self.buf.truncate(0)
 
     @mock.patch('tutumcli.commands.tutum.Image.list')
     def test_image_list_quiet(self, mock_list):
-        output = 'image_name_1\nimage_name_2'
+        output = 'r-staging.tutum.co/admin/tutum-app\nr-staging.tutum.co/admin/python-quickstart'
         mock_list.return_value = self.imagelist
-        image_list(True, False, False)
+        image_list(True, False, False, False, False, False)
 
         self.assertEqual(output, self.buf.getvalue().strip())
         self.buf.truncate(0)
 
-    @mock.patch('tutumcli.commands.tutum.Image.list', return_value=[])
-    def test_image_list_parameter(self, mock_list):
-        image_list(False, True, False)
-        mock_list.assert_called_with(starred=True)
-
-        image_list(False, False, True)
-        mock_list.assert_called_with(base_image=True)
-
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.tutum.Image.list', side_effect=TutumApiError)
     def test_image_list_with_exception(self, mock_fetch_remote_container, mock_exit):
-        image_list(False, False, False)
+        image_list(False, False, False, False, False, False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 

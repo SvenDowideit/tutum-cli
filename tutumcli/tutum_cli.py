@@ -74,7 +74,7 @@ def patch_help_option(argv=sys.argv):
         elif args[1] == 'container' and args[2] in ['exec', 'inspect', 'logs', 'redeploy', 'start', 'stop',
                                                     'terminate']:
             args.append('-h')
-        elif args[1] == 'image' and args[2] in ['register', 'push', 'rm', 'search', 'update']:
+        elif args[1] == 'image' and args[2] in ['register', 'push', 'rm', 'search', 'update', 'inspect']:
             args.append('-h')
         elif args[1] == 'node' and args[2] in ['inspect', 'rm', 'upgrade']:
             args.append('-h')
@@ -221,7 +221,7 @@ def dispatch_cmds(args):
             commands.container_terminate(args.identifier, args.sync)
     elif args.cmd == 'image':
         if args.subcmd == 'list':
-            commands.image_list(args.quiet, args.jumpstarts, args.linux)
+            commands.image_list(args.quiet, args.jumpstarts, args.private, args.user, args.all, args.no_trunc)
         elif args.subcmd == 'register':
             commands.image_register(args.image_name, args.description, args.username, args.password, args.sync)
         elif args.subcmd == 'push':
@@ -232,6 +232,8 @@ def dispatch_cmds(args):
             commands.image_search(args.query)
         elif args.subcmd == 'update':
             commands.image_update(args.image_name, args.username, args.password, args.description, args.sync)
+        elif args.subcmd == 'inspect':
+            commands.image_inspect(args.identifier)
     elif args.cmd == 'node':
         if args.subcmd == 'inspect':
             commands.node_inspect(args.identifier)

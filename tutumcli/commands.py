@@ -14,6 +14,7 @@ import tutum
 import docker
 import yaml
 from tutum.api import auth
+
 from tutum import TutumApiError, TutumAuthError, ObjectNotFound, NonUniqueIdentifier
 
 from exceptions import StreamOutputError
@@ -782,23 +783,53 @@ def container_terminate(identifiers, sync):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def image_list(quiet, jumpstarts, linux):
+def image_list(quiet, jumpstarts_image, private_image, user_image, all_image, no_trunc):
     try:
-        headers = ["NAME", "DESCRIPTION"]
+        headers = ["NAME", "#TAG", "IN_USE", "PRIVATE", "TUTUM_BUILD", "DESCRIPTION"]
         data_list = []
         name_list = []
-        if jumpstarts:
-            image_list = tutum.Image.list(starred=True)
-        elif linux:
-            image_list = tutum.Image.list(base_image=True)
+
+        param = {}
+        if jumpstarts_image:
+            param["jumpstart"] = True
+        elif private_image:
+            param["is_private_image"] = True
+        elif user_image:
+            param["is_user_image"] = True
+        elif all_image:
+            pass
         else:
-            image_list = tutum.Image.list(is_private_image=True)
+            param["is_user_image"] = True
+
+        image_list = tutum.Image.list(**param)
         if len(image_list) != 0:
             for image in image_list:
-                data_list.append([image.name, image.description])
+                data = [image.name, len(image.tags)]
+
+                if image.in_use:
+                    data.append("yes")
+                else:
+                    data.append("no")
+
+                if image.is_private_image:
+                    data.append("yes")
+                else:
+                    data.append("no")
+
+                if image.build_source:
+                    data.append("yes")
+                else:
+                    data.append("no")
+
+                description = image.description
+                if not no_trunc and description and len(description) > 40:
+                    description = description[:36] + ' ...'
+                data.append(description)
+
+                data_list.append(data)
                 name_list.append(image.name)
         else:
-            data_list.append(["", ""])
+            data_list.append(["", "", "", "", ""])
 
         if quiet:
             for name in name_list:
@@ -808,6 +839,22 @@ def image_list(quiet, jumpstarts, linux):
 
     except Exception as e:
         print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def image_inspect(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            try:
+                image = tutum.Image.fetch(identifier)
+            except Exception:
+                raise ObjectNotFound("Cannot find an image with the identifier '%s'" % identifier)
+            print(json.dumps(image.get_all_attributes(), indent=2))
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
         sys.exit(EXCEPTION_EXIT_CODE)
 
 

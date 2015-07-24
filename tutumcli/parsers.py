@@ -508,13 +508,21 @@ def add_image_parser(subparsers):
     image_subparser = image_parser.add_subparsers(title='tutum image commands', dest='subcmd')
 
     # tutum image list
-    list_parser = image_subparser.add_parser('list', help='List private images',
-                                             description='List private images')
+    list_parser = image_subparser.add_parser('list', help="List user's images",
+                                             description="List user's images")
     list_parser.add_argument('-q', '--quiet', help='print only image names', action='store_true')
 
     list_exclusive_group = list_parser.add_mutually_exclusive_group()
-    list_exclusive_group.add_argument('-j', '--jumpstarts', help='list jumpstart images', action='store_true')
-    list_exclusive_group.add_argument('-l', '--linux', help='list linux images', action='store_true')
+    list_exclusive_group.add_argument('-j', '--jumpstarts', help='list jumpstart images only', action='store_true')
+    list_exclusive_group.add_argument('-p', '--private', help='list private images only', action='store_true')
+    list_exclusive_group.add_argument('-u', '--user', help='list user added images only(default)', action='store_true')
+    list_exclusive_group.add_argument('-a', '--all', help='list all images', action='store_true')
+    list_parser.add_argument('--no-trunc', help="don't truncate output", action='store_true')
+
+    # tutum image inspect
+    inspect_parser = image_subparser.add_parser('inspect', help='Inspect a image',
+                                                    description='Inspect a image')
+    inspect_parser.add_argument('identifier', help="image name", nargs='+')
 
     # tutum image register
     register_parser = image_subparser.add_parser('register',

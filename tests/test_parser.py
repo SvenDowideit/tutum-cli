@@ -294,7 +294,8 @@ class CommandsDispatchTestCase(unittest.TestCase):
     def test_image_dispatch(self, mock_cmds):
         args = self.parser.parse_args(['image', 'list'])
         dispatch_cmds(args)
-        mock_cmds.image_list.assert_called_with(args.quiet, args.jumpstarts, args.linux)
+        mock_cmds.image_list.assert_called_with(args.quiet, args.jumpstarts, args.private, args.user, args.all,
+                                                args.no_trunc)
 
         args = self.parser.parse_args(['image', 'register', 'name'])
         dispatch_cmds(args)
