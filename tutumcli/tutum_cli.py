@@ -74,7 +74,7 @@ def patch_help_option(argv=sys.argv):
         elif args[1] == 'container' and args[2] in ['exec', 'inspect', 'logs', 'redeploy', 'start', 'stop',
                                                     'terminate']:
             args.append('-h')
-        elif args[1] == 'image' and args[2] in ['register', 'push', 'rm', 'search', 'update', 'inspect']:
+        elif args[1] == 'image' and args[2] in ['register', 'push', 'rm', 'search', 'tag', 'update', 'inspect']:
             args.append('-h')
         elif args[1] == 'node' and args[2] in ['inspect', 'rm', 'upgrade']:
             args.append('-h')
@@ -94,6 +94,9 @@ def patch_help_option(argv=sys.argv):
     elif len(args) == 4:
         if args[1] == 'service' and args[2] == 'env':
             if args[3] in ['add', 'remove', 'update']:
+                args.append('-h')
+        if args[1] == 'image' and args[2] == 'tag':
+            if args[3] in ['inspect', 'build']:
                 args.append('-h')
     if debug:
         args.insert(1, '--debug')
@@ -234,6 +237,13 @@ def dispatch_cmds(args):
             commands.image_update(args.image_name, args.username, args.password, args.description, args.sync)
         elif args.subcmd == 'inspect':
             commands.image_inspect(args.identifier)
+        elif args.subcmd == 'tag':
+            if args.imagetagsubcmd == 'list':
+                commands.image_tag_list(args.jumpstarts, args.private, args.user, args.all, args.identifier)
+            elif args.imagetagsubcmd == 'inspect':
+                commands.image_tag_inspect(args.identifier)
+            elif args.imagetagsubcmd == 'build':
+                commands.image_tag_build(args.identifier, args.sync)
     elif args.cmd == 'node':
         if args.subcmd == 'inspect':
             commands.node_inspect(args.identifier)

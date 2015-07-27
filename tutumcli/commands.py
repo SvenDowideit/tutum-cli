@@ -8,13 +8,13 @@ from os.path import join, expanduser, abspath
 import ConfigParser
 import errno
 import urllib
+import re
 
 import websocket
 import tutum
 import docker
 import yaml
 from tutum.api import auth
-
 from tutum import TutumApiError, TutumAuthError, ObjectNotFound, NonUniqueIdentifier
 
 from exceptions import StreamOutputError
@@ -1031,6 +1031,100 @@ def image_update(repositories, username, password, description, sync):
             utils.sync_action(image, sync)
             if result:
                 print(image.name)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def image_tag_list(jumpstarts_image, private_image, user_image, all_image, identifiers):
+    has_exception = False
+    tag_match = re.compile("/api/v1/image/.*/tag/(.*)/")
+    try:
+        headers = ["NAME", "TAG"]
+        data_list = []
+        param = {}
+        if not identifiers:
+            if jumpstarts_image:
+                param["jumpstart"] = True
+            elif private_image:
+                param["is_private_image"] = True
+            elif user_image:
+                param["is_user_image"] = True
+            elif all_image:
+                pass
+            else:
+                param["is_user_image"] = True
+
+        image_list = tutum.Image.list(**param)
+        if len(image_list) != 0:
+            for image in image_list:
+                if identifiers and image.name not in identifiers:
+                    continue
+                tags = []
+                if image.tags:
+                    for tag in image.tags:
+                        match = tag_match.search(tag)
+                        if match:
+                            tags.append(match.group(1))
+                data_list.append([image.name, ", ".join(sorted(tags))])
+
+        if not data_list:
+            data_list.append(["", ""])
+
+        utils.tabulate_result(data_list, headers)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def image_tag_inspect(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            if identifier:
+                terms = identifier.split(":", 1)
+                if len(terms) == 2:
+                    name = terms[0]
+                    tag = terms[1]
+                else:
+                    name = terms[0]
+                    tag = "latest"
+
+                try:
+                    image = tutum.ImageTag.fetch(name, tag)
+                except Exception:
+                    raise ObjectNotFound("Cannot find an image tag with the identifier '%s'" % identifier)
+                print(json.dumps(image.get_all_attributes(), indent=2))
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def image_tag_build(identifiers, sync):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            if identifier:
+                terms = identifier.split(":", 1)
+                if len(terms) == 2:
+                    name = terms[0]
+                    tag = terms[1]
+                else:
+                    name = terms[0]
+                    tag = "latest"
+
+                try:
+                    image = tutum.ImageTag.fetch(name, tag)
+                except Exception:
+                    raise ObjectNotFound("Cannot find an image tag with the identifier '%s'" % identifier)
+                image.build()
+                utils.sync_action(image, sync)
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True
