@@ -9,7 +9,6 @@ import ConfigParser
 import errno
 import urllib
 import re
-import curses.ascii
 
 import websocket
 import tutum

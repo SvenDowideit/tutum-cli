@@ -15,6 +15,7 @@ import docker
 import tutum
 from dateutil import tz
 from tabulate import tabulate
+
 from tutum import ObjectNotFound
 
 from exceptions import BadParameter, DockerNotFound, StreamOutputError
@@ -465,6 +466,8 @@ def container_service_log_handler(message):
         source = msg.get("source", None)
         if source:
             log = " | ".join([source, log])
+            if os.isatty(out.fileno()):
+                log = AnsiColor.color_it(log, source)
         out.write(log)
         out.flush()
     except:
@@ -478,3 +481,16 @@ def action_log_handler(message):
             print(msg.get("log", ""))
     except:
         pass
+
+
+class AnsiColor:
+    source_identified = []
+
+    @staticmethod
+    def color_it(log, source):
+        if source not in AnsiColor.source_identified:
+            AnsiColor.source_identified.append(source)
+
+        color_index = AnsiColor.source_identified.index(source) % 7
+        seq = "\x1b[1;%dm%s\x1b[0m" % (31 + color_index, log)
+        return seq
