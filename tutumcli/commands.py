@@ -9,6 +9,7 @@ import ConfigParser
 import errno
 import urllib
 import re
+import curses.ascii
 
 import websocket
 import tutum
@@ -521,27 +522,39 @@ def container_exec(identifier, command):
         cli_log.info("websocket: %s %s" % (url, header))
         shell = websocket.create_connection(url, timeout=10, header=header)
 
-        oldtty = termios.tcgetattr(sys.stdin)
+        oldtty = None
+        try:
+            oldtty = termios.tcgetattr(sys.stdin)
+        except:
+            pass
+
         old_handler = signal.getsignal(signal.SIGWINCH)
         errorcode = 0
 
         try:
-            tty.setraw(sys.stdin.fileno())
-            tty.setcbreak(sys.stdin.fileno())
+            if oldtty:
+                tty.setraw(sys.stdin.fileno())
+                tty.setcbreak(sys.stdin.fileno())
 
             while True:
                 try:
-                    r, w, e = select.select([shell.sock, sys.stdin], [], [shell.sock], 5)
-                    if sys.stdin in r:
-                        x = sys.stdin.read(1)
-                        # read arrows
-                        if x == '\x1b':
-                            x += sys.stdin.read(1)
-                            if x[1] == '[':
+                    if oldtty:
+                        r, w, e = select.select([shell.sock, sys.stdin], [], [shell.sock], 5)
+                        if sys.stdin in r:
+                            x = sys.stdin.read(1)
+                            # read arrows
+                            if x == '\x1b':
                                 x += sys.stdin.read(1)
-                        if len(x) == 0:
-                            shell.send('\n')
+                                if x[1] == '[':
+                                    x += sys.stdin.read(1)
+                            if len(x) == 0:
+                                shell.send('\n')
+                            shell.send(x)
+                    else:
+                        x = str(sys.stdin.read())
+                        r, w, e = select.select([shell.sock], [], [shell.sock], 1)
                         shell.send(x)
+                        shell.send(u"\u0004")
 
                     if shell.sock in r:
                         data = shell.recv()
@@ -586,7 +599,8 @@ def container_exec(identifier, command):
             sys.stderr.flush()
             errorcode = EXCEPTION_EXIT_CODE
         finally:
-            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, oldtty)
+            if oldtty:
+                termios.tcsetattr(sys.stdin, termios.TCSADRAIN, oldtty)
             signal.signal(signal.SIGWINCH, old_handler)
             exit(errorcode)
 
