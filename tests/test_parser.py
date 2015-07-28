@@ -131,7 +131,8 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                  autoredeploy=args.autoredeploy, roles=args.role,
                                                  sequential=args.sequential,
                                                  volume=args.volume, volumes_from=args.volumes_from,
-                                                 deployment_strategy=args.deployment_strategy, sync=args.sync)
+                                                 deployment_strategy=args.deployment_strategy, sync=args.sync,
+                                                 net=args.net, pid=args.pid)
 
     @mock.patch('tutumcli.tutum_cli.commands')
     def test_push_dispatch(self, mock_cmds):
@@ -168,7 +169,8 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                     autoredeploy=args.autoredeploy, roles=args.role,
                                                     sequential=args.sequential,
                                                     volume=args.volume, volumes_from=args.volumes_from,
-                                                    deployment_strategy=args.deployment_strategy, sync=args.sync)
+                                                    deployment_strategy=args.deployment_strategy, sync=args.sync,
+                                                    net=args.net, pid=args.pid)
 
         args = self.parser.parse_args(['service', 'inspect', 'id'])
         dispatch_cmds(args)
@@ -199,7 +201,8 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                  autoredeploy=args.autoredeploy, roles=args.role,
                                                  sequential=args.sequential,
                                                  volume=args.volume, volumes_from=args.volumes_from,
-                                                 deployment_strategy=args.deployment_strategy, sync=args.sync)
+                                                 deployment_strategy=args.deployment_strategy, sync=args.sync,
+                                                 net=args.net, pid=args.pid)
 
         args = self.parser.parse_args(['service', 'scale', 'id', '3'])
         dispatch_cmds(args)
@@ -218,7 +221,8 @@ class CommandsDispatchTestCase(unittest.TestCase):
                                                  autoredeploy=args.autoredeploy, roles=args.role,
                                                  sequential=args.sequential, redeploy=args.redeploy,
                                                  volume=args.volume, volumes_from=args.volumes_from,
-                                                 deployment_strategy=args.deployment_strategy, sync=args.sync)
+                                                 deployment_strategy=args.deployment_strategy, sync=args.sync,
+                                                 net=args.net, pid=args.pid)
 
         args = self.parser.parse_args(['service', 'start', 'id'])
         dispatch_cmds(args)
@@ -290,7 +294,8 @@ class CommandsDispatchTestCase(unittest.TestCase):
     def test_image_dispatch(self, mock_cmds):
         args = self.parser.parse_args(['image', 'list'])
         dispatch_cmds(args)
-        mock_cmds.image_list.assert_called_with(args.quiet, args.jumpstarts, args.linux)
+        mock_cmds.image_list.assert_called_with(args.quiet, args.jumpstarts, args.private, args.user, args.all,
+                                                args.no_trunc)
 
         args = self.parser.parse_args(['image', 'register', 'name'])
         dispatch_cmds(args)

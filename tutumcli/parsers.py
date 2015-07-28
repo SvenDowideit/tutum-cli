@@ -84,6 +84,8 @@ def add_run_parser(subparsers):
                             choices=['EMPTIEST_NODE', 'HIGH_AVAILABILITY', 'EVERY_NODE'])
     run_parser.add_argument('--sync', help='block the command until the async operation has finished',
                             action='store_true')
+    run_parser.add_argument('--net', help='Set the Network mode for the container')
+    run_parser.add_argument('--pid', help="PID namespace to use")
 
 
 def add_up_parser(subparsers):
@@ -190,11 +192,15 @@ def add_service_parser(subparsers):
                                choices=['EMPTIEST_NODE', 'HIGH_AVAILABILITY', 'EVERY_NODE'])
     create_parser.add_argument('--sync', help='block the command until the async operation has finished',
                                action='store_true')
+    create_parser.add_argument('--net', help='Set the Network mode for the container')
+    create_parser.add_argument('--pid', help="PID namespace to use")
 
     # tutum service env
     env_parser = service_subparser.add_parser('env', help="Service environment variables related operations",
                                               description="Service environment variables related operations")
     env_subparser = env_parser.add_subparsers(title='tutum service env commands', dest='envsubcmd')
+
+    # tutum service env add
     env_add_parser = env_subparser.add_parser('add', help='Add new environment variables',
                                               description='Add new environment variables')
     env_add_parser.add_argument('identifier', help="service's UUID (either long or short) or name[.stack_name]",
@@ -210,6 +216,7 @@ def add_service_parser(subparsers):
     env_add_parser.add_argument('--redeploy', help="redeploy service with new configuration after set command",
                                 action='store_true')
 
+    # tutum service env list
     env_list_parser = env_subparser.add_parser('list', help='list all environment variables',
                                                description='list all environment variables')
     env_list_parser.add_argument('identifier', help="service's UUID (either long or short) or name[.stack_name]")
@@ -218,6 +225,7 @@ def add_service_parser(subparsers):
     env_list_parser.add_argument('--image', help='show only image defined environment variables', action='store_true')
     env_list_parser.add_argument('--tutum', help='show only tutum defined environment variables', action='store_true')
 
+    # tutum service env remove
     env_remove_parser = env_subparser.add_parser('remove', help='Remove existing environment variables',
                                                  description='Remove existing environment variables')
     env_remove_parser.add_argument('identifier', help="service's UUID (either long or short) or name[.stack_name]",
@@ -228,6 +236,7 @@ def add_service_parser(subparsers):
     env_remove_parser.add_argument('--redeploy', help="redeploy service with new configuration after set command",
                                    action='store_true')
 
+    # tutum service env set
     env_set_parser = env_subparser.add_parser('set', help='Replace existing environment variables with new ones',
                                               description='Replace existing environment variables with new ones')
     env_set_parser.add_argument('identifier', help="service's UUID (either long or short) or name[.stack_name]",
@@ -243,6 +252,7 @@ def add_service_parser(subparsers):
     env_set_parser.add_argument('--redeploy', help="redeploy service with new configuration after set command",
                                 action='store_true')
 
+    # tutum service env update
     env_update_parser = env_subparser.add_parser('update', help='Update existing environment variables with new values',
                                                  description='Update existing environment variables with new values')
     env_update_parser.add_argument('identifier', help="service's UUID (either long or short) or name[.stack_name]",
@@ -338,6 +348,8 @@ def add_service_parser(subparsers):
                             choices=['EMPTIEST_NODE', 'HIGH_AVAILABILITY', 'EVERY_NODE'])
     run_parser.add_argument('--sync', help='block the command until the async operation has finished',
                             action='store_true')
+    run_parser.add_argument('--net', help='Set the Network mode for the container')
+    run_parser.add_argument('--pid', help="PID namespace to use")
 
     # tutum service scale
     scale_parser = service_subparser.add_parser('scale', help='Scale a running service',
@@ -403,6 +415,8 @@ def add_service_parser(subparsers):
                             choices=['EMPTIEST_NODE', 'HIGH_AVAILABILITY', 'EVERY_NODE'])
     set_parser.add_argument('--sync', help='block the command until the async operation has finished',
                             action='store_true')
+    set_parser.add_argument('--net', help='Set the Network mode for the container')
+    set_parser.add_argument('--pid', help="PID namespace to use")
 
     # tutum service start
     start_parser = service_subparser.add_parser('start', help='Start a stopped service',
@@ -499,14 +513,47 @@ def add_image_parser(subparsers):
                                          description='Image-related operations')
     image_subparser = image_parser.add_subparsers(title='tutum image commands', dest='subcmd')
 
+    # tutum image tag
+    tag_parser = image_subparser.add_parser('tag', help="Image tag related operations",
+                                            description="Image tag related operations")
+    tag_subparser = tag_parser.add_subparsers(title='tutum image tag commands', dest='imagetagsubcmd')
+
+    # tutum image tag list
+    tag_list_parser = tag_subparser.add_parser('list', help="List tags of user's images",
+                                               description="List tags of user's images")
+    tag_list_exclusive_group = tag_list_parser.add_mutually_exclusive_group()
+    tag_list_exclusive_group.add_argument('-j', '--jumpstarts', help='list jumpstart images only', action='store_true')
+    tag_list_exclusive_group.add_argument('-p', '--private', help='list private images only', action='store_true')
+    tag_list_exclusive_group.add_argument('-u', '--user', help='list user added images only(default)',
+                                          action='store_true')
+    tag_list_exclusive_group.add_argument('-a', '--all', help='list all images', action='store_true')
+    tag_list_parser.add_argument('identifier', help="image name", nargs='*')
+
+    # tutum image tag inspect
+    tag_inspect_parser = tag_subparser.add_parser('inspect', help="Inspect an image tag",
+                                                  description="Inspect an image tag")
+    tag_inspect_parser.add_argument('identifier', help="image tag, format: image_name:[tag]", nargs='+')
+
+    # tutum image tag build
+    tag_build_parser = tag_subparser.add_parser('build', help="Build an image tag", description="Build an image tag")
+    tag_build_parser.add_argument('identifier', help="image tag, format: image_name:[tag]", nargs='+')
+    tag_build_parser.add_argument('--sync', help='block the command until the async operation has finished',
+                                  action='store_true')
+
     # tutum image list
-    list_parser = image_subparser.add_parser('list', help='List private images',
-                                             description='List private images')
+    list_parser = image_subparser.add_parser('list', help="List user's images", description="List user's images")
     list_parser.add_argument('-q', '--quiet', help='print only image names', action='store_true')
 
     list_exclusive_group = list_parser.add_mutually_exclusive_group()
-    list_exclusive_group.add_argument('-j', '--jumpstarts', help='list jumpstart images', action='store_true')
-    list_exclusive_group.add_argument('-l', '--linux', help='list linux images', action='store_true')
+    list_exclusive_group.add_argument('-j', '--jumpstarts', help='list jumpstart images only', action='store_true')
+    list_exclusive_group.add_argument('-p', '--private', help='list private images only', action='store_true')
+    list_exclusive_group.add_argument('-u', '--user', help='list user added images only(default)', action='store_true')
+    list_exclusive_group.add_argument('-a', '--all', help='list all images', action='store_true')
+    list_parser.add_argument('--no-trunc', help="don't truncate output", action='store_true')
+
+    # tutum image inspect
+    inspect_parser = image_subparser.add_parser('inspect', help='Inspect a image', description='Inspect a image')
+    inspect_parser.add_argument('identifier', help="image name", nargs='+')
 
     # tutum image register
     register_parser = image_subparser.add_parser('register',

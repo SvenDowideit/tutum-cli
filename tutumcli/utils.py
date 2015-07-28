@@ -14,7 +14,6 @@ import ago
 import docker
 import tutum
 from dateutil import tz
-
 from tabulate import tabulate
 
 from tutum import ObjectNotFound
@@ -429,6 +428,7 @@ def inject_env_var(services):
 
 def sync_action(obj, sync):
     import time
+
     action_uri = getattr(obj, "tutum_action_uri", "")
     if sync and action_uri:
         last_state = None
@@ -455,7 +455,6 @@ def sync_action(obj, sync):
                 break
 
 
-
 def container_service_log_handler(message):
     try:
         msg = json.loads(message)
@@ -467,6 +466,8 @@ def container_service_log_handler(message):
         source = msg.get("source", None)
         if source:
             log = " | ".join([source, log])
+            if os.isatty(out.fileno()):
+                log = AnsiColor.color_it(log, source)
         out.write(log)
         out.flush()
     except:
@@ -480,3 +481,16 @@ def action_log_handler(message):
             print(msg.get("log", ""))
     except:
         pass
+
+
+class AnsiColor:
+    source_identified = []
+
+    @staticmethod
+    def color_it(log, source):
+        if source not in AnsiColor.source_identified:
+            AnsiColor.source_identified.append(source)
+
+        color_index = AnsiColor.source_identified.index(source) % 7
+        seq = "\x1b[1;%dm%s\x1b[0m" % (31 + color_index, log)
+        return seq

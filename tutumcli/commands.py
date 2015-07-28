@@ -8,14 +8,13 @@ from os.path import join, expanduser, abspath
 import ConfigParser
 import errno
 import urllib
+import re
 
 import websocket
 import tutum
 import docker
 import yaml
-
 from tutum.api import auth
-
 from tutum import TutumApiError, TutumAuthError, ObjectNotFound, NonUniqueIdentifier
 
 from exceptions import StreamOutputError
@@ -244,7 +243,7 @@ def service_redeploy(identifiers, sync):
 
 def service_create(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
                    expose, publish, envvars, envfiles, tag, linked_to_service, autorestart, autodestroy, autoredeploy,
-                   roles, sequential, volume, volumes_from, deployment_strategy, sync):
+                   roles, sequential, volume, volumes_from, deployment_strategy, sync, net, pid):
     try:
         ports = utils.parse_published_ports(publish)
 
@@ -280,7 +279,7 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
                                        linked_to_service=links_service,
                                        autorestart=autorestart, autodestroy=autodestroy, autoredeploy=autoredeploy,
                                        roles=roles, sequential_deployment=sequential, tags=tags, bindings=bindings,
-                                       deployment_strategy=deployment_strategy)
+                                       deployment_strategy=deployment_strategy, net=net, pid=pid)
         result = service.save()
         utils.sync_action(service, sync)
         if result:
@@ -292,7 +291,7 @@ def service_create(image, name, cpu_shares, memory, privileged, target_num_conta
 
 def service_run(image, name, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
                 expose, publish, envvars, envfiles, tag, linked_to_service, autorestart, autodestroy, autoredeploy,
-                roles, sequential, volume, volumes_from, deployment_strategy, sync):
+                roles, sequential, volume, volumes_from, deployment_strategy, sync, net, pid):
     try:
         ports = utils.parse_published_ports(publish)
 
@@ -328,7 +327,7 @@ def service_run(image, name, cpu_shares, memory, privileged, target_num_containe
                                        linked_to_service=links_service,
                                        autorestart=autorestart, autodestroy=autodestroy, autoredeploy=autoredeploy,
                                        roles=roles, sequential_deployment=sequential, tags=tags, bindings=bindings,
-                                       deployment_strategy=deployment_strategy)
+                                       deployment_strategy=deployment_strategy, net=net, pid=pid)
         service.save()
         result = service.start()
         utils.sync_action(service, sync)
@@ -359,7 +358,7 @@ def service_scale(identifiers, target_num_containers, sync):
 
 def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_containers, run_command, entrypoint,
                 expose, publish, envvars, envfiles, tag, linked_to_service, autorestart, autodestroy, autoredeploy,
-                roles, sequential, redeploy, volume, volumes_from, deployment_strategy, sync):
+                roles, sequential, redeploy, volume, volumes_from, deployment_strategy, sync, net, pid):
     has_exception = False
     for identifier in identifiers:
         try:
@@ -432,6 +431,12 @@ def service_set(identifiers, image, cpu_shares, memory, privileged, target_num_c
 
                 if deployment_strategy:
                     service.deployment_strategy = deployment_strategy
+
+                if net:
+                    service.net = net
+
+                if pid:
+                    service.pid = pid
 
                 result = service.save()
                 utils.sync_action(service, sync)
@@ -516,27 +521,39 @@ def container_exec(identifier, command):
         cli_log.info("websocket: %s %s" % (url, header))
         shell = websocket.create_connection(url, timeout=10, header=header)
 
-        oldtty = termios.tcgetattr(sys.stdin)
+        oldtty = None
+        try:
+            oldtty = termios.tcgetattr(sys.stdin)
+        except:
+            pass
+
         old_handler = signal.getsignal(signal.SIGWINCH)
         errorcode = 0
 
         try:
-            tty.setraw(sys.stdin.fileno())
-            tty.setcbreak(sys.stdin.fileno())
+            if oldtty:
+                tty.setraw(sys.stdin.fileno())
+                tty.setcbreak(sys.stdin.fileno())
 
             while True:
                 try:
-                    r, w, e = select.select([shell.sock, sys.stdin], [], [shell.sock], 5)
-                    if sys.stdin in r:
-                        x = sys.stdin.read(1)
-                        # read arrows
-                        if x == '\x1b':
-                            x += sys.stdin.read(1)
-                            if x[1] == '[':
+                    if oldtty:
+                        r, w, e = select.select([shell.sock, sys.stdin], [], [shell.sock], 5)
+                        if sys.stdin in r:
+                            x = sys.stdin.read(1)
+                            # read arrows
+                            if x == '\x1b':
                                 x += sys.stdin.read(1)
-                        if len(x) == 0:
-                            shell.send('\n')
+                                if x[1] == '[':
+                                    x += sys.stdin.read(1)
+                            if len(x) == 0:
+                                shell.send('\n')
+                            shell.send(x)
+                    else:
+                        x = str(sys.stdin.read())
+                        r, w, e = select.select([shell.sock], [], [shell.sock], 1)
                         shell.send(x)
+                        shell.send(u"\u0004")
 
                     if shell.sock in r:
                         data = shell.recv()
@@ -581,7 +598,8 @@ def container_exec(identifier, command):
             sys.stderr.flush()
             errorcode = EXCEPTION_EXIT_CODE
         finally:
-            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, oldtty)
+            if oldtty:
+                termios.tcsetattr(sys.stdin, termios.TCSADRAIN, oldtty)
             signal.signal(signal.SIGWINCH, old_handler)
             exit(errorcode)
 
@@ -778,23 +796,53 @@ def container_terminate(identifiers, sync):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def image_list(quiet, jumpstarts, linux):
+def image_list(quiet, jumpstarts_image, private_image, user_image, all_image, no_trunc):
     try:
-        headers = ["NAME", "DESCRIPTION"]
+        headers = ["NAME", "#TAG", "IN_USE", "PRIVATE", "TUTUM_BUILD", "DESCRIPTION"]
         data_list = []
         name_list = []
-        if jumpstarts:
-            image_list = tutum.Image.list(starred=True)
-        elif linux:
-            image_list = tutum.Image.list(base_image=True)
+
+        param = {}
+        if jumpstarts_image:
+            param["jumpstart"] = True
+        elif private_image:
+            param["is_private_image"] = True
+        elif user_image:
+            param["is_user_image"] = True
+        elif all_image:
+            pass
         else:
-            image_list = tutum.Image.list(is_private_image=True)
+            param["is_user_image"] = True
+
+        image_list = tutum.Image.list(**param)
         if len(image_list) != 0:
             for image in image_list:
-                data_list.append([image.name, image.description])
+                data = [image.name, len(image.tags)]
+
+                if image.in_use:
+                    data.append("yes")
+                else:
+                    data.append("no")
+
+                if image.is_private_image:
+                    data.append("yes")
+                else:
+                    data.append("no")
+
+                if image.build_source:
+                    data.append("yes")
+                else:
+                    data.append("no")
+
+                description = image.description
+                if not no_trunc and description and len(description) > 40:
+                    description = description[:36] + ' ...'
+                data.append(description)
+
+                data_list.append(data)
                 name_list.append(image.name)
         else:
-            data_list.append(["", ""])
+            data_list.append(["", "", "", "", ""])
 
         if quiet:
             for name in name_list:
@@ -804,6 +852,22 @@ def image_list(quiet, jumpstarts, linux):
 
     except Exception as e:
         print(e, file=sys.stderr)
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def image_inspect(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            try:
+                image = tutum.Image.fetch(identifier)
+            except Exception:
+                raise ObjectNotFound("Cannot find an image with the identifier '%s'" % identifier)
+            print(json.dumps(image.get_all_attributes(), indent=2))
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
@@ -980,6 +1044,100 @@ def image_update(repositories, username, password, description, sync):
             utils.sync_action(image, sync)
             if result:
                 print(image.name)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def image_tag_list(jumpstarts_image, private_image, user_image, all_image, identifiers):
+    has_exception = False
+    tag_match = re.compile("/api/v1/image/.*/tag/(.*)/")
+    try:
+        headers = ["NAME", "TAG"]
+        data_list = []
+        param = {}
+        if not identifiers:
+            if jumpstarts_image:
+                param["jumpstart"] = True
+            elif private_image:
+                param["is_private_image"] = True
+            elif user_image:
+                param["is_user_image"] = True
+            elif all_image:
+                pass
+            else:
+                param["is_user_image"] = True
+
+        image_list = tutum.Image.list(**param)
+        if len(image_list) != 0:
+            for image in image_list:
+                if identifiers and image.name not in identifiers:
+                    continue
+                tags = []
+                if image.tags:
+                    for tag in image.tags:
+                        match = tag_match.search(tag)
+                        if match:
+                            tags.append(match.group(1))
+                data_list.append([image.name, ", ".join(sorted(tags))])
+
+        if not data_list:
+            data_list.append(["", ""])
+
+        utils.tabulate_result(data_list, headers)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def image_tag_inspect(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            if identifier:
+                terms = identifier.split(":", 1)
+                if len(terms) == 2:
+                    name = terms[0]
+                    tag = terms[1]
+                else:
+                    name = terms[0]
+                    tag = "latest"
+
+                try:
+                    image = tutum.ImageTag.fetch(name, tag)
+                except Exception:
+                    raise ObjectNotFound("Cannot find an image tag with the identifier '%s'" % identifier)
+                print(json.dumps(image.get_all_attributes(), indent=2))
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def image_tag_build(identifiers, sync):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            if identifier:
+                terms = identifier.split(":", 1)
+                if len(terms) == 2:
+                    name = terms[0]
+                    tag = terms[1]
+                else:
+                    name = terms[0]
+                    tag = "latest"
+
+                try:
+                    image = tutum.ImageTag.fetch(name, tag)
+                except Exception:
+                    raise ObjectNotFound("Cannot find an image tag with the identifier '%s'" % identifier)
+                image.build()
+                utils.sync_action(image, sync)
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True

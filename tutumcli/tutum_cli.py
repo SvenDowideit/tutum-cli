@@ -74,7 +74,7 @@ def patch_help_option(argv=sys.argv):
         elif args[1] == 'container' and args[2] in ['exec', 'inspect', 'logs', 'redeploy', 'start', 'stop',
                                                     'terminate']:
             args.append('-h')
-        elif args[1] == 'image' and args[2] in ['register', 'push', 'rm', 'search', 'update']:
+        elif args[1] == 'image' and args[2] in ['register', 'push', 'rm', 'search', 'tag', 'update', 'inspect']:
             args.append('-h')
         elif args[1] == 'node' and args[2] in ['inspect', 'rm', 'upgrade']:
             args.append('-h')
@@ -94,6 +94,9 @@ def patch_help_option(argv=sys.argv):
     elif len(args) == 4:
         if args[1] == 'service' and args[2] == 'env':
             if args[3] in ['add', 'remove', 'update']:
+                args.append('-h')
+        if args[1] == 'image' and args[2] == 'tag':
+            if args[3] in ['inspect', 'build']:
                 args.append('-h')
     if debug:
         args.insert(1, '--debug')
@@ -133,7 +136,7 @@ def dispatch_cmds(args):
                              autorestart=args.autorestart, autodestroy=args.autodestroy,
                              autoredeploy=args.autoredeploy, roles=args.role,
                              sequential=args.sequential, volume=args.volume, volumes_from=args.volumes_from,
-                             deployment_strategy=args.deployment_strategy, sync=args.sync)
+                             deployment_strategy=args.deployment_strategy, sync=args.sync, net=args.net, pid=args.pid)
     elif args.cmd == 'service':
         if args.subcmd == 'create':
             commands.service_create(image=args.image, name=args.name, cpu_shares=args.cpushares,
@@ -145,7 +148,8 @@ def dispatch_cmds(args):
                                     autorestart=args.autorestart, autodestroy=args.autodestroy,
                                     autoredeploy=args.autoredeploy, roles=args.role,
                                     sequential=args.sequential, volume=args.volume, volumes_from=args.volumes_from,
-                                    deployment_strategy=args.deployment_strategy, sync=args.sync)
+                                    deployment_strategy=args.deployment_strategy, sync=args.sync, net=args.net,
+                                    pid=args.pid)
         elif args.subcmd == 'inspect':
             commands.service_inspect(args.identifier)
         elif args.subcmd == 'logs':
@@ -164,7 +168,8 @@ def dispatch_cmds(args):
                                  autorestart=args.autorestart, autodestroy=args.autodestroy,
                                  autoredeploy=args.autoredeploy, roles=args.role,
                                  sequential=args.sequential, volume=args.volume, volumes_from=args.volumes_from,
-                                 deployment_strategy=args.deployment_strategy, sync=args.sync)
+                                 deployment_strategy=args.deployment_strategy, sync=args.sync, net=args.net,
+                                 pid=args.pid)
         elif args.subcmd == 'scale':
             commands.service_scale(args.identifier, args.target_num_containers, args.sync)
         elif args.subcmd == 'set':
@@ -178,7 +183,8 @@ def dispatch_cmds(args):
                                  autoredeploy=args.autoredeploy, roles=args.role,
                                  sequential=args.sequential, redeploy=args.redeploy,
                                  volume=args.volume, volumes_from=args.volumes_from,
-                                 deployment_strategy=args.deployment_strategy, sync=args.sync)
+                                 deployment_strategy=args.deployment_strategy, sync=args.sync, net=args.net,
+                                 pid=args.pid)
         elif args.subcmd == 'start':
             commands.service_start(args.identifier, args.sync)
         elif args.subcmd == 'stop':
@@ -218,7 +224,7 @@ def dispatch_cmds(args):
             commands.container_terminate(args.identifier, args.sync)
     elif args.cmd == 'image':
         if args.subcmd == 'list':
-            commands.image_list(args.quiet, args.jumpstarts, args.linux)
+            commands.image_list(args.quiet, args.jumpstarts, args.private, args.user, args.all, args.no_trunc)
         elif args.subcmd == 'register':
             commands.image_register(args.image_name, args.description, args.username, args.password, args.sync)
         elif args.subcmd == 'push':
@@ -229,6 +235,15 @@ def dispatch_cmds(args):
             commands.image_search(args.query)
         elif args.subcmd == 'update':
             commands.image_update(args.image_name, args.username, args.password, args.description, args.sync)
+        elif args.subcmd == 'inspect':
+            commands.image_inspect(args.identifier)
+        elif args.subcmd == 'tag':
+            if args.imagetagsubcmd == 'list':
+                commands.image_tag_list(args.jumpstarts, args.private, args.user, args.all, args.identifier)
+            elif args.imagetagsubcmd == 'inspect':
+                commands.image_tag_inspect(args.identifier)
+            elif args.imagetagsubcmd == 'build':
+                commands.image_tag_build(args.identifier, args.sync)
     elif args.cmd == 'node':
         if args.subcmd == 'inspect':
             commands.node_inspect(args.identifier)
