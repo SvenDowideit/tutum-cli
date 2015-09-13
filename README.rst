@@ -126,5 +126,5 @@ Your login credentials will be stored in ``~/.tutum``:
 
 Note: ``tutum-cli`` and ``python-tutum`` will pick up the auth in the following order:
     * ``TUTUM_AUTH``
-    * ``TUTUM_USER` and `TUTUM_API_KEY``
+    * ``TUTUM_USER`` and ``TUTUM_APIKEY``
     * ``~/.tutum``
