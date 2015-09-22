@@ -1629,7 +1629,7 @@ class NodeClusterCreateTestCase(unittest.TestCase):
         nodecluster = tutumcli.commands.tutum.NodeCluster()
         nodecluster.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
         mock_create.return_value = nodecluster
-        nodecluster_create(3, 'name', provider_name, region_name, nodetype_name, False)
+        nodecluster_create(3, 'name', provider_name, region_name, nodetype_name, False, None)
 
         mock_create.assert_called_with(name='name', target_num_nodes=3, region=region_uri,
                                        node_type=nodetype_uri)
@@ -1639,6 +1639,6 @@ class NodeClusterCreateTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.tutum.NodeCluster.create', side_effect=TutumApiError)
     def test_nodecluster_create_with_exception(self, mock_create, mock_exit):
-        nodecluster_create(3, 'name', 'provider', 'region', 'nodetype', False)
+        nodecluster_create(3, 'name', 'provider', 'region', 'nodetype', False, None)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)

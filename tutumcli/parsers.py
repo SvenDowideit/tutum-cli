@@ -643,6 +643,8 @@ def add_nodecluster_parser(subparsers):
     create_parser.add_argument('nodetype', help='name of the node type')
     create_parser.add_argument('--sync', help='block the command until the async operation has finished',
                                action='store_true')
+    create_parser.add_argument('--disk', help="Disk size of node in GB(Default:60). "
+                                              "The available value varies depending on the providers")
 
     # tutum nodecluster inspect
     inspect_parser = nodecluster_subparser.add_parser('inspect', help='Inspect a nodecluster',

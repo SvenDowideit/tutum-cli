@@ -1359,13 +1359,15 @@ def nodecluster_show_types(provider, region):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def nodecluster_create(target_num_nodes, name, provider, region, nodetype, sync):
+def nodecluster_create(target_num_nodes, name, provider, region, nodetype, sync, disk):
     region_uri = "/api/v1/region/%s/%s/" % (provider, region)
     nodetype_uri = "/api/v1/nodetype/%s/%s/" % (provider, nodetype)
 
     try:
-        nodecluster = tutum.NodeCluster.create(name=name, target_num_nodes=target_num_nodes,
-                                               region=region_uri, node_type=nodetype_uri)
+        args = {'name': name, 'target_num_nodes':target_num_nodes, 'region':region_uri, 'node_type':nodetype_uri}
+        if disk:
+            args["disk"] = disk
+        nodecluster = tutum.NodeCluster.create(**args)
         nodecluster.save()
         result = nodecluster.deploy()
         utils.sync_action(nodecluster, sync)
