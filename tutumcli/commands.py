@@ -14,7 +14,9 @@ import websocket
 import tutum
 import docker
 import yaml
+
 from tutum.api import auth
+
 from tutum import TutumApiError, TutumAuthError, ObjectNotFound, NonUniqueIdentifier
 
 from exceptions import StreamOutputError
@@ -1359,14 +1361,35 @@ def nodecluster_show_types(provider, region):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def nodecluster_create(target_num_nodes, name, provider, region, nodetype, sync, disk):
+def nodecluster_create(target_num_nodes, name, provider, region, nodetype, sync, disk, aws_vpc_id,
+                       aws_vpc_subnets, aws_vpc_security_groups, aws_iam_instance_profile_name):
     region_uri = "/api/v1/region/%s/%s/" % (provider, region)
     nodetype_uri = "/api/v1/nodetype/%s/%s/" % (provider, nodetype)
 
+    provider_options = {}
+    aws_vpc = {}
+    aws_iam = {}
+
+    if aws_iam_instance_profile_name:
+        aws_iam["instance_profile_name"] = aws_iam_instance_profile_name
+    if aws_vpc_id:
+        aws_vpc["id"] = aws_vpc_id
+    if aws_vpc_subnets:
+        aws_vpc["subnets"] = aws_vpc_subnets
+    if aws_vpc_security_groups:
+        aws_vpc["security_groups"] = aws_vpc_security_groups
+    if aws_vpc:
+        provider_options["vpc"] = aws_vpc
+    if aws_iam:
+        provider_options["iam"] = aws_iam
+
+    args = {'name': name, 'target_num_nodes': target_num_nodes, 'region': region_uri, 'node_type': nodetype_uri}
+    if disk:
+        args["disk"] = disk
+    if provider_options:
+        args["provider_options"] = provider_options
+
     try:
-        args = {'name': name, 'target_num_nodes':target_num_nodes, 'region':region_uri, 'node_type':nodetype_uri}
-        if disk:
-            args["disk"] = disk
         nodecluster = tutum.NodeCluster.create(**args)
         nodecluster.save()
         result = nodecluster.deploy()
