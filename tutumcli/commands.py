@@ -1361,7 +1361,7 @@ def nodecluster_show_types(provider, region):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def nodecluster_create(target_num_nodes, name, provider, region, nodetype, sync, disk, aws_vpc_id,
+def nodecluster_create(target_num_nodes, name, provider, region, nodetype, sync, disk, tags, aws_vpc_id,
                        aws_vpc_subnets, aws_vpc_security_groups, aws_iam_instance_profile_name):
     region_uri = "/api/v1/region/%s/%s/" % (provider, region)
     nodetype_uri = "/api/v1/nodetype/%s/%s/" % (provider, nodetype)
@@ -1388,7 +1388,8 @@ def nodecluster_create(target_num_nodes, name, provider, region, nodetype, sync,
         args["disk"] = disk
     if provider_options:
         args["provider_options"] = provider_options
-
+    if tags:
+        args["tags"] = [{'name': tag} for tag in tags]
     try:
         nodecluster = tutum.NodeCluster.create(**args)
         nodecluster.save()

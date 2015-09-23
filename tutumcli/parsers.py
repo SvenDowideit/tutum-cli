@@ -645,13 +645,14 @@ def add_nodecluster_parser(subparsers):
                                action='store_true')
     create_parser.add_argument('--disk', help="Disk size of node in GB(Default:60). "
                                               "The available value varies depending on the providers")
-    create_parser.add_argument('--aws-vpc-id', help='AWS provider option: vpc id')
-    create_parser.add_argument('--aws-vpc-subnet', help="AWS provider option: vpc subnet",
+    create_parser.add_argument('--tag', help="set the tag of the node cluster", action='append')
+    create_parser.add_argument('--aws-vpc-id', help='aws provider option: vpc id')
+    create_parser.add_argument('--aws-vpc-subnet', help="aws provider option: vpc subnet",
                                action='append')
-    create_parser.add_argument('--aws-vpc-security-group', help="AWS provider option: vpc security group",
+    create_parser.add_argument('--aws-vpc-security-group', help="aws provider option: vpc security group",
                                action='append')
     create_parser.add_argument('--aws-iam-instance-profile-name',
-                               help='AWS provider option: instance profile name for the iam')
+                               help='aws provider option: instance profile name for the iam')
 
     # tutum nodecluster inspect
     inspect_parser = nodecluster_subparser.add_parser('inspect', help='Inspect a nodecluster',

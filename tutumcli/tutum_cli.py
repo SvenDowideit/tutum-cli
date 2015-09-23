@@ -258,7 +258,7 @@ def dispatch_cmds(args):
     elif args.cmd == 'nodecluster':
         if args.subcmd == 'create':
             commands.nodecluster_create(args.target_num_nodes, args.name, args.provider, args.region, args.nodetype,
-                                        args.sync, args.disk, args.aws_vpc_id, args.aws_vpc_subnet,
+                                        args.sync, args.disk, args.tag, args.aws_vpc_id, args.aws_vpc_subnet,
                                         args.aws_vpc_security_group, args.aws_iam_instance_profile_name)
         elif args.subcmd == 'inspect':
             commands.nodecluster_inspect(args.identifier)

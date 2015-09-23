@@ -15,7 +15,6 @@ import docker
 import tutum
 from dateutil import tz
 from tabulate import tabulate
-
 from tutum import ObjectNotFound
 
 from exceptions import BadParameter, DockerNotFound, StreamOutputError
