@@ -130,6 +130,17 @@ def add_action_parser(subparsers):
     logs_parser.add_argument('-t', '--tail', help='Output the specified number of lines at the end of logs '
                                                   '(defaults: 300)', type=int)
 
+    # tutum action cancel
+    inspect_parser = action_subparser.add_parser('cancel', help="Cancel an action in Pending or In progress state",
+                                                 description="Cancels an action in Pending or In progress state")
+    inspect_parser.add_argument('identifier', help="action's UUID (either long or short)", nargs='+')
+
+    # tutum action retry
+    inspect_parser = action_subparser.add_parser('retry', help="Retries an action in Success, Failed or Canceled state",
+                                                 description="Retries an action in Success, Failed or Canceled state")
+    inspect_parser.add_argument('identifier', help="action's UUID (either long or short)", nargs='+')
+
+
 
 def add_service_parser(subparsers):
     def str2bool(v):

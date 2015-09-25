@@ -1910,8 +1910,34 @@ def action_inspect(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
-            volumegroup = tutum.Utils.fetch_remote_action(identifier)
-            print(json.dumps(volumegroup.get_all_attributes(), indent=2))
+            action = tutum.Utils.fetch_remote_action(identifier)
+            print(json.dumps(action.get_all_attributes(), indent=2))
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def action_cancel(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            action = tutum.Utils.fetch_remote_action(identifier)
+            action.cancel()
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def action_retry(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            action = tutum.Utils.fetch_remote_action(identifier)
+            action.retry()
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True

@@ -66,7 +66,7 @@ def patch_help_option(argv=sys.argv):
                                         'stack', 'push', 'run']:
         args.append('-h')
     elif len(args) == 3:
-        if args[1] == 'action' and args[2] in ['inspect', 'logs']:
+        if args[1] == 'action' and args[2] in ['inspect', 'logs', 'cancel', 'retry']:
             args.append('-h')
         elif args[1] == 'service' and args[2] in ['create', 'env', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
                                                   'start', 'stop', 'terminate']:
@@ -118,6 +118,10 @@ def dispatch_cmds(args):
             commands.action_list(args.quiet, args.last)
         elif args.subcmd == 'logs':
             commands.action_logs(args.identifier, args.tail, args.follow)
+        elif args.subcmd == 'cancel':
+            commands.action_cancel(args.identifier)
+        elif args.subcmd == 'retry':
+            commands.action_retry(args.identifier)
     elif args.cmd == 'build':
         commands.build(args.tag, args.directory, args.sock)
     elif args.cmd == 'event':
