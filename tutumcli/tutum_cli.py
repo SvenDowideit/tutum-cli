@@ -76,7 +76,7 @@ def patch_help_option(argv=sys.argv):
             args.append('-h')
         elif args[1] == 'image' and args[2] in ['register', 'push', 'rm', 'search', 'tag', 'update', 'inspect']:
             args.append('-h')
-        elif args[1] == 'node' and args[2] in ['inspect', 'rm', 'upgrade']:
+        elif args[1] == 'node' and args[2] in ['inspect', 'rm', 'upgrade', 'healthcheck']:
             args.append('-h')
         elif args[1] == 'nodecluster' and args[2] in ['create', 'inspect', 'rm', 'scale', 'upgrade']:
             args.append('-h')
@@ -259,6 +259,8 @@ def dispatch_cmds(args):
             commands.node_upgrade(args.identifier, args.sync)
         elif args.subcmd == 'byo':
             commands.node_byo()
+        elif args.subcmd == 'healthcheck':
+            commands.node_healthcheck(args.identifier)
     elif args.cmd == 'nodecluster':
         if args.subcmd == 'create':
             commands.nodecluster_create(args.target_num_nodes, args.name, args.provider, args.region, args.nodetype,

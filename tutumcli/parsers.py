@@ -636,6 +636,11 @@ def add_node_parser(subparsers):
     upgrade_parser.add_argument('--sync', help='block the command until the async operation has finished',
                                 action='store_true')
 
+    # tutum node healthcheck
+    healthcheck_parser = node_subparser.add_parser('healthcheck', help='Test connectivity between Tutum and the node. '
+                    'Updates the node status to Deployed if the check was successful, or to Unreachable otherwise')
+    healthcheck_parser.add_argument('identifier', help="node's UUID (either long or short)", nargs='+')
+
 
 def add_nodecluster_parser(subparsers):
     # tutum nodecluster
@@ -863,7 +868,7 @@ def add_stack_parser(subparsers):
     # tutum stack up
     up_parser = stack_subparser.add_parser('up', help='Create and deploy a stack',
                                            description='Create and deploy a stack')
-    up_parser.add_argument('-n', '--name', help='The name of the stack, which wil be shown in tutum')
+    up_parser.add_argument('-n', '--name', help='The name of the stack, which will be shown in tutum')
     up_parser.add_argument('-f', '--file', help="the name of the Stackfile")
     up_parser.add_argument('--sync', help='block the command until the async operation has finished',
                            action='store_true')

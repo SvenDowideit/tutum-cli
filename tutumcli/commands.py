@@ -1223,6 +1223,21 @@ def node_upgrade(identifiers, sync):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
+def node_healthcheck(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            node = tutum.Utils.fetch_remote_node(identifier)
+            result = node.health_check()
+            if result:
+                print(node.uuid)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
 def node_byo():
     token = ""
     try:
