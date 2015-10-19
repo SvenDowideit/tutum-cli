@@ -27,8 +27,8 @@ def add_event_parser(subparsers):
 
 def add_push_parser(subparsers):
     # tutum push
-    push_parser = subparsers.add_parser('push', help='Push a local image to Tutum private registry',
-                                        description='Push a local image to Tutum private registry')
+    push_parser = subparsers.add_parser('push', help='Deprecated. Please use "docker push" instead',
+                                        description='Deprecated. Please use "docker push" instead')
     push_parser.add_argument('name', help='name of the image to push')
     push_parser.add_argument('--public', help='push image to public registry', action='store_true')
 
@@ -578,8 +578,8 @@ def add_image_parser(subparsers):
                                  action='store_true')
 
     # tutum image push
-    push_parser = image_subparser.add_parser('push', help='Push a local image to Tutum private registry',
-                                             description='Push a local image to Tutum private registry')
+    push_parser = image_subparser.add_parser('push', help='Deprecated. Please use "docker push" instead',
+                                             description='Deprecated. Please use "docker push" instead')
     push_parser.add_argument('name', help='name of the image to push')
     push_parser.add_argument('--public', help='push image to public registry', action='store_true')
 
