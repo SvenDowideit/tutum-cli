@@ -618,7 +618,7 @@ class ServiceRedeployTestCase(unittest.TestCase):
         service.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
         mock_fetch_remote_service.return_value = service
         mock_redeploy.return_value = True
-        service_redeploy(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
+        service_redeploy(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], True, False)
 
         self.assertEqual(service.uuid, self.buf.getvalue().strip())
         self.buf.truncate(0)
@@ -626,7 +626,7 @@ class ServiceRedeployTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_service', side_effect=TutumApiError)
     def test_service_redeploy_with_exception(self, mock_fetch_remote_service, mock_exit):
-        service_redeploy(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
+        service_redeploy(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], True, False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 
@@ -885,7 +885,7 @@ class ContainerRedeployTestCase(unittest.TestCase):
         container.uuid = '7A4CFE51-03BB-42D6-825E-3B533888D8CD'
         mock_fetch_remote_container.return_value = container
         mock_redeploy.return_value = True
-        container_redeploy(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
+        container_redeploy(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], True, False)
 
         self.assertEqual(container.uuid, self.buf.getvalue().strip())
         self.buf.truncate(0)
@@ -893,7 +893,7 @@ class ContainerRedeployTestCase(unittest.TestCase):
     @mock.patch('tutumcli.commands.sys.exit')
     @mock.patch('tutumcli.commands.tutum.Utils.fetch_remote_container', side_effect=TutumApiError)
     def test_container_redeploy_with_exception(self, mock_fetch_remote_container, mock_exit):
-        container_redeploy(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], False)
+        container_redeploy(['7A4CFE51-03BB-42D6-825E-3B533888D8CD'], True, False)
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
 

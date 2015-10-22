@@ -12,14 +12,10 @@ import re
 
 import websocket
 import tutum
-import docker
 import yaml
-
 from tutum.api import auth
-
 from tutum import TutumApiError, TutumAuthError, ObjectNotFound, NonUniqueIdentifier
 
-from exceptions import StreamOutputError
 from tutumcli import utils
 
 TUTUM_FILE = '.tutum'
@@ -227,12 +223,12 @@ def service_ps(quiet, status, stack):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def service_redeploy(identifiers, sync):
+def service_redeploy(identifiers, not_reuse_volume, sync):
     has_exception = False
     for identifier in identifiers:
         try:
             service = tutum.Utils.fetch_remote_service(identifier)
-            result = service.redeploy()
+            result = service.redeploy(not not_reuse_volume)
             utils.sync_action(service, sync)
             if result:
                 print(service.uuid)
@@ -661,12 +657,12 @@ def container_logs(identifiers, tail, follow):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def container_redeploy(identifiers, sync):
+def container_redeploy(identifiers, not_reuse_volume, sync):
     has_exception = False
     for identifier in identifiers:
         try:
             container = tutum.Utils.fetch_remote_container(identifier)
-            result = container.redeploy()
+            result = container.redeploy(not not_reuse_volume)
             utils.sync_action(container, sync)
             if result:
                 print(container.uuid)
@@ -1735,12 +1731,12 @@ def stack_list(quiet):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def stack_redeploy(identifiers, sync):
+def stack_redeploy(identifiers, not_reuse_volume, sync):
     has_exception = False
     for identifier in identifiers:
         try:
             stack = tutum.Utils.fetch_remote_stack(identifier)
-            result = stack.redeploy()
+            result = stack.redeploy(not not_reuse_volume)
             utils.sync_action(stack, sync)
             if result:
                 print(stack.uuid)

@@ -141,7 +141,6 @@ def add_action_parser(subparsers):
     inspect_parser.add_argument('identifier', help="action's UUID (either long or short)", nargs='+')
 
 
-
 def add_service_parser(subparsers):
     def str2bool(v):
         return v.lower() in ("yes", "true", "t", "1", "y")
@@ -306,6 +305,8 @@ def add_service_parser(subparsers):
                                                    description='Redeploy a running service')
     redeploy_parser.add_argument('identifier', help="service's UUID (either long or short) or name[.stack_name]",
                                  nargs='+')
+    redeploy_parser.add_argument('--not-reuse-volumes', help="do not reuse volumes in redeployment",
+                                 action='store_true')
     redeploy_parser.add_argument('--sync', help='block the command until the async operation has finished',
                                  action='store_true')
 
@@ -484,6 +485,8 @@ def add_container_parser(subparsers):
                                                      description='Redeploy a running container')
     redeploy_parser.add_argument('identifier', help="container's UUID (either long or short) or name[.stack_name]",
                                  nargs='+')
+    redeploy_parser.add_argument('--not-reuse-volumes', help="do not reuse volumes in redeployment",
+                                 action='store_true')
     redeploy_parser.add_argument('--sync', help='block the command until the async operation has finished',
                                  action='store_true')
 
@@ -638,7 +641,7 @@ def add_node_parser(subparsers):
 
     # tutum node healthcheck
     healthcheck_parser = node_subparser.add_parser('healthcheck', help='Test connectivity between Tutum and the node. '
-                    'Updates the node status to Deployed if the check was successful, or to Unreachable otherwise')
+                                                                       'Updates the node status to Deployed if the check was successful, or to Unreachable otherwise')
     healthcheck_parser.add_argument('identifier', help="node's UUID (either long or short)", nargs='+')
 
 
@@ -843,6 +846,8 @@ def add_stack_parser(subparsers):
     redeploy_parser = stack_subparser.add_parser('redeploy', help='Redeploy a running stack',
                                                  description='Redeploy a running stack')
     redeploy_parser.add_argument('identifier', help="stack's UUID (either long or short) or name", nargs='+')
+    redeploy_parser.add_argument('--not-reuse-volumes', help="do not reuse volumes in redeployment",
+                                 action='store_true')
     redeploy_parser.add_argument('--sync', help='block the command until the async operation has finished',
                                  action='store_true')
 

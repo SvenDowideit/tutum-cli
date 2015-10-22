@@ -161,7 +161,7 @@ def dispatch_cmds(args):
         elif args.subcmd == 'ps':
             commands.service_ps(args.quiet, args.status, args.stack)
         elif args.subcmd == 'redeploy':
-            commands.service_redeploy(args.identifier, args.sync)
+            commands.service_redeploy(args.identifier, args.not_reuse_volumes, args.sync)
         elif args.subcmd == 'run':
             commands.service_run(image=args.image, name=args.name, cpu_shares=args.cpushares,
                                  memory=args.memory, privileged=args.privileged,
@@ -217,7 +217,7 @@ def dispatch_cmds(args):
         elif args.subcmd == 'logs':
             commands.container_logs(args.identifier, args.tail, args.follow)
         elif args.subcmd == 'redeploy':
-            commands.container_redeploy(args.identifier, args.sync)
+            commands.container_redeploy(args.identifier, args.not_reuse_volumes, args.sync)
         elif args.subcmd == 'ps':
             commands.container_ps(args.quiet, args.status, args.service, args.no_trunc)
         elif args.subcmd == 'start':
@@ -318,7 +318,7 @@ def dispatch_cmds(args):
         elif args.subcmd == 'list':
             commands.stack_list(args.quiet)
         elif args.subcmd == 'redeploy':
-            commands.stack_redeploy(args.identifier, args.sync)
+            commands.stack_redeploy(args.identifier, args.not_reuse_volumes, args.sync)
         elif args.subcmd == 'start':
             commands.stack_start(args.identifier, args.sync)
         elif args.subcmd == 'stop':
