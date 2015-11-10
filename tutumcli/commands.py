@@ -1632,7 +1632,7 @@ def trigger_list(identifier, quiet):
         trigger = tutum.Trigger.fetch(service)
         triggers = trigger.list()
         for t in triggers:
-            url = tutum.domain + t.get('url', '/')[1:]
+            url = tutum.rest_host + t.get('url', '/')[1:]
             data_list.append([t.get('uuid', '')[:8], t.get('name', ''), t.get('operation', ''), url])
             uuid_list.append(t.get('uuid', ''))
         if quiet:
