@@ -66,7 +66,7 @@ def patch_help_option(argv=sys.argv):
                                         'stack', 'push', 'run']:
         args.append('-h')
     elif len(args) == 3:
-        if args[1] == 'action' and args[2] in ['inspect', 'logs']:
+        if args[1] == 'action' and args[2] in ['inspect', 'logs', 'cancel', 'retry']:
             args.append('-h')
         elif args[1] == 'service' and args[2] in ['create', 'env', 'inspect', 'logs', 'redeploy', 'run', 'scale', 'set',
                                                   'start', 'stop', 'terminate']:
@@ -76,7 +76,7 @@ def patch_help_option(argv=sys.argv):
             args.append('-h')
         elif args[1] == 'image' and args[2] in ['register', 'push', 'rm', 'search', 'tag', 'update', 'inspect']:
             args.append('-h')
-        elif args[1] == 'node' and args[2] in ['inspect', 'rm', 'upgrade']:
+        elif args[1] == 'node' and args[2] in ['inspect', 'rm', 'upgrade', 'healthcheck']:
             args.append('-h')
         elif args[1] == 'nodecluster' and args[2] in ['create', 'inspect', 'rm', 'scale', 'upgrade']:
             args.append('-h')
@@ -118,6 +118,10 @@ def dispatch_cmds(args):
             commands.action_list(args.quiet, args.last)
         elif args.subcmd == 'logs':
             commands.action_logs(args.identifier, args.tail, args.follow)
+        elif args.subcmd == 'cancel':
+            commands.action_cancel(args.identifier)
+        elif args.subcmd == 'retry':
+            commands.action_retry(args.identifier)
     elif args.cmd == 'build':
         commands.build(args.tag, args.directory, args.sock)
     elif args.cmd == 'event':
@@ -157,7 +161,7 @@ def dispatch_cmds(args):
         elif args.subcmd == 'ps':
             commands.service_ps(args.quiet, args.status, args.stack)
         elif args.subcmd == 'redeploy':
-            commands.service_redeploy(args.identifier, args.sync)
+            commands.service_redeploy(args.identifier, args.not_reuse_volumes, args.sync)
         elif args.subcmd == 'run':
             commands.service_run(image=args.image, name=args.name, cpu_shares=args.cpushares,
                                  memory=args.memory, privileged=args.privileged,
@@ -213,7 +217,7 @@ def dispatch_cmds(args):
         elif args.subcmd == 'logs':
             commands.container_logs(args.identifier, args.tail, args.follow)
         elif args.subcmd == 'redeploy':
-            commands.container_redeploy(args.identifier, args.sync)
+            commands.container_redeploy(args.identifier, args.not_reuse_volumes, args.sync)
         elif args.subcmd == 'ps':
             commands.container_ps(args.quiet, args.status, args.service, args.no_trunc)
         elif args.subcmd == 'start':
@@ -255,10 +259,13 @@ def dispatch_cmds(args):
             commands.node_upgrade(args.identifier, args.sync)
         elif args.subcmd == 'byo':
             commands.node_byo()
+        elif args.subcmd == 'healthcheck':
+            commands.node_healthcheck(args.identifier)
     elif args.cmd == 'nodecluster':
         if args.subcmd == 'create':
             commands.nodecluster_create(args.target_num_nodes, args.name, args.provider, args.region, args.nodetype,
-                                        args.sync)
+                                        args.sync, args.disk, args.tag, args.aws_vpc_id, args.aws_vpc_subnet,
+                                        args.aws_vpc_security_group, args.aws_iam_instance_profile_name)
         elif args.subcmd == 'inspect':
             commands.nodecluster_inspect(args.identifier)
         elif args.subcmd == 'list':
@@ -311,7 +318,7 @@ def dispatch_cmds(args):
         elif args.subcmd == 'list':
             commands.stack_list(args.quiet)
         elif args.subcmd == 'redeploy':
-            commands.stack_redeploy(args.identifier, args.sync)
+            commands.stack_redeploy(args.identifier, args.not_reuse_volumes, args.sync)
         elif args.subcmd == 'start':
             commands.stack_start(args.identifier, args.sync)
         elif args.subcmd == 'stop':

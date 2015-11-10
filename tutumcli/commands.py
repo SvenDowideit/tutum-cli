@@ -12,12 +12,10 @@ import re
 
 import websocket
 import tutum
-import docker
 import yaml
 from tutum.api import auth
 from tutum import TutumApiError, TutumAuthError, ObjectNotFound, NonUniqueIdentifier
 
-from exceptions import StreamOutputError
 from tutumcli import utils
 
 TUTUM_FILE = '.tutum'
@@ -225,12 +223,12 @@ def service_ps(quiet, status, stack):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def service_redeploy(identifiers, sync):
+def service_redeploy(identifiers, not_reuse_volume, sync):
     has_exception = False
     for identifier in identifiers:
         try:
             service = tutum.Utils.fetch_remote_service(identifier)
-            result = service.redeploy()
+            result = service.redeploy(not not_reuse_volume)
             utils.sync_action(service, sync)
             if result:
                 print(service.uuid)
@@ -659,12 +657,12 @@ def container_logs(identifiers, tail, follow):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def container_redeploy(identifiers, sync):
+def container_redeploy(identifiers, not_reuse_volume, sync):
     has_exception = False
     for identifier in identifiers:
         try:
             container = tutum.Utils.fetch_remote_container(identifier)
-            result = container.redeploy()
+            result = container.redeploy(not not_reuse_volume)
             utils.sync_action(container, sync)
             if result:
                 print(container.uuid)
@@ -894,102 +892,9 @@ def image_register(repository, description, username, password, sync):
 
 
 def image_push(name, public):
-    def push_to_public(repository):
-        print('Pushing %s to public registry ...' % repository)
-
-        output_status = NO_ERROR
-        # tag a image to its name to check if the images exists
-        try:
-            docker_client.tag(name, name, force=True)
-        except Exception as e:
-            print(e, file=sys.stderr)
-            sys.exit(EXCEPTION_EXIT_CODE)
-        try:
-            tag = None
-            if ':' in repository:
-                tag = repository.split(':')[-1]
-                repository = repository.replace(':%s' % tag, '')
-            output = docker_client.push(repository, tag=tag, stream=True)
-            utils.stream_output(output, sys.stdout)
-        except StreamOutputError as e:
-            if 'status 401' in e.message.lower():
-                output_status = AUTH_ERROR
-            else:
-                print(e, file=sys.stderr)
-                sys.exit(EXCEPTION_EXIT_CODE)
-        except Exception as e:
-            print(e.message, file=sys.stderr)
-            sys.exit(EXCEPTION_EXIT_CODE)
-
-        if output_status == NO_ERROR:
-            print('')
-            sys.exit()
-
-        if output_status == AUTH_ERROR:
-            print('Please login prior to push:')
-            username = raw_input('Username: ')
-            password = getpass.getpass()
-            email = raw_input('Email: ')
-            try:
-                result = docker_client.login(username, password=password, email=email)
-                if isinstance(result, dict):
-                    print(result.get('Status', None))
-            except Exception as e:
-                print(e, file=sys.stderr)
-                sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
-            push_to_public(repository)
-
-    def push_to_tutum(repository):
-        print('Pushing %s to Tutum private registry ...' % repository)
-
-        user = tutum.user
-        apikey = tutum.apikey
-        if user is None or apikey is None:
-            print('Not authorized')
-            sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
-
-        try:
-            registry = os.getenv('TUTUM_REGISTRY_URL') or 'tutum.co'
-            docker_client.login(user, apikey, registry=registry)
-        except Exception as e:
-            print(e, file=sys.stderr)
-            sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
-
-        if repository:
-            repository = filter(None, repository.split('/'))[-1]
-        tag = None
-        if ':' in repository:
-            tag = repository.split(':')[-1]
-            repository = repository.replace(':%s' % tag, '')
-        repository = '%s/%s/%s' % (registry.split('//')[-1].split('/')[0], user, repository)
-
-        if tag:
-            print('Tagging %s as %s:%s ...' % (name, repository, tag))
-        else:
-            print('Tagging %s as %s ...' % (name, repository))
-
-        try:
-            docker_client.tag(name, repository, tag=tag, force=True)
-        except Exception as e:
-            print(e, file=sys.stderr)
-            sys.exit(EXCEPTION_EXIT_CODE)
-
-        output = docker_client.push(repository, tag=tag, stream=True)
-        try:
-            utils.stream_output(output, sys.stdout)
-        except docker.errors.APIError as e:
-            print(e.explanation, file=sys.stderr)
-            sys.exit(EXCEPTION_EXIT_CODE)
-        except Exception as e:
-            print(e.message, file=sys.stderr)
-            sys.exit(EXCEPTION_EXIT_CODE)
-        print('')
-
-    docker_client = utils.get_docker_client()
-    if public:
-        push_to_public(name)
-    else:
-        push_to_tutum(name)
+    msg = 'tutum image push <image> has been deprecated. Please use "docker tag" and "docker push" commands instead.'
+    print(msg, file=sys.stderr)
+    sys.exit(EXCEPTION_EXIT_CODE)
 
 
 def image_rm(repositories, sync):
@@ -1221,6 +1126,21 @@ def node_upgrade(identifiers, sync):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
+def node_healthcheck(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            node = tutum.Utils.fetch_remote_node(identifier)
+            result = node.health_check()
+            if result:
+                print(node.uuid)
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
 def node_byo():
     token = ""
     try:
@@ -1359,13 +1279,37 @@ def nodecluster_show_types(provider, region):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def nodecluster_create(target_num_nodes, name, provider, region, nodetype, sync):
+def nodecluster_create(target_num_nodes, name, provider, region, nodetype, sync, disk, tags, aws_vpc_id,
+                       aws_vpc_subnets, aws_vpc_security_groups, aws_iam_instance_profile_name):
     region_uri = "/api/v1/region/%s/%s/" % (provider, region)
     nodetype_uri = "/api/v1/nodetype/%s/%s/" % (provider, nodetype)
 
+    provider_options = {}
+    aws_vpc = {}
+    aws_iam = {}
+
+    if aws_iam_instance_profile_name:
+        aws_iam["instance_profile_name"] = aws_iam_instance_profile_name
+    if aws_vpc_id:
+        aws_vpc["id"] = aws_vpc_id
+    if aws_vpc_subnets:
+        aws_vpc["subnets"] = aws_vpc_subnets
+    if aws_vpc_security_groups:
+        aws_vpc["security_groups"] = aws_vpc_security_groups
+    if aws_vpc:
+        provider_options["vpc"] = aws_vpc
+    if aws_iam:
+        provider_options["iam"] = aws_iam
+
+    args = {'name': name, 'target_num_nodes': target_num_nodes, 'region': region_uri, 'node_type': nodetype_uri}
+    if disk:
+        args["disk"] = disk
+    if provider_options:
+        args["provider_options"] = provider_options
+    if tags:
+        args["tags"] = [{'name': tag} for tag in tags]
     try:
-        nodecluster = tutum.NodeCluster.create(name=name, target_num_nodes=target_num_nodes,
-                                               region=region_uri, node_type=nodetype_uri)
+        nodecluster = tutum.NodeCluster.create(**args)
         nodecluster.save()
         result = nodecluster.deploy()
         utils.sync_action(nodecluster, sync)
@@ -1688,7 +1632,7 @@ def trigger_list(identifier, quiet):
         trigger = tutum.Trigger.fetch(service)
         triggers = trigger.list()
         for t in triggers:
-            url = tutum.domain + t.get('url', '/')[1:]
+            url = tutum.rest_host + t.get('url', '/')[1:]
             data_list.append([t.get('uuid', '')[:8], t.get('name', ''), t.get('operation', ''), url])
             uuid_list.append(t.get('uuid', ''))
         if quiet:
@@ -1787,12 +1731,12 @@ def stack_list(quiet):
         sys.exit(EXCEPTION_EXIT_CODE)
 
 
-def stack_redeploy(identifiers, sync):
+def stack_redeploy(identifiers, not_reuse_volume, sync):
     has_exception = False
     for identifier in identifiers:
         try:
             stack = tutum.Utils.fetch_remote_stack(identifier)
-            result = stack.redeploy()
+            result = stack.redeploy(not not_reuse_volume)
             utils.sync_action(stack, sync)
             if result:
                 print(stack.uuid)
@@ -1884,8 +1828,34 @@ def action_inspect(identifiers):
     has_exception = False
     for identifier in identifiers:
         try:
-            volumegroup = tutum.Utils.fetch_remote_action(identifier)
-            print(json.dumps(volumegroup.get_all_attributes(), indent=2))
+            action = tutum.Utils.fetch_remote_action(identifier)
+            print(json.dumps(action.get_all_attributes(), indent=2))
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def action_cancel(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            action = tutum.Utils.fetch_remote_action(identifier)
+            action.cancel()
+        except Exception as e:
+            print(e, file=sys.stderr)
+            has_exception = True
+    if has_exception:
+        sys.exit(EXCEPTION_EXIT_CODE)
+
+
+def action_retry(identifiers):
+    has_exception = False
+    for identifier in identifiers:
+        try:
+            action = tutum.Utils.fetch_remote_action(identifier)
+            action.retry()
         except Exception as e:
             print(e, file=sys.stderr)
             has_exception = True

@@ -90,7 +90,7 @@ Then, you can run commands like:
 Authentication
 --------------
 
-In other to manage your apps and containers running on Tutum, you need to log into Tutum in any of the following ways
+In order to manage your apps and containers running on Tutum, you need to log into Tutum in any of the following ways
 (will be used in this order):
 
 * Login using Tutum CLI or storing it directly in a configuration file in ``~/.tutum``:
@@ -126,5 +126,5 @@ Your login credentials will be stored in ``~/.tutum``:
 
 Note: ``tutum-cli`` and ``python-tutum`` will pick up the auth in the following order:
     * ``TUTUM_AUTH``
-    * ``TUTUM_USER` and `TUTUM_API_KEY``
+    * ``TUTUM_USER`` and ``TUTUM_APIKEY``
     * ``~/.tutum``

@@ -27,8 +27,8 @@ def add_event_parser(subparsers):
 
 def add_push_parser(subparsers):
     # tutum push
-    push_parser = subparsers.add_parser('push', help='Push a local image to Tutum private registry',
-                                        description='Push a local image to Tutum private registry')
+    push_parser = subparsers.add_parser('push', help='Deprecated. Please use "docker push" instead',
+                                        description='Deprecated. Please use "docker push" instead')
     push_parser.add_argument('name', help='name of the image to push')
     push_parser.add_argument('--public', help='push image to public registry', action='store_true')
 
@@ -129,6 +129,16 @@ def add_action_parser(subparsers):
     logs_parser.add_argument('-f', '--follow', help='follow log output', action='store_true')
     logs_parser.add_argument('-t', '--tail', help='Output the specified number of lines at the end of logs '
                                                   '(defaults: 300)', type=int)
+
+    # tutum action cancel
+    inspect_parser = action_subparser.add_parser('cancel', help="Cancel an action in Pending or In progress state",
+                                                 description="Cancels an action in Pending or In progress state")
+    inspect_parser.add_argument('identifier', help="action's UUID (either long or short)", nargs='+')
+
+    # tutum action retry
+    inspect_parser = action_subparser.add_parser('retry', help="Retries an action in Success, Failed or Canceled state",
+                                                 description="Retries an action in Success, Failed or Canceled state")
+    inspect_parser.add_argument('identifier', help="action's UUID (either long or short)", nargs='+')
 
 
 def add_service_parser(subparsers):
@@ -295,6 +305,8 @@ def add_service_parser(subparsers):
                                                    description='Redeploy a running service')
     redeploy_parser.add_argument('identifier', help="service's UUID (either long or short) or name[.stack_name]",
                                  nargs='+')
+    redeploy_parser.add_argument('--not-reuse-volumes', help="do not reuse volumes in redeployment",
+                                 action='store_true')
     redeploy_parser.add_argument('--sync', help='block the command until the async operation has finished',
                                  action='store_true')
 
@@ -473,6 +485,8 @@ def add_container_parser(subparsers):
                                                      description='Redeploy a running container')
     redeploy_parser.add_argument('identifier', help="container's UUID (either long or short) or name[.stack_name]",
                                  nargs='+')
+    redeploy_parser.add_argument('--not-reuse-volumes', help="do not reuse volumes in redeployment",
+                                 action='store_true')
     redeploy_parser.add_argument('--sync', help='block the command until the async operation has finished',
                                  action='store_true')
 
@@ -567,8 +581,8 @@ def add_image_parser(subparsers):
                                  action='store_true')
 
     # tutum image push
-    push_parser = image_subparser.add_parser('push', help='Push a local image to Tutum private registry',
-                                             description='Push a local image to Tutum private registry')
+    push_parser = image_subparser.add_parser('push', help='Deprecated. Please use "docker push" instead',
+                                             description='Deprecated. Please use "docker push" instead')
     push_parser.add_argument('name', help='name of the image to push')
     push_parser.add_argument('--public', help='push image to public registry', action='store_true')
 
@@ -625,6 +639,11 @@ def add_node_parser(subparsers):
     upgrade_parser.add_argument('--sync', help='block the command until the async operation has finished',
                                 action='store_true')
 
+    # tutum node healthcheck
+    healthcheck_parser = node_subparser.add_parser('healthcheck', help='Test connectivity between Tutum and the node. '
+                                                                       'Updates the node status to Deployed if the check was successful, or to Unreachable otherwise')
+    healthcheck_parser.add_argument('identifier', help="node's UUID (either long or short)", nargs='+')
+
 
 def add_nodecluster_parser(subparsers):
     # tutum nodecluster
@@ -643,6 +662,16 @@ def add_nodecluster_parser(subparsers):
     create_parser.add_argument('nodetype', help='name of the node type')
     create_parser.add_argument('--sync', help='block the command until the async operation has finished',
                                action='store_true')
+    create_parser.add_argument('--disk', help="Disk size of node in GB(Default:60). "
+                                              "The available value varies depending on the providers")
+    create_parser.add_argument('--tag', help="set the tag of the node cluster", action='append')
+    create_parser.add_argument('--aws-vpc-id', help='aws provider option: vpc id')
+    create_parser.add_argument('--aws-vpc-subnet', help="aws provider option: vpc subnet",
+                               action='append')
+    create_parser.add_argument('--aws-vpc-security-group', help="aws provider option: vpc security group",
+                               action='append')
+    create_parser.add_argument('--aws-iam-instance-profile-name',
+                               help='aws provider option: instance profile name for the iam')
 
     # tutum nodecluster inspect
     inspect_parser = nodecluster_subparser.add_parser('inspect', help='Inspect a nodecluster',
@@ -817,6 +846,8 @@ def add_stack_parser(subparsers):
     redeploy_parser = stack_subparser.add_parser('redeploy', help='Redeploy a running stack',
                                                  description='Redeploy a running stack')
     redeploy_parser.add_argument('identifier', help="stack's UUID (either long or short) or name", nargs='+')
+    redeploy_parser.add_argument('--not-reuse-volumes', help="do not reuse volumes in redeployment",
+                                 action='store_true')
     redeploy_parser.add_argument('--sync', help='block the command until the async operation has finished',
                                  action='store_true')
 
@@ -842,7 +873,7 @@ def add_stack_parser(subparsers):
     # tutum stack up
     up_parser = stack_subparser.add_parser('up', help='Create and deploy a stack',
                                            description='Create and deploy a stack')
-    up_parser.add_argument('-n', '--name', help='The name of the stack, which wil be shown in tutum')
+    up_parser.add_argument('-n', '--name', help='The name of the stack, which will be shown in tutum')
     up_parser.add_argument('-f', '--file', help="the name of the Stackfile")
     up_parser.add_argument('--sync', help='block the command until the async operation has finished',
                            action='store_true')

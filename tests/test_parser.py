@@ -186,7 +186,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
 
         args = self.parser.parse_args(['service', 'redeploy', 'mysql'])
         dispatch_cmds(args)
-        mock_cmds.service_redeploy.assert_called_with(args.identifier, args.sync)
+        mock_cmds.service_redeploy.assert_called_with(args.identifier, args.not_reuse_volumes, args.sync)
 
         args = self.parser.parse_args(['service', 'run', 'mysql'])
         dispatch_cmds(args)
@@ -289,6 +289,10 @@ class CommandsDispatchTestCase(unittest.TestCase):
         args = self.parser.parse_args(['container', 'terminate', 'id'])
         dispatch_cmds(args)
         mock_cmds.container_terminate.assert_called_with(args.identifier, args.sync)
+
+        args = self.parser.parse_args(['container', 'redeploy', 'id'])
+        dispatch_cmds(args)
+        mock_cmds.container_redeploy.assert_called_with(args.identifier, args.not_reuse_volumes, args.sync)
 
     @mock.patch('tutumcli.tutum_cli.commands')
     def test_image_dispatch(self, mock_cmds):
@@ -404,7 +408,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
 
         args = self.parser.parse_args(['stack', 'redeploy', 'id'])
         dispatch_cmds(args)
-        mock_cmds.stack_redeploy.assert_called_with(args.identifier, args.sync)
+        mock_cmds.stack_redeploy.assert_called_with(args.identifier, args.not_reuse_volumes, args.sync)
 
         args = self.parser.parse_args(['stack', 'start', 'id'])
         dispatch_cmds(args)
