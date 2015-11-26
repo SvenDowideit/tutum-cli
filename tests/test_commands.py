@@ -1025,7 +1025,7 @@ class ImageSearchTestCase(unittest.TestCase):
     @mock.patch.object(tutumcli.commands.utils.docker.Client, 'search')
     @mock.patch('tutumcli.utils.get_docker_client')
     def test_image_search(self, mock_get_docker_client, mock_search):
-        mock_get_docker_client.return_value = docker.Client()
+        mock_get_docker_client.return_value = tutumcli.commands.utils.docker.Client()
         mock_search.return_value = [
             {
                 "description": "1st image",
@@ -1060,7 +1060,7 @@ vgauthier/sshd   3rd image            0  ✓           ✓'''
     @mock.patch.object(tutumcli.commands.utils.docker.Client, 'search', side_effect=TutumApiError)
     @mock.patch('tutumcli.utils.get_docker_client')
     def test_image_search_with_exception(self, mock_get_docker_client, mock_search, mock_exit):
-        mock_get_docker_client.return_value = docker.Client()
+        mock_get_docker_client.return_value = tutumcli.commands.utils.docker.Client()
         image_search('keyword')
 
         mock_exit.assert_called_with(EXCEPTION_EXIT_CODE)
