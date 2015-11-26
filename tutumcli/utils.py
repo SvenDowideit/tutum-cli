@@ -407,9 +407,10 @@ def inject_env_var(services):
             env_vars = service["environment"]
         except:
             continue
+
         if isinstance(env_vars, list):
             for i, env_var in enumerate(env_vars):
-                if env_var.find("=") < 0 and os.getenv(env_var):
+                if isinstance(env_var, str) and env_var.find("=") < 0 and os.getenv(env_var):
                     env_vars[i] = "%s=%s" % (env_var, os.getenv(env_var))
         elif isinstance(env_vars, dict):
             for k, v in env_vars.iteritems():
