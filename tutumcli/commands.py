@@ -3,7 +3,7 @@ import base64
 import getpass
 import json
 import sys
-import os
+import ConfigParser
 import logging
 from os.path import join, expanduser, abspath
 import errno
@@ -16,10 +16,10 @@ from tutum.api import auth
 from tutum import TutumApiError, TutumAuthError, ObjectNotFound, NonUniqueIdentifier
 from tutumcli import utils
 
+
 TUTUM_FILE = '.tutum'
 AUTH_SECTION = 'auth'
-USER_OPTION = "user"
-APIKEY_OPTION = 'apikey'
+BASIC_AUTH_OPTION = "basic_auth"
 AUTH_ERROR = 'auth_error'
 NO_ERROR = 'no_error'
 
@@ -39,9 +39,11 @@ def login(username, password):
         password = getpass.getpass()
     try:
         auth.verify_credential(username, password)
-        credential = {"auths": {"tutum.co": {"auth": base64.b64encode("%s:%s" % (username, password))}}}
+        config = ConfigParser.ConfigParser()
+        config.add_section(AUTH_SECTION)
+        config.set(AUTH_SECTION, BASIC_AUTH_OPTION, base64.b64encode("%s:%s" % (username, password)))
         with open(join(expanduser('~'), TUTUM_FILE), 'w') as f:
-            json.dump(credential, f, indent=4, separators=(',', ': '))
+            config.write(f)
         print("Login succeeded!")
     except Exception as e:
         print(e, file=sys.stderr)
@@ -54,9 +56,11 @@ def verify_auth(args):
         password = getpass.getpass()
         try:
             auth.verify_credential(username, password)
-            credential = {"auths": {"tutum.co": {"auth": base64.b64encode("%s:%s" % (username, password))}}}
+            config = ConfigParser.ConfigParser()
+            config.add_section(AUTH_SECTION)
+            config.set(AUTH_SECTION, BASIC_AUTH_OPTION, '"%s"' % base64.b64encode("%s:%s" % (username, password)))
             with open(join(expanduser('~'), TUTUM_FILE), 'w') as f:
-                json.dump(credential, f, indent=4, separators=(',', ': '))
+                config.write(f)
             return True
         except tutum.TutumAuthError:
             return False
@@ -72,7 +76,7 @@ def verify_auth(args):
             while True:
                 if _login():
                     print("Login succeeded!")
-                    tutum.basic_auth = auth.load_from_file(file="~/.tutum", site="tutum.co")
+                    tutum.basic_auth, tutum.apikey_auth = auth.load_from_file("~/.tutum")
                     break
                 else:
                     print("Not Authorized, Please login:", file=sys.stderr)
