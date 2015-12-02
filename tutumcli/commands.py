@@ -1,21 +1,19 @@
 from __future__ import print_function
+import base64
 import getpass
 import json
 import sys
 import os
 import logging
 from os.path import join, expanduser, abspath
-import ConfigParser
 import errno
 import urllib
 import re
-
 import websocket
 import tutum
 import yaml
 from tutum.api import auth
 from tutum import TutumApiError, TutumAuthError, ObjectNotFound, NonUniqueIdentifier
-
 from tutumcli import utils
 
 TUTUM_FILE = '.tutum'
@@ -31,7 +29,7 @@ EXCEPTION_EXIT_CODE = 3
 cli_log = logging.getLogger("cli")
 
 
-def login(username, password, email):
+def login(username, password):
     if not username and not password:
         username = raw_input('Username: ')
         password = getpass.getpass()
@@ -40,29 +38,11 @@ def login(username, password, email):
     elif not password:
         password = getpass.getpass()
     try:
-        user, api_key = auth.get_auth(username, password)
-        if api_key is not None:
-            config = ConfigParser.ConfigParser()
-            config.add_section(AUTH_SECTION)
-            config.set(AUTH_SECTION, USER_OPTION, user)
-            config.set(AUTH_SECTION, APIKEY_OPTION, api_key)
-            with open(join(expanduser('~'), TUTUM_FILE), 'w') as cfgfile:
-                config.write(cfgfile)
-            print("Login succeeded!")
-    except TutumAuthError:
-        registered, text = utils.try_register(username, password, email)
-        if registered:
-            print(text)
-        else:
-            if 'username: A user with that username already exists.' in text:
-                print("Wrong username and/or password. Please try to login again", file=sys.stderr)
-                sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
-            else:
-                text = text.replace('password1', 'password')
-                text = text.replace('password2', 'password')
-                text = text.replace('\npassword: This field is required.', '', 1)
-                print(text, file=sys.stderr)
-                sys.exit(TUTUM_AUTH_ERROR_EXIT_CODE)
+        auth.verify_credential(username, password)
+        credential = {"auths": {"tutum.co": {"auth": base64.b64encode("%s:%s" % (username, password))}}}
+        with open(join(expanduser('~'), TUTUM_FILE), 'w') as f:
+            json.dump(credential, f, indent=4, separators=(',', ': '))
+        print("Login succeeded!")
     except Exception as e:
         print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
@@ -73,15 +53,11 @@ def verify_auth(args):
         username = raw_input("Username: ")
         password = getpass.getpass()
         try:
-            user, api_key = auth.get_auth(username, password)
-            if api_key is not None:
-                config = ConfigParser.ConfigParser()
-                config.add_section(AUTH_SECTION)
-                config.set(AUTH_SECTION, USER_OPTION, user)
-                config.set(AUTH_SECTION, APIKEY_OPTION, api_key)
-                with open(join(expanduser('~'), TUTUM_FILE), 'w') as cfgfile:
-                    config.write(cfgfile)
-                return True
+            auth.verify_credential(username, password)
+            credential = {"auths": {"tutum.co": {"auth": base64.b64encode("%s:%s" % (username, password))}}}
+            with open(join(expanduser('~'), TUTUM_FILE), 'w') as f:
+                json.dump(credential, f, indent=4, separators=(',', ': '))
+            return True
         except tutum.TutumAuthError:
             return False
         except Exception as e:
@@ -94,12 +70,9 @@ def verify_auth(args):
         except tutum.TutumAuthError:
             print("Not Authorized, Please login:", file=sys.stderr)
             while True:
-                success = _login()
-                if success:
+                if _login():
                     print("Login succeeded!")
-                    # Update user and apikey for SDK
-                    tutum.user = auth.load_from_file()[0] or os.environ.get('TUTUM_USER', None)
-                    tutum.apikey = auth.load_from_file()[1] or os.environ.get('TUTUM_APIKEY', None)
+                    tutum.basic_auth = auth.load_from_file(file="~/.tutum", site="tutum.co")
                     break
                 else:
                     print("Not Authorized, Please login:", file=sys.stderr)
@@ -516,8 +489,11 @@ def container_exec(identifier, command):
 
     def invoke_shell(url):
         header = {'User-Agent': tutum.user_agent}
-        cli_log.info("websocket: %s %s" % (url, header))
-        shell = websocket.create_connection(url, timeout=10, header=header)
+        header.update(tutum.auth.get_auth_header())
+
+        h = [": ".join([key, value]) for key, value in header.items()]
+        cli_log.info("websocket: %s %s" % (url, h))
+        shell = websocket.create_connection(url, timeout=10, header=h)
 
         oldtty = None
         try:
@@ -607,10 +583,7 @@ def container_exec(identifier, command):
         print(e, file=sys.stderr)
         sys.exit(EXCEPTION_EXIT_CODE)
 
-    if tutum.tutum_auth:
-        endpoint = "container/%s/exec/?auth=%s" % (container.uuid, urllib.quote_plus(tutum.tutum_auth))
-    else:
-        endpoint = "container/%s/exec/?user=%s&token=%s" % (container.uuid, tutum.user, tutum.apikey)
+    endpoint = "container/%s/exec/?" % container.uuid
 
     if command:
         escaped_cmd = []

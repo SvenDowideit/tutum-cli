@@ -7,7 +7,6 @@ import re
 import os
 import codecs
 import sys
-
 import requests
 import yaml
 import ago
@@ -16,7 +15,6 @@ import tutum
 from dateutil import tz
 from tabulate import tabulate
 from tutum import ObjectNotFound
-
 from exceptions import BadParameter, DockerNotFound, StreamOutputError
 from . import __version__
 
@@ -292,33 +290,6 @@ def parse_envvars(envvar_list, envfile_list):
         parsed_envvar_list.append(v)
 
     return parsed_envvar_list
-
-
-def try_register(username, password, email):
-    if not email:
-        email = raw_input("Email: ")
-
-    headers = {"Content-Type": "application/json", "User-Agent": "tutum/%s" % __version__}
-    data = {'username': username, "password1": password, "password2": password, "email": email}
-
-    try:
-        r = requests.post(urlparse.urljoin(tutum.base_url, "register/"), data=json.dumps(data), headers=headers)
-        if r.status_code == 201:
-            return True, "Account created. Please check your email for activation instructions."
-        elif r.status_code == 429:
-            return False, "Too many retries. Please login again later."
-        else:
-            messages = r.json()['register']
-            if isinstance(messages, dict):
-                _text = []
-                for key in messages.keys():
-                    _text.append("%s: %s" % (key, '\n'.join(messages[key])))
-                _text = '\n'.join(_text)
-            else:
-                _text = messages
-            return False, _text
-    except Exception:
-        return False, r.text
 
 
 def parse_volume(volume):

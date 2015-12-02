@@ -108,7 +108,7 @@ class CommandsDispatchTestCase(unittest.TestCase):
     def test_login_dispatch(self, mock_cmds):
         args = self.parser.parse_args(['login'])
         dispatch_cmds(args)
-        mock_cmds.login.assert_called_with(None, None, None)
+        mock_cmds.login.assert_called_with(None, None)
 
     @mock.patch('tutumcli.tutum_cli.commands')
     def test_build_dispatch(self, mock_cmds):
