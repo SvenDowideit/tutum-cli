@@ -104,17 +104,20 @@ In order to manage your apps and containers running on Tutum, you need to log in
 
 Your login credentials will be stored in ``~/.tutum``:
 
-.. sourcecode:: json
+.. sourcecode:: ini
 
-    {
-        "auths": {
-            "tutum.co": {
-                "auth": "<username:password(base64 encoded)>",
-            }
-        }
-    }
+    [auth]
+    user = "username"
+    apikey = "apikey"
 
-* Set the environment variables ``TUTUM_USER`` and ``TUTUM_PASS``:
+* Set the environment variables ``TUTUM_USER``, ``TUTUM_APIKEY``, or ``TUTUM_USER``, ``TUTUM_PASS``:
+
+.. sourcecode:: bash
+
+    export TUTUM_USER=<username>
+    export TUTUM_APIKEY=<apikey>
+
+or
 
 .. sourcecode:: bash
 
@@ -130,5 +133,5 @@ Your login credentials will be stored in ``~/.tutum``:
 
 Note: ``tutum-cli`` and ``python-tutum`` will pick up the auth in the following order:
     * ``TUTUM_AUTH``
-    * ``TUTUM_USER`` and ``TUTUM_PASS``
+    * ``TUTUM_USER``, ``TUTUM_PASS`` or ``TUTUM_USER``, ``TUTUM_APIKEY``
     * ``~/.tutum``
