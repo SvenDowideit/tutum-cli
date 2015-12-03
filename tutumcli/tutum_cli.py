@@ -3,10 +3,8 @@ import logging
 import copy
 import sys
 import codecs
-
 import tutum
 import requests
-
 from . import __version__
 from tutumcli import parsers
 from tutumcli import commands
@@ -110,7 +108,7 @@ def dispatch_cmds(args):
         cli_log = logging.getLogger("cli")
         cli_log.setLevel(logging.DEBUG)
     if args.cmd == 'login':
-        commands.login(args.username, args.password, args.email)
+        commands.login(args.username, args.password)
     elif args.cmd == 'action':
         if args.subcmd == 'inspect':
             commands.action_inspect(args.identifier)

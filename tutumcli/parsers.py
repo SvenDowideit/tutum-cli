@@ -6,7 +6,6 @@ def add_login_parser(subparsers):
     login_parser = subparsers.add_parser('login', help='Login into Tutum', description='Login into Tutum')
     login_parser.add_argument('-u', '--username', help='Tutum username')
     login_parser.add_argument('-p', '--password', help='Tutum password')
-    login_parser.add_argument('-e', '--email', help='Email for registration')
 
 
 def add_build_parser(subparsers):

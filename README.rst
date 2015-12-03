@@ -110,12 +110,19 @@ Your login credentials will be stored in ``~/.tutum``:
     user = "username"
     apikey = "apikey"
 
-* Set the environment variables ``TUTUM_USER`` and ``TUTUM_APIKEY``:
+* Set the environment variables ``TUTUM_USER``, ``TUTUM_APIKEY``, or ``TUTUM_USER``, ``TUTUM_PASS``:
 
 .. sourcecode:: bash
 
-    export TUTUM_USER=username
-    export TUTUM_APIKEY=apikey
+    export TUTUM_USER=<username>
+    export TUTUM_APIKEY=<apikey>
+
+or
+
+.. sourcecode:: bash
+
+    export TUTUM_USER=<username>
+    export TUTUM_PASS=<password>
 
 * Set the environment variables ``TUTUM_AUTH``:
 
@@ -126,5 +133,5 @@ Your login credentials will be stored in ``~/.tutum``:
 
 Note: ``tutum-cli`` and ``python-tutum`` will pick up the auth in the following order:
     * ``TUTUM_AUTH``
-    * ``TUTUM_USER`` and ``TUTUM_APIKEY``
+    * ``TUTUM_USER``, ``TUTUM_PASS`` or ``TUTUM_USER``, ``TUTUM_APIKEY``
     * ``~/.tutum``
